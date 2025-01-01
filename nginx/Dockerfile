@@ -1,7 +1,7 @@
 FROM node:alpine AS build
 RUN apk add --no-cache git
 WORKDIR /app
-RUN git clone --depth 1 https://github.com/suyttthideptrai/SS2-game-theory-solver.git .
+RUN git clone --depth 1 https://github.com/FitHanuSpecialSubject/GA-Webapp.git .
 RUN npm i -f
 RUN rm -rf /app/.env
 COPY .env /app
