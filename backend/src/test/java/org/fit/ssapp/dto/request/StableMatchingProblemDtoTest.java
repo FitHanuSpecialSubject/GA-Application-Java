@@ -23,6 +23,7 @@ public class StableMatchingProblemDtoTest {
 
   @Test
   void testValidDTO() {
+    int availableCores = Runtime.getRuntime().availableProcessors();
     dto = new StableMatchingProblemDto(
         "Stable Matching Problem",
         2,
@@ -41,7 +42,7 @@ public class StableMatchingProblemDtoTest {
         50,
         3600,
         "Genetic Algorithm",
-        "4"
+        String.valueOf(availableCores)
     );
 
     Set<ConstraintViolation<StableMatchingProblemDto>> violations = validator.validate(dto);
