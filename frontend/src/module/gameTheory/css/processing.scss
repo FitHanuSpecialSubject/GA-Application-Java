@@ -1,0 +1,71 @@
+.input-processing-page {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+.problem-name{
+    font-size: 20px;
+    color: #000;
+    border-bottom: 1px solid black;
+    text-align: center;
+    width: fit-content;
+    margin: 0 auto;
+    padding: 5px 20px;
+}
+
+.solve-now-btn{
+    font-size: 15px;
+    border-radius: 5px;
+    background-color:rgba(49, 49, 49, 0.932);
+    color: white;
+    width: fit-content;
+    margin: 0 auto;
+    padding: 5px 10px;
+    cursor: pointer;
+    border: none;
+    transition: all 0.3s ease-in-out;
+
+    &:hover{
+        background-color: black;
+        transform: scale(1.1);
+    }
+
+}
+
+
+.algo-chooser{
+    background: var(--grey);
+    padding: 20px;
+    border-radius: 10px;
+    .bold {
+        font-size: 13px;
+    }
+    margin: 0 auto;
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+select, option {
+    height: 40px;
+    padding: 5px 15px;
+    border-radius: 5px;
+
+}
+.playerNum{
+    font-size: 18px;
+    text-align: center;
+    margin: 0;
+}
+
+.player-container {
+    padding: 20px;
+    max-width: 1000px;
+    margin: 0 auto;
+    width: 60%;
+    height: 100px;
+    height: fit-content;
+    max-height: 80vh;
+    overflow-y: scroll;
+}
+

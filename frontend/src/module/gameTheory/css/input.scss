@@ -1,0 +1,129 @@
+.input-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 1000px;
+    gap: 20px;
+    max-width: 80%;
+    margin: 0 auto;
+
+    .warning {
+        color: rgb(186, 7, 7);
+        font-size: 14px;
+
+        a {
+            color: black;
+        }
+    }
+    .header-text {
+        font-size: 12px;
+        color: #000;
+        border-bottom: 1px solid black;
+        width: fit-content;
+        margin: 0 auto;
+        padding: 0 10px;
+    }
+
+    .input-container {
+        // margin: 20px 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        width: 100%;
+
+
+        .row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            width: 100%;
+        }
+    }
+
+    .guide-box {
+        background: #f0f0f0;
+        font-size: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        max-width: 800px;
+        padding: 10px 20px;
+        border-radius: 10px;
+
+        .guide-link {
+            color: #000000;
+            width: fit-content;
+            margin: 0 auto;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+
+            &:hover {
+                background-color: black;
+                color: white;
+            }
+        }
+
+
+    }
+
+
+
+    .drag-area {
+        width: 50%;
+        height: 50%;
+        min-width: 350px;
+        min-height: 300px;
+        border: 2px dashed #0000006c;
+        display: flex;
+        flex-direction: column;
+        border-radius: 10px;
+        justify-content: center;
+        align-items: center;
+
+        .drag-text {
+            font-size: 12px;
+            color: #00000095;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        #select-file-label {
+            background: var(--grey);
+            color: black;
+            // border: none;
+            padding: 5px 15px;
+            border-radius: 5px;
+            font-size: 12px;
+            line-height: 20px;
+            cursor: pointer;
+            border: 1px solid var(--black);
+
+            &:hover {
+                background: black;
+                color: white;
+            }
+        }
+
+        #select-file {
+            display: none;
+        }
+    }
+
+    .dragging {
+        background: var(--grey)
+    }
+
+    .file-error {
+        color: rgb(240, 66, 66);
+        font-size: 12px;
+    }
+
+    .btn {
+        border: 2px solid #d0cfcf;
+    }
+}

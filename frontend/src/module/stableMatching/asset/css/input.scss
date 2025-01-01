@@ -1,0 +1,232 @@
+.input-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 1000px;
+  gap: 30px;
+  max-width: 80%;
+  margin: 0 auto;
+  .content-guidance {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    // height: 75vh;
+    padding: 0 20px;
+    overflow-y: scroll;
+    .section {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      p {
+        text-align: left;
+      }
+    }
+  }
+  .warning {
+    color: rgb(186, 7, 7);
+    font-size: 14px;
+
+    a {
+      color: black;
+    }
+  }
+
+  .header-text {
+    font-size: 12px;
+    color: #000;
+    border-bottom: 1px solid black;
+    width: fit-content;
+    margin: 0 auto;
+    padding: 0 10px;
+  }
+
+  .input-container {
+    // margin: 20px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+
+    
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      
+    }
+
+
+    .table {
+      width: 100%;
+      border: 1px solid rgb(0, 0, 0);
+      overflow-x: auto;
+      border-collapse: collapse;
+      border-radius: 5px;
+    }
+
+    .th {
+      border: 1px solid black;
+      padding: 8px; // Adjust the padding as needed
+      text-align: center; // Center-align content in cells
+    }
+    .td {
+      border: 1px solid black;
+      padding: 8px; // Adjust the padding as needed
+      text-align: center; // Center-align content in cells
+
+      .input-table-data {
+        border: none;
+        text-align: center;
+      }
+    }
+  }
+
+  .guide-box {
+    background: #f0f0f0;
+    font-size: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    max-width: 800px;
+    padding: 10px 20px;
+    border-radius: 10px;
+
+    .guide-link {
+      color: #000000;
+      width: fit-content;
+      margin: 0 auto;
+      border-radius: 5px;
+      padding: 5px 10px;
+      cursor: pointer;
+
+      &:hover {
+        background-color: black;
+        color: white;
+      }
+    }
+  }
+
+  .drag-area {
+    width: 50%;
+    height: 50%;
+    min-width: 350px;
+    min-height: 300px;
+    border: 2px dashed #0000006c;
+    display: flex;
+    flex-direction: column;
+    border-radius: 10px;
+    justify-content: center;
+    align-items: center;
+
+    .drag-text {
+      font-size: 12px;
+      color: #00000095;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    #select-file-label {
+      background: var(--grey);
+      color: black;
+      // border: none;
+      padding: 5px 15px;
+      border-radius: 5px;
+      font-size: 12px;
+      line-height: 20px;
+      cursor: pointer;
+      border: 1px solid var(--black);
+
+      &:hover {
+        background: black;
+        color: white;
+      }
+    }
+
+    #select-file {
+      display: none;
+    }
+  }
+
+  .dragging {
+    background: var(--grey);
+  }
+
+  .file-error {
+    color: rgb(240, 66, 66);
+    font-size: 12px;
+  }
+
+  .show-guideline-btn {
+    background-color: #99999a;
+    color: white;
+    border: none;
+    padding: 5px 15px;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  .show-guideline-btn:hover {
+    background-color: #464646;
+  }
+
+  .show-guideline-btn:focus {
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+  }
+
+  .show-guideline-btn:active {
+    background-color: #474747;
+  }
+
+  .subsection {
+    margin-left: 40px;
+    margin-bottom: 20px;
+  }
+
+  ul {
+    list-style-type: none; /* Loại bỏ kiểu danh sách mặc định */
+    padding-left: 0; /* Loại bỏ padding mặc định của danh sách */
+  }
+
+  li {
+    position: relative;
+    padding-left: 20px; /* Tạo khoảng cách bên trái cho nội dung của mục danh sách */
+  }
+
+  li:before {
+    content: "-"; /* Hiển thị dấu "-" trước mỗi thẻ <li> */
+    position: absolute;
+    left: 0; /* Đặt vị trí của dấu "-" bên trái */
+  }
+
+  .subsection p {
+    margin-bottom: 10px;
+  }
+
+  .subsection ul {
+    margin: 0;
+    padding-left: 20px;
+  }
+
+  .subsection li {
+    margin-bottom: 5px;
+  }
+
+  .guideline-text {
+    background-color: hsl(0, 5%, 92%);
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .toggle-icon {
+    margin-right: 5px; 
+  }
+}

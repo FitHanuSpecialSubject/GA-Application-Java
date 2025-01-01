@@ -1,0 +1,178 @@
+@import "bootstrap/dist/css/bootstrap.min.css";
+
+.matching-output-page {
+  width: auto;
+  margin: 0 auto;
+  align-items: center;
+  justify-content: center;
+  padding: 0 100px;
+
+  .problem-name {
+    font-size: 20px;
+    color: #000;
+    border-bottom: 1px solid black;
+    text-align: center;
+    width: fit-content;
+    margin: 0 auto;
+    padding: 5px 20px;
+  }
+  #head-title {
+    font-size: 20px;
+    color: #000;
+    text-align: center;
+    width: fit-content;
+    margin: 0 auto;
+    padding: 5px 20px;
+  }
+  .header-text {
+    font-size: 16px;
+    // font-weight: 600;
+    color: #000;
+    border-bottom: 1px solid black;
+    width: fit-content;
+    margin: 0;
+    padding: 0 10px 10px 10px;
+    width: 300px;
+    text-align: center;
+  }
+
+  .below-headertext {
+    font-size: 14px;
+    // font-weight: 600;
+    color: #000;
+    width: fit-content;
+    margin: 0 auto;
+    padding: 0 10px;
+  }
+  .result-information {
+    font-size: 14px;
+    // font-weight: 600;
+    color: #000;
+    width: fit-content;
+    margin: 0 auto;
+    padding: 0 10px;
+    text-align: center;
+  }
+  .output-container {
+    margin: 20px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .param-box {
+    background: var(--grey);
+    display: flex;
+    flex-direction: column;
+    width: fit-content;
+    margin: 0 auto;
+    padding: 20px;
+    border-radius: 10px;
+    gap: 20px;
+
+    .estimated-time {
+      min-width: 280px;
+      font-size: 13px;
+      text-align: center;
+      // background: red;
+    }
+
+    .insight-btn {
+      background: rgb(133, 132, 132);
+      color: white;
+      margin: 0 auto;
+      &:hover {
+        background: black;
+        color: white;
+      }
+    }
+  }
+
+  .grid-container {
+    display: grid;
+    grid-template-columns: 10% 30% 30% 30%;
+    /* The first column is half the width of the others */
+    font-weight: bold;
+    padding: 0 30px;
+    max-width: 1200px;
+
+    .head-column {
+      text-align: left;
+    }
+  }
+
+  .column {
+    padding: 10px;
+  }
+
+  /* For screen sizes less than or equal to 768px */
+  @media only screen and (max-width: 768px) {
+    .matching-output-page {
+      padding: 0 10px;
+    }
+
+    .header-text {
+      font-size: 14px;
+      width: 100%;
+      padding: 0 5px 5px 5px;
+      margin: 0;
+    }
+
+    .below-headertext {
+      font-size: 12px;
+      padding: 0 5px;
+    }
+
+    .row {
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+  }
+
+  /* For screen sizes greater than 768px */
+  @media only screen and (min-width: 769px) {
+    .matching-output-page {
+      padding: 0 30px;
+    }
+
+    .header-text {
+      font-size: 16px;
+      width: fit-content;
+      padding: 0 10px 10px 10px;
+      margin: 0 auto;
+    }
+
+    .below-headertext {
+      font-size: 14px;
+      padding: 0 10px;
+    }
+
+    .row {
+      justify-content: center;
+    }
+
+    .grid-container {
+      grid-template-columns: 10% 30% 30% 30%;
+      width: 1200px;
+    }
+
+    .grid-item-container {
+      margin-top: 10px;
+      padding: 0 20px;
+
+      .player-name {
+        font-weight: 700;
+        color: #000;
+      }
+    }
+  }
+}

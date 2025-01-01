@@ -6,7 +6,7 @@ RUN mkdir -p $HOME
 WORKDIR $HOME
 ADD pom.xml $HOME
 RUN mvn verify --fail-never
-ADD . $HOME
+ADD .. $HOME
 RUN mvn package -DskipTests
 
 

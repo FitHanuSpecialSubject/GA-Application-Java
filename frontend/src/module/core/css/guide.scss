@@ -1,0 +1,81 @@
+.guide-page {
+    margin-top: 10px;
+    max-width: 1400px;
+    // height: 75vh;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 20% 80%;
+    // padding-left: 400px;
+    .sidebar {
+        position: sticky;
+        top: 20px;
+        left: 0;
+        border-right: 1px solid black;
+        display: flex;
+        flex-direction: column;
+        // background: red;
+        gap: 20px;
+        height: 100vh;
+        // height: 100%;
+        max-width: 300px;
+        // height: 75vh;
+        padding: 0 10px;
+
+        div {
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+
+            &:hover {
+                background: gray;
+                color: white;
+            }
+        }
+
+        .highlight {
+            color: white;
+            background: black;
+
+            &:hover {
+                background: black;
+                color: white;
+            }
+        }
+    }
+
+    .content {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        // height: 75vh;
+        padding: 0 20px;
+        overflow-y: scroll;
+        .section {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            
+            .steps {
+                padding: 20px;
+            }
+            .gray-board {
+                background: #f0f0f0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                // width: 100%;
+                min-height: 400px;
+                height: fit-content;
+                // padding: 10px;
+                border-radius: 5px;
+                padding: 20px;
+                border: 1px solid #e5e5e5;
+                
+                p {
+                    text-align: center;     
+                }
+            }
+        }
+
+    }
+}

@@ -1,0 +1,73 @@
+.Navbar {
+    padding: 0;
+    margin: 0;
+    background: #20262E;
+    color: white;
+
+    .container {
+        max-width: 1200px;
+        display: flex;
+        justify-content: space-between;
+        padding: 15px 30px;
+        align-items: center;
+        margin: 0 auto;
+
+        .logo {
+            filter: invert(100%);
+            width: 25px;
+        }
+
+        .app-name {
+            font-size: 1.3rem;
+            cursor: pointer;
+            // font-weight: bold;
+        }
+
+        .nav-item-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 5px;
+
+            // width: 200px;
+            // background: red;
+
+
+            .nav-item {
+                margin: 0 10px;
+                cursor: pointer;
+                padding: 3px 10px;
+                font-size: 12px;
+                text-decoration: none;
+                color: white;
+            }
+
+            .highlight {
+                color: white;
+                background-color: #20262E;
+            }
+        }
+    }
+
+    
+
+}
+
+.app-info {
+    background: white;
+    color: #20262E;
+    max-width: 1200px;
+    display: flex;
+    padding: 15px 30px;
+    align-items: center;
+    margin: 0 auto;
+    gap: 15px;
+
+    .moea-framework-logo {
+        width: 30px;
+        height: 30px;
+    }
+    p {
+        font-size: 10px;
+    }
+}

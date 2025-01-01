@@ -1,0 +1,87 @@
+.insight-page {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    justify-content: center;
+    align-items: center;
+
+    .problem-name{
+        font-size: 20px;
+        color: #000;
+        border-bottom: 1px solid black;
+        text-align: center;
+        width: fit-content;
+        margin: 0 auto;
+        padding: 5px 20px;
+    }
+    
+    .header-text {
+        font-size: 12px;
+        color: #000;
+        // border-bottom: 1px solid black;
+        width: fit-content;
+        margin: 0 auto;
+        padding: 0 10px;
+    }
+    
+    .row {
+        display: flex;
+        flex-direction: row;
+        gap: 20px;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        min-width: 800px;
+        max-width: 1000px;
+    }
+
+    .figure-description {
+        font-size: 13px;
+        margin-top: 10px;
+    }
+
+    .fitness-table {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;    
+        min-width: 800px;
+        width: fit-content;
+        max-width: 90%;
+        overflow-x: scroll;
+        background: #f0f0f0;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+
+        table {
+            background: white;
+
+            td,
+            th {
+                padding: 10px;
+                border: 1px solid black;
+                text-align: center;
+                width: fit-content;
+            }
+        }
+
+
+    }
+
+    .runtime-graph {
+        min-width: 800px;
+        width: fit-content;
+        max-width: 1000px;
+        overflow-x: scroll;
+        background: #f0f0f0;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        height: fit-content;
+
+        .graph {
+            background: white;
+        }
+    }
+}

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Force Simulation Example</title>
+  <!-- Include D3 library -->
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+  <svg width="800" height="600"></svg>
+
+  <script>
+    // Define the dimensions of the SVG container
+    const width = 800;
+    const height = 600;
+
+    // Create an SVG container
+    const svg = d3.select("svg")
+      .attr("width", width)
+      .attr("height", height);
+
+    // Sample data for nodes
+    const nodes = [
+      { id: 1, x: 100, y: 100 },
+      { id: 2, x: 200, y: 200 },
+      { id: 3, x: 300, y: 300 }
+    ];
+
+    // Create a force simulation
+    const simulation = d3.forceSimulation(nodes);
+
+    // Add circles for each node
+    const circles = svg.selectAll("circle")
+      .data(nodes)
+      .enter()
+      .append("circle")
+      .attr("r", 10)
+      .attr("fill", "steelblue");
+
+    // Update circle positions based on simulation
+    simulation.on("tick", () => {
+      circles
+        .attr("cx", d => d.x)
+        .attr("cy", d => d.y);
+    });
+  </script>
+</body>
+</html>

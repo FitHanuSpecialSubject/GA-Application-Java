@@ -1,3 +1,9 @@
+HELP.md
+../target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
 ### STS ###
 .apt_generated
 .classpath
@@ -27,11 +33,17 @@ build/
 .vscode/
 /bin/
 
-### Java Backend libs, builds ###
-**/target
-backend/data
+### Profiler ###
+err_err_profile.jfr
+err_err_profile.jfr.txt
+err_profile.jfr
+err_profile.jfr.txt
+profile.jfr
 
-### Webapp libs, builds ###
-**/node_modules
-**/node
-**/build
+### Run Data ###
+.data
+.log
+
+
+### frontend module ###
+node
