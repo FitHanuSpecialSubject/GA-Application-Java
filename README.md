@@ -44,7 +44,7 @@ If result not present, please test on your system and give feedback.
 ### Steps
 1. Clone the repository
 ```bash 
-git clone https://github.com/suyttthideptrai/SS1_2023_StableMatchingSolver_Backend.git
+git clone https://github.com/FitHanuSpecialSubject/GA-Webapp.git
 cd SS1_2023_StableMatchingSolver_Backend
 ```
 
