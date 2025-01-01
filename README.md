@@ -85,7 +85,7 @@ mvn clean install -PwithFront
 
 ### Backend run
 
-* Run via maven profile (for a quick shot in terminal)
+* Run via maven profile
 
 ```bash
 mvn verify -DskipTests -PstartBE
@@ -99,10 +99,10 @@ java -jar target/[generated_application_filename].jar
 
 * Or use modern Java IDE like IntelliJ IDEA, Eclipse, Netbeans, ... to run with IDE preconfigures
 
-### Webapp run via maven
+### Webapp run via maven (for a quick demo via terminal)
 
 ```bash
-mvn verify -DskipTests -PstartFE
+mvn verify -DskipTests -Dskip.node-and-npm.install -PstartFE
 ```
 
 * Separate process with BE
@@ -140,4 +140,4 @@ documents
 #### Mọi vấn đề khó khăn hoặc thắc mắc có thể liên hệ với các thành viên nhóm code SS1, SS2 (F2023, S2024),trợ giảng hoặc thầy cô hướng dẫn.
 
 
-###### Update 2024-12-20 by [Tiến Thành](https://github.com/suyttthideptrai)
+###### Update 2025-1-1 by [Tiến Thành](https://github.com/suyttthideptrai)
