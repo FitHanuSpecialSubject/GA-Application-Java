@@ -8,7 +8,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
-import org.fit.ssapp.constants.MatchingConst;
+import org.fit.ssapp.constants.StableMatchingConst;
 
 public class EvaluateFunctionValidator implements
     ConstraintValidator<ValidEvaluateFunction, String[]> {
@@ -18,7 +18,7 @@ public class EvaluateFunctionValidator implements
   @Override
   public boolean isValid(String[] values, ConstraintValidatorContext context) {
     for (String func : values) {
-        if (func.equalsIgnoreCase(MatchingConst.DEFAULT_EVALUATE_FUNC)) {
+        if (func.equalsIgnoreCase(StableMatchingConst.DEFAULT_EVALUATE_FUNC)) {
             continue;
         }
       String cleanFunc = func.replaceAll("\\s+", "");

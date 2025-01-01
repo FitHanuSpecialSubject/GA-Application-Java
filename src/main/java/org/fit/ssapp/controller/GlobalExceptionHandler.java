@@ -12,11 +12,20 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+/**
+ * Controller layer exception handler.
+ */
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
   Logger logger = Logger.getLogger("GlobalExceptionHandler");
 
+  /**
+   * Server busy exception handler.
+   *
+   * @param ex RejectedExecutionException
+   * @return ResponseEntity
+   */
   @ExceptionHandler(RejectedExecutionException.class)
   public ResponseEntity<String> handleRejectedExecutionException(RejectedExecutionException ex) {
     logger.warning("Queue full!");
@@ -24,6 +33,12 @@ public class GlobalExceptionHandler {
         .body("Server is busy. Please try again later.");
   }
 
+  /**
+   * MethodArgumentNotValidException handler.
+   *
+   * @param ex MethodArgumentNotValidException
+   * @return ResponseEntity
+   */
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<Map<String, Object>> handleMethodArgumentNotValidException(
       MethodArgumentNotValidException ex) {

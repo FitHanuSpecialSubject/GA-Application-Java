@@ -5,9 +5,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * App related constants.
+ */
 public class AppConst {
 
-  public final static String[] SUPPORTED_ALGOS = {
+  public static final String[] SUPPORTED_ALGOS = {
       "AGE-MOEA-II",
       "AMOSA",
       "CMA-ES",
@@ -37,7 +40,7 @@ public class AppConst {
   };
 
   // based on net.objecthunter.exp4j version 0.4.8 supported math functions
-  public final static Set<String> BUILTIN_FUNCTION_NAMES = new HashSet<>(Arrays.asList(
+  public static final Set<String> BUILTIN_FUNCTION_NAMES = new HashSet<>(Arrays.asList(
       "sin",
       "cos",
       "tan",

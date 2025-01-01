@@ -5,10 +5,10 @@ import java.util.concurrent.CompletableFuture;
 import org.fit.ssapp.dto.request.GameTheoryProblemDto;
 import org.fit.ssapp.dto.request.StableMatchingProblemDto;
 import org.fit.ssapp.dto.response.Response;
-import org.fit.ssapp.service.GameTheorySolver;
-import org.fit.ssapp.service.OTMStableMatchingSolver;
-import org.fit.ssapp.service.StableProblemService;
-import org.fit.ssapp.service.TripletProblemRBO;
+import org.fit.ssapp.service.GameTheoryService;
+import org.fit.ssapp.service.StableMatchingOtmService;
+import org.fit.ssapp.service.StableMatchingService;
+import org.fit.ssapp.service.TripletMatchingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
@@ -20,29 +20,43 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * Main Controller.
+ */
 @RestController
 @RequestMapping("/api")
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class HomeController {
 
   @Autowired
-  private GameTheorySolver gameTheorySolver;
+  private GameTheoryService gameTheoryService;
 
   @Autowired
-  private StableProblemService stableMatchingSolver;
+  private StableMatchingService stableMatchingSolver;
 
   @Autowired
-  private OTMStableMatchingSolver stableMatchingOTMProblemDTO;
+  private StableMatchingOtmService otmProblemSolver;
 
   @Autowired
-  private TripletProblemRBO tripletProblemRBO;
+  private TripletMatchingService tripletMatchingSolver;
 
 
+  /**
+   * Status check serverside page.
+   *
+   * @return index static page.
+   */
   @GetMapping("/")
   public String home() {
     return "index";
   }
 
+  /**
+   * Solve MTM matching problem.
+   *
+   * @param object StableMatchingProblemDto.
+   * @return CompletableFuture<ResponseEntity<Response>>
+   */
   @Async("taskExecutor")
   @PostMapping("/stable-matching-solver")
   public CompletableFuture<ResponseEntity<Response>> solveStableMatching(
@@ -50,31 +64,53 @@ public class HomeController {
     return CompletableFuture.completedFuture(stableMatchingSolver.solve(object));
   }
 
-//    @Async("taskExecutor")
-//    @PostMapping("/stable-matching-oto-solver")
-//    public CompletableFuture<ResponseEntity<Response>> solveStableMatchingOTO(@RequestBody StableMatchingProblemDto object) {
-//        return CompletableFuture.completedFuture(stableMatchingSolver.solveStableMatchingOTO(object));
-//    }
+//  @Async("taskExecutor")
+//  @PostMapping("/stable-matching-oto-solver")
+//  public CompletableFuture<ResponseEntity<Response>> solveStableMatchingOTO(
+//  @RequestBody StableMatchingProblemDto object) {
+//      return CompletableFuture
+//      .completedFuture(stableMatchingSolver.solveStableMatchingOTO(object));
+//      }
 
+  /**
+   * Solve OTM matching problem.
+   *
+   * @param object Matching Problem Request
+   *
+   * @return CompletableFuture<ResponseEntity<Response>>
+   */
   @Async("taskExecutor")
   @PostMapping("/stable-matching-otm-solver")
   public CompletableFuture<ResponseEntity<Response>> solveStableMatchingOTM(
       @RequestBody @Valid StableMatchingProblemDto object) {
-    return CompletableFuture.completedFuture(stableMatchingOTMProblemDTO.solve(object));
+    return CompletableFuture.completedFuture(otmProblemSolver.solve(object));
   }
 
+  /**
+   * Solve triplet (3 set) matching problem.
+   *
+   * @param object Matching Problem Request
+   * @return CompletableFuture<ResponseEntity<Response>>
+   */
   @Async("taskExecutor")
   @PostMapping("/solve-triplet-matching")
   public CompletableFuture<ResponseEntity<Response>> solveTripletMatching(
       @RequestBody StableMatchingProblemDto object) {
-    return CompletableFuture.completedFuture(tripletProblemRBO.solve(object));
+    return CompletableFuture.completedFuture(tripletMatchingSolver.solve(object));
   }
 
+  /**
+   * Solve game theory problem service.
+   *
+   * @param gameTheoryProblem Matching Problem Request.
+   *
+   * @return CompletableFuture<ResponseEntity<Response>>
+   */
   @Async("taskExecutor")
   @PostMapping("/game-theory-solver")
   public CompletableFuture<ResponseEntity<Response>> solveGameTheory(
       @RequestBody GameTheoryProblemDto gameTheoryProblem) {
-    return CompletableFuture.completedFuture(gameTheorySolver.solveGameTheory(gameTheoryProblem));
+    return CompletableFuture.completedFuture(gameTheoryService.solveGameTheory(gameTheoryProblem));
   }
 
   @Async("taskExecutor")
@@ -82,7 +118,7 @@ public class HomeController {
   public CompletableFuture<ResponseEntity<Response>> getProblemResultInsights(
       @RequestBody GameTheoryProblemDto gameTheoryProblem,
       @PathVariable String sessionCode) {
-    return CompletableFuture.completedFuture(gameTheorySolver.getProblemResultInsights(
+    return CompletableFuture.completedFuture(gameTheoryService.getProblemResultInsights(
         gameTheoryProblem,
         sessionCode));
   }
@@ -101,7 +137,7 @@ public class HomeController {
   public CompletableFuture<ResponseEntity<Response>> getOTMMatchingResultInsights(
       @RequestBody @Valid StableMatchingProblemDto object,
       @PathVariable String sessionCode) {
-    return CompletableFuture.completedFuture(stableMatchingOTMProblemDTO.getInsights(
+    return CompletableFuture.completedFuture(otmProblemSolver.getInsights(
         object,
         sessionCode));
   }
@@ -111,7 +147,7 @@ public class HomeController {
   public CompletableFuture<ResponseEntity<Response>> getTripletMatchingResultInsights(
       @RequestBody StableMatchingProblemDto object,
       @PathVariable String sessionCode) {
-    return CompletableFuture.completedFuture(tripletProblemRBO.getInsights(
+    return CompletableFuture.completedFuture(tripletMatchingSolver.getInsights(
         object,
         sessionCode));
   }

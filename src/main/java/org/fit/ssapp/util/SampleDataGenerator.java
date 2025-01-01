@@ -1,7 +1,7 @@
 package org.fit.ssapp.util;
 
-import static org.fit.ssapp.constants.MatchingConst.DEFAULT_EVALUATE_FUNC;
-import static org.fit.ssapp.constants.MatchingConst.DEFAULT_FITNESS_FUNC;
+import static org.fit.ssapp.constants.StableMatchingConst.DEFAULT_EVALUATE_FUNC;
+import static org.fit.ssapp.constants.StableMatchingConst.DEFAULT_FITNESS_FUNC;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -9,7 +9,7 @@ import java.util.Random;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.fit.ssapp.constants.MatchingConst.ReqTypes;
+import org.fit.ssapp.constants.StableMatchingConst.ReqTypes;
 import org.fit.ssapp.dto.mapper.StableMatchingProblemMapper;
 import org.fit.ssapp.dto.request.StableMatchingProblemDto;
 import org.fit.ssapp.ss.smt.Matches;

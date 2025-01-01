@@ -22,11 +22,11 @@
 //    @Mock
 //    private SimpMessagingTemplate mockSimpMessagingTemplate;
 //
-//    private OTMStableMatchingSolver otmStableMatchingSolverUnderTest;
+//    private StableMatchingOtmService otmStableMatchingSolverUnderTest;
 //
 //    @BeforeEach
 //    void setUp() {
-//        otmStableMatchingSolverUnderTest = new OTMStableMatchingSolver(mockSimpMessagingTemplate);
+//        otmStableMatchingSolverUnderTest = new StableMatchingOtmService(mockSimpMessagingTemplate);
 //    }
 //
 //    @Test

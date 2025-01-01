@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.fit.ssapp.constants.MatchingConst;
+import org.fit.ssapp.constants.StableMatchingConst;
 import org.fit.ssapp.dto.mapper.StableMatchingProblemMapper;
 import org.fit.ssapp.dto.request.StableMatchingProblemDto;
 import org.fit.ssapp.dto.response.Progress;
@@ -33,7 +33,7 @@ import org.springframework.validation.BindingResult;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class TripletProblemRBO {
+public class TripletMatchingService {
 
   private static final int RUN_COUNT_PER_ALGORITHM = 10;
   private final SimpMessagingTemplate simpMessagingTemplate;
@@ -83,7 +83,7 @@ public class TripletProblemRBO {
       MatchingSolution matchingSolution = formatSolution(algorithm, results, runtime);
       matchingSolution.setSetSatisfactions(problem.getMatchesSatisfactions((Matches) results
           .get(0)
-          .getAttribute(MatchingConst.MATCHES_KEY)));
+          .getAttribute(StableMatchingConst.MATCHES_KEY)));
 
       return ResponseEntity.ok(Response
           .builder()
@@ -174,7 +174,7 @@ public class TripletProblemRBO {
 
   public ResponseEntity<Response> getInsights(StableMatchingProblemDto request,
       String sessionCode) {
-    String[] algorithms = MatchingConst.ALLOWED_INSIGHT_ALGORITHMS;
+    String[] algorithms = StableMatchingConst.ALLOWED_INSIGHT_ALGORITHMS;
     simpMessagingTemplate.convertAndSendToUser(sessionCode,
         "/progress",
         createProgressMessage("Initializing the problem..."));

@@ -2,7 +2,10 @@ package org.fit.ssapp.constants;
 
 import java.util.Set;
 
-public class MatchingConst {
+/**
+ * SMT related constants.
+ */
+public class StableMatchingConst {
 
   public static final String MATCHES_KEY = "matches";
   public static final int UNUSED_VALUE = 0;
@@ -13,7 +16,7 @@ public class MatchingConst {
   public static final Set<Character> EVAL_VARIABLE_PREFIXES = Set.of('p', 'w', 'r');
 
   /**
-   * Requirement types
+   * Ordinal requirement types.
    */
   public interface ReqTypes {
 
@@ -21,11 +24,6 @@ public class MatchingConst {
     int ONE_BOUND = 1;
     int TWO_BOUND = 2;
     int TIME_SLOT = 3;
-  }
 
-  public interface InsightConfig {
-
-    int POPULATION_SIZE = 50;
-    int GENERATIONS = 100;
   }
 }

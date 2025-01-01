@@ -86,7 +86,7 @@ public class StableMatchingSolverTest {
 
   @Test
   public void testStableSolverMTM() {
-    StableProblemService solver = new StableProblemService(null);
+    StableMatchingService solver = new StableMatchingService(null);
     // Solve the problem
     ResponseEntity<Response> response = solver.solve(stableMatchingProblemDto);
 
@@ -97,7 +97,7 @@ public class StableMatchingSolverTest {
 
   @Test
   public void testStableSolverOTM() {
-    OTMStableMatchingSolver stableMatchingOTMProblemDTO = new OTMStableMatchingSolver(null);
+    StableMatchingOtmService stableMatchingOTMProblemDTO = new StableMatchingOtmService(null);
     // Solve the problem
     ResponseEntity<Response> response = stableMatchingOTMProblemDTO.solve(
         stableMatchingProblemDto);

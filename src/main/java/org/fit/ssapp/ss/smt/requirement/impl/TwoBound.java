@@ -3,7 +3,7 @@ package org.fit.ssapp.ss.smt.requirement.impl;
 import static org.fit.ssapp.util.NumberUtils.formatDouble;
 
 import lombok.Getter;
-import org.fit.ssapp.constants.MatchingConst;
+import org.fit.ssapp.constants.StableMatchingConst;
 import org.fit.ssapp.ss.smt.requirement.Requirement;
 
 @Getter
@@ -22,7 +22,7 @@ public class TwoBound implements Requirement {
    */
   @Override
   public int getType() {
-    return MatchingConst.ReqTypes.TWO_BOUND;
+    return StableMatchingConst.ReqTypes.TWO_BOUND;
   }
 
   /**

@@ -11,7 +11,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.fit.ssapp.constants.MatchingConst;
+import org.fit.ssapp.constants.StableMatchingConst;
 import org.fit.ssapp.ss.smt.Matches;
 import org.fit.ssapp.ss.smt.MatchingData;
 import org.fit.ssapp.ss.smt.MatchingProblem;
@@ -67,7 +67,7 @@ public class OTOProblem implements MatchingProblem {
   /**
    * will not be used
    */
-  final int UNUSED_VAL = MatchingConst.UNUSED_VALUE;
+  final int UNUSED_VAL = StableMatchingConst.UNUSED_VALUE;
 
   @Override
   public String getName() {
@@ -110,7 +110,7 @@ public class OTOProblem implements MatchingProblem {
     } else {
       fitnessScore = fitnessEvaluator.defaultFitnessEvaluation(satisfactions);
     }
-    solution.setAttribute(MatchingConst.MATCHES_KEY, result);
+    solution.setAttribute(StableMatchingConst.MATCHES_KEY, result);
     solution.setObjective(0, -fitnessScore);
   }
 

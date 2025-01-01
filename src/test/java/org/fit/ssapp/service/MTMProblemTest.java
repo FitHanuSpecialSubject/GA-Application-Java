@@ -2,7 +2,7 @@ package org.fit.ssapp.service;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.fit.ssapp.constants.MatchingConst;
+import org.fit.ssapp.constants.StableMatchingConst;
 import org.fit.ssapp.dto.mapper.StableMatchingProblemMapper;
 import org.fit.ssapp.dto.request.StableMatchingProblemDto;
 import org.fit.ssapp.ss.smt.Matches;
@@ -38,7 +38,7 @@ public class MTMProblemTest {
     // Create a Solution to test and get Matches from the Solution
     Solution solution = problem.newSolution();
     problem.evaluate(solution);
-    Matches matches = (Matches) solution.getAttribute(MatchingConst.MATCHES_KEY);
+    Matches matches = (Matches) solution.getAttribute(StableMatchingConst.MATCHES_KEY);
     for (int i = 0; i < stableMatchingProblemDto.getNumberOfIndividuals(); i++) {
       // Getting individual
       int capacity = problem.getMatchingData().getCapacityOf(i);

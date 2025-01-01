@@ -1,7 +1,7 @@
 package org.fit.ssapp.ss.smt.requirement.impl;
 
 import lombok.Getter;
-import org.fit.ssapp.constants.MatchingConst;
+import org.fit.ssapp.constants.StableMatchingConst;
 import org.fit.ssapp.ss.smt.requirement.Requirement;
 
 @Getter
@@ -18,7 +18,7 @@ public class ScaleTarget implements Requirement {
    */
   @Override
   public int getType() {
-    return MatchingConst.ReqTypes.SCALE_TARGET;
+    return StableMatchingConst.ReqTypes.SCALE_TARGET;
   }
 
   /**

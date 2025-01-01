@@ -3,7 +3,7 @@ package org.fit.ssapp.ss.smt.preference;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import org.fit.ssapp.constants.MatchingConst;
+import org.fit.ssapp.constants.StableMatchingConst;
 import org.fit.ssapp.ss.smt.Matches;
 import org.fit.ssapp.ss.smt.MatchingData;
 
@@ -67,7 +67,7 @@ public class PreferenceListWrapper {
   // Stable Matching Algorithm Component: isPreferredOver
   public boolean isPreferredOver(int proposeNode, int preferNodeCurrentNode, int preferNode) {
     PreferenceList preferenceOfSelectorNode = lists.get(preferNode);
-    return preferenceOfSelectorNode.isScoreGreater(MatchingConst.UNUSED_VALUE,
+    return preferenceOfSelectorNode.isScoreGreater(StableMatchingConst.UNUSED_VALUE,
         proposeNode,
         preferNodeCurrentNode);
   }

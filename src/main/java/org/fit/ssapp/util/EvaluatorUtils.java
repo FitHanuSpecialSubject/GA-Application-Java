@@ -7,7 +7,7 @@ import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 import net.objecthunter.exp4j.ValidationResult;
 import org.fit.ssapp.constants.AppConst;
-import org.fit.ssapp.constants.MatchingConst;
+import org.fit.ssapp.constants.StableMatchingConst;
 
 public class EvaluatorUtils {
 
@@ -120,7 +120,7 @@ public class EvaluatorUtils {
    */
   public static String getValidEvaluationFunction(String func) {
     func = func.trim();
-    if (func.equals(MatchingConst.DEFAULT_EVALUATE_FUNC)) {
+    if (func.equals(StableMatchingConst.DEFAULT_EVALUATE_FUNC)) {
       return "";
     }
     return func;
@@ -148,7 +148,7 @@ public class EvaluatorUtils {
   public static String getValidFitnessFunction(String func) {
     func = func.trim();
     if (StringUtils.isEmptyOrNull(func) ||
-        func.equalsIgnoreCase(MatchingConst.DEFAULT_FITNESS_FUNC)) {
+        func.equalsIgnoreCase(StableMatchingConst.DEFAULT_FITNESS_FUNC)) {
       return "";
     }
     return func;

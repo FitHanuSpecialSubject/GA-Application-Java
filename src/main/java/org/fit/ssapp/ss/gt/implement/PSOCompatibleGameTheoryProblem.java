@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Objects;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.fit.ssapp.service.GameTheorySolver;
+import org.fit.ssapp.service.GameTheoryService;
 import org.fit.ssapp.ss.gt.Conflict;
 import org.fit.ssapp.ss.gt.GameTheoryProblem;
 import org.fit.ssapp.ss.gt.NormalPlayer;
@@ -71,7 +71,7 @@ public class PSOCompatibleGameTheoryProblem implements GameTheoryProblem, Serial
     double runtime = ((double) (endTime - startTime) / 1000);
     runtime = Math.round(runtime * 100.0) / 100.0;
 
-    GameSolution solution = GameTheorySolver.formatSolution(problem, result);
+    GameSolution solution = GameTheoryService.formatSolution(problem, result);
     System.out.println(solution);
   }
 

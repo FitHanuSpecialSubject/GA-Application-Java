@@ -1,15 +1,21 @@
 package org.fit.ssapp.constants;
 
+/**
+ * Message constants.
+ */
 public class MessageConst {
 
+  /**
+   * Error messages.
+   */
   public interface ErrMessage {
 
     /**
-     * validate number of set
+     * validate number of set.
      */
     String MES_001 = "Number of set must be greater or equal to 2";
     /**
-     * validate number of individualNumber
+     * validate number of individualNumber.
      */
     String MES_002 = "The number of individuals (or corresponding elements that related to the number of individuals) should be at least 3";
     String MES_003 = "There should be at least one property";
@@ -26,6 +32,9 @@ public class MessageConst {
     String EVAL_FN_NUM = "The number of evaluateFunctions should be at least 2";
   }
 
+  /**
+   * Error code (not message).
+   */
   public interface ErrCode {
 
     String NOT_EMPTY = "NotEmpty";

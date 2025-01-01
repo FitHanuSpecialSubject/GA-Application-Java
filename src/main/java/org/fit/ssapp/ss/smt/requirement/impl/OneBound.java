@@ -4,7 +4,7 @@ import static org.fit.ssapp.util.NumberUtils.formatDouble;
 
 import java.util.Objects;
 import lombok.Getter;
-import org.fit.ssapp.constants.MatchingConst;
+import org.fit.ssapp.constants.StableMatchingConst;
 import org.fit.ssapp.ss.smt.requirement.Requirement;
 
 @Getter
@@ -35,7 +35,7 @@ public class OneBound implements Requirement {
    */
   @Override
   public int getType() {
-    return MatchingConst.ReqTypes.ONE_BOUND;
+    return StableMatchingConst.ReqTypes.ONE_BOUND;
   }
 
   /**
