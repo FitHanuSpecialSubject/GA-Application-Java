@@ -1,6 +1,6 @@
 package org.fit.ssapp.service;
 
-import org.fit.ssapp.dto.request.StableMatchingPrDto;
+import org.fit.ssapp.dto.request.StableMatchingProblemDto;
 import org.fit.ssapp.dto.response.Response;
 import org.springframework.http.ResponseEntity;
 
@@ -12,17 +12,17 @@ public interface ProblemService {
   /**
    * solve
    *
-   * @param problem StableMatchingPrDto
+   * @param problem StableMatchingProblemDto
    * @return ResponseEntity<Response>
    */
-  ResponseEntity<Response> solve(StableMatchingPrDto problem);
+  ResponseEntity<Response> solve(StableMatchingProblemDto problem);
 
   /**
    * getInsights
    *
-   * @param problem     StableMatchingPrDto
+   * @param problem     StableMatchingProblemDto
    * @param sessionCode String
    * @return ResponseEntity<Response>
    */
-  ResponseEntity<Response> getInsights(StableMatchingPrDto problem, String sessionCode);
+  ResponseEntity<Response> getInsights(StableMatchingProblemDto problem, String sessionCode);
 }

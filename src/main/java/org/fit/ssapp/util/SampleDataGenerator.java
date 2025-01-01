@@ -11,7 +11,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.fit.ssapp.constants.MatchingConst.ReqTypes;
 import org.fit.ssapp.dto.mapper.StableMatchingProblemMapper;
-import org.fit.ssapp.dto.request.StableMatchingPrDto;
+import org.fit.ssapp.dto.request.StableMatchingProblemDto;
 import org.fit.ssapp.ss.smt.Matches;
 import org.fit.ssapp.ss.smt.MatchingProblem;
 import org.fit.ssapp.ss.smt.requirement.Requirement;
@@ -123,12 +123,12 @@ public class SampleDataGenerator {
   }
 
   /**
-   * Generates a StableMatchingPrDto instance based on the configured parameters.
+   * Generates a StableMatchingProblemDto instance based on the configured parameters.
    *
-   * @return A StableMatchingPrDto object
+   * @return A StableMatchingProblemDto object
    */
-  public StableMatchingPrDto generateDto() {
-    StableMatchingPrDto problemDTO = new StableMatchingPrDto();
+  public StableMatchingProblemDto generateDto() {
+    StableMatchingProblemDto problemDTO = new StableMatchingProblemDto();
     problemDTO.setNumberOfIndividuals(individualNum);
     problemDTO.setNumberOfSets(numberForeachSet.length);
     problemDTO.setNumberOfProperty(numberOfProperties);
@@ -150,7 +150,7 @@ public class SampleDataGenerator {
   public MatchingProblem generateProblem() {
     MatchingProblem matchingProblem;
 
-    StableMatchingPrDto newDto = this.generateDto();
+    StableMatchingProblemDto newDto = this.generateDto();
     switch (this.matchingProblemType) {
       case MTM -> {
         matchingProblem = StableMatchingProblemMapper.toMTM(newDto);

@@ -3,17 +3,17 @@ package org.fit.ssapp.dto.validator;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import java.util.Arrays;
-import org.fit.ssapp.dto.request.StableMatchingPrDto;
+import org.fit.ssapp.dto.request.StableMatchingProblemDto;
 
 public class IndividualArrayPropertyCountValidator implements
-    ConstraintValidator<ValidIndividualArrayPropertyCount, StableMatchingPrDto> {
+    ConstraintValidator<ValidIndividualArrayPropertyCount, StableMatchingProblemDto> {
 
   @Override
   public void initialize(ValidIndividualArrayPropertyCount annotation) {
   }
 
   @Override
-  public boolean isValid(StableMatchingPrDto dto, ConstraintValidatorContext context) {
+  public boolean isValid(StableMatchingProblemDto dto, ConstraintValidatorContext context) {
     int expectedPropertyCount = dto.getNumberOfProperty();
 
     return Arrays.stream(dto.getIndividualRequirements())

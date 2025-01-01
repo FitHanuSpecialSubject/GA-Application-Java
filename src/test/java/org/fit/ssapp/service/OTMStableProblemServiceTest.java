@@ -1,6 +1,6 @@
 //package com.example.SS2_Backend.service;
 //
-//import com.example.SS2_Backend.dto.request.StableMatchingPrDto;
+//import com.example.SS2_Backend.dto.request.StableMatchingProblemDto;
 //import com.example.SS2_Backend.dto.response.Response;
 //import org.junit.jupiter.api.BeforeEach;
 //import org.junit.jupiter.api.Test;
@@ -32,7 +32,7 @@
 //    @Test
 //    void testSolve() {
 //        // Setup a two-set stable matching problem
-//        final StableMatchingPrDto request = new StableMatchingPrDto();
+//        final StableMatchingProblemDto request = new StableMatchingProblemDto();
 //        request.setProblemName("Two-Set Stable Matching Optimization");
 //
 //        // Two sets (e.g., Students and Universities)

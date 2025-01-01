@@ -2,17 +2,17 @@ package org.fit.ssapp.dto.validator;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import org.fit.ssapp.dto.request.StableMatchingPrDto;
+import org.fit.ssapp.dto.request.StableMatchingProblemDto;
 
 public class IndividualArraysSizeValidator implements
-    ConstraintValidator<ValidIndividualArraysSize, StableMatchingPrDto> {
+    ConstraintValidator<ValidIndividualArraysSize, StableMatchingProblemDto> {
 
   @Override
   public void initialize(ValidIndividualArraysSize annotation) {
   }
 
   @Override
-  public boolean isValid(StableMatchingPrDto dto, ConstraintValidatorContext context) {
+  public boolean isValid(StableMatchingProblemDto dto, ConstraintValidatorContext context) {
     int expectedCount = dto.getNumberOfIndividuals();
     return
         dto.getIndividualSetIndices().length == expectedCount &&

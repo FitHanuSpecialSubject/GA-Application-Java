@@ -8,7 +8,7 @@ import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 import java.util.Set;
-import org.fit.ssapp.dto.request.StableMatchingPrDto;
+import org.fit.ssapp.dto.request.StableMatchingProblemDto;
 import org.fit.ssapp.dto.response.Response;
 import org.fit.ssapp.ss.smt.MatchingData;
 import org.fit.ssapp.ss.smt.evaluator.impl.TwoSetFitnessEvaluator;
@@ -21,7 +21,7 @@ import org.springframework.http.ResponseEntity;
 
 public class StableMatchingSolverTest {
 
-  StableMatchingPrDto stableMatchingPrDto;
+  StableMatchingProblemDto stableMatchingProblemDto;
   SampleDataGenerator sampleData;
   int numberOfIndividuals1;
   int numberOfIndividuals2;
@@ -37,7 +37,7 @@ public class StableMatchingSolverTest {
         numberOfIndividuals1, numberOfIndividuals2,
         numberOfProperties
     );
-    stableMatchingPrDto = sampleData.generateDto();
+    stableMatchingProblemDto = sampleData.generateDto();
     ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
     validator = factory.getValidator();
 
@@ -45,9 +45,9 @@ public class StableMatchingSolverTest {
 
   @Test
   public void testEvaluateFunctions() {
-    stableMatchingPrDto.setEvaluateFunctions(new String[]{"default", "default"});
-    Set<ConstraintViolation<StableMatchingPrDto>> violations = validator.validate(
-        stableMatchingPrDto);
+    stableMatchingProblemDto.setEvaluateFunctions(new String[]{"default", "default"});
+    Set<ConstraintViolation<StableMatchingProblemDto>> violations = validator.validate(
+        stableMatchingProblemDto);
     assert (violations.isEmpty());
   }
 
@@ -88,7 +88,7 @@ public class StableMatchingSolverTest {
   public void testStableSolverMTM() {
     StableProblemService solver = new StableProblemService(null);
     // Solve the problem
-    ResponseEntity<Response> response = solver.solve(stableMatchingPrDto);
+    ResponseEntity<Response> response = solver.solve(stableMatchingProblemDto);
 
     // Verify the response
     assertNotNull(response);
@@ -100,7 +100,7 @@ public class StableMatchingSolverTest {
     OTMStableMatchingSolver stableMatchingOTMProblemDTO = new OTMStableMatchingSolver(null);
     // Solve the problem
     ResponseEntity<Response> response = stableMatchingOTMProblemDTO.solve(
-        stableMatchingPrDto);
+        stableMatchingProblemDto);
 
     // Verify the response
     assertNotNull(response);

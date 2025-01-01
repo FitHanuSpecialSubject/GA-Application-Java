@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.fit.ssapp.constants.MatchingConst;
 import org.fit.ssapp.dto.mapper.StableMatchingProblemMapper;
-import org.fit.ssapp.dto.request.StableMatchingPrDto;
+import org.fit.ssapp.dto.request.StableMatchingProblemDto;
 import org.fit.ssapp.ss.smt.Matches;
 import org.fit.ssapp.ss.smt.implement.MTMProblem;
 import org.fit.ssapp.util.MatchingProblemType;
@@ -15,7 +15,7 @@ import org.moeaframework.core.Solution;
 
 public class MTMProblemTest {
 
-  StableMatchingPrDto stableMatchingPrDto;
+  StableMatchingProblemDto stableMatchingProblemDto;
   SampleDataGenerator sampleData;
   int numberOfIndividuals1;
   int numberOfIndividuals2;
@@ -32,14 +32,14 @@ public class MTMProblemTest {
 
   @Test
   public void testNodeCapacity() {
-    stableMatchingPrDto = sampleData.generateDto();
-    MTMProblem problem = StableMatchingProblemMapper.toMTM(stableMatchingPrDto);
+    stableMatchingProblemDto = sampleData.generateDto();
+    MTMProblem problem = StableMatchingProblemMapper.toMTM(stableMatchingProblemDto);
 
     // Create a Solution to test and get Matches from the Solution
     Solution solution = problem.newSolution();
     problem.evaluate(solution);
     Matches matches = (Matches) solution.getAttribute(MatchingConst.MATCHES_KEY);
-    for (int i = 0; i < stableMatchingPrDto.getNumberOfIndividuals(); i++) {
+    for (int i = 0; i < stableMatchingProblemDto.getNumberOfIndividuals(); i++) {
       // Getting individual
       int capacity = problem.getMatchingData().getCapacityOf(i);
       int matchedCount = matches.getSetOf(i).size();

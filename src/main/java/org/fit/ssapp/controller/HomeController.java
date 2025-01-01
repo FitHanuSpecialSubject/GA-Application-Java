@@ -3,7 +3,7 @@ package org.fit.ssapp.controller;
 import jakarta.validation.Valid;
 import java.util.concurrent.CompletableFuture;
 import org.fit.ssapp.dto.request.GameTheoryProblemDto;
-import org.fit.ssapp.dto.request.StableMatchingPrDto;
+import org.fit.ssapp.dto.request.StableMatchingProblemDto;
 import org.fit.ssapp.dto.response.Response;
 import org.fit.ssapp.service.GameTheorySolver;
 import org.fit.ssapp.service.OTMStableMatchingSolver;
@@ -46,27 +46,27 @@ public class HomeController {
   @Async("taskExecutor")
   @PostMapping("/stable-matching-solver")
   public CompletableFuture<ResponseEntity<Response>> solveStableMatching(
-      @RequestBody @Valid StableMatchingPrDto object) {
+      @RequestBody @Valid StableMatchingProblemDto object) {
     return CompletableFuture.completedFuture(stableMatchingSolver.solve(object));
   }
 
 //    @Async("taskExecutor")
 //    @PostMapping("/stable-matching-oto-solver")
-//    public CompletableFuture<ResponseEntity<Response>> solveStableMatchingOTO(@RequestBody StableMatchingPrDto object) {
+//    public CompletableFuture<ResponseEntity<Response>> solveStableMatchingOTO(@RequestBody StableMatchingProblemDto object) {
 //        return CompletableFuture.completedFuture(stableMatchingSolver.solveStableMatchingOTO(object));
 //    }
 
   @Async("taskExecutor")
   @PostMapping("/stable-matching-otm-solver")
   public CompletableFuture<ResponseEntity<Response>> solveStableMatchingOTM(
-      @RequestBody @Valid StableMatchingPrDto object) {
+      @RequestBody @Valid StableMatchingProblemDto object) {
     return CompletableFuture.completedFuture(stableMatchingOTMProblemDTO.solve(object));
   }
 
   @Async("taskExecutor")
   @PostMapping("/solve-triplet-matching")
   public CompletableFuture<ResponseEntity<Response>> solveTripletMatching(
-      @RequestBody StableMatchingPrDto object) {
+      @RequestBody StableMatchingProblemDto object) {
     return CompletableFuture.completedFuture(tripletProblemRBO.solve(object));
   }
 
@@ -90,7 +90,7 @@ public class HomeController {
   @Async("taskExecutor")
   @PostMapping("/matching-problem-result-insights/{sessionCode}")
   public CompletableFuture<ResponseEntity<Response>> getMatchingResultInsights(
-      @RequestBody @Valid StableMatchingPrDto object,
+      @RequestBody @Valid StableMatchingProblemDto object,
       @PathVariable String sessionCode) {
     return CompletableFuture.completedFuture(stableMatchingSolver.getInsights(object,
         sessionCode));
@@ -99,7 +99,7 @@ public class HomeController {
   @Async("taskExecutor")
   @PostMapping("/otm-matching-problem-result-insights/{sessionCode}")
   public CompletableFuture<ResponseEntity<Response>> getOTMMatchingResultInsights(
-      @RequestBody @Valid StableMatchingPrDto object,
+      @RequestBody @Valid StableMatchingProblemDto object,
       @PathVariable String sessionCode) {
     return CompletableFuture.completedFuture(stableMatchingOTMProblemDTO.getInsights(
         object,
@@ -109,7 +109,7 @@ public class HomeController {
   @Async("taskExecutor")
   @PostMapping("/rbo-triplet-problem-result-insights/{sessionCode}")
   public CompletableFuture<ResponseEntity<Response>> getTripletMatchingResultInsights(
-      @RequestBody StableMatchingPrDto object,
+      @RequestBody StableMatchingProblemDto object,
       @PathVariable String sessionCode) {
     return CompletableFuture.completedFuture(tripletProblemRBO.getInsights(
         object,

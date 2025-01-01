@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.fit.ssapp.constants.MatchingConst;
 import org.fit.ssapp.dto.mapper.StableMatchingProblemMapper;
-import org.fit.ssapp.dto.request.StableMatchingPrDto;
+import org.fit.ssapp.dto.request.StableMatchingProblemDto;
 import org.fit.ssapp.dto.response.Progress;
 import org.fit.ssapp.dto.response.Response;
 import org.fit.ssapp.ss.smt.Matches;
@@ -38,10 +38,10 @@ public class StableProblemService implements ProblemService {
   private static final int RUN_COUNT_PER_ALGORITHM = 10;
   private final SimpMessagingTemplate simpMessagingTemplate;
 
-  public ResponseEntity<Response> solve(StableMatchingPrDto request) {
+  public ResponseEntity<Response> solve(StableMatchingProblemDto request) {
 
     try {
-      log.info("Validating StableMatchingPrDto Request ...");
+      log.info("Validating StableMatchingProblemDto Request ...");
 //            BindingResult bindingResult = ValidationUtils.validate(request);
 //            if (bindingResult.hasErrors()) {
 //                return ResponseEntity
@@ -200,7 +200,7 @@ public class StableProblemService implements ProblemService {
     }
   }
 
-  public ResponseEntity<Response> getInsights(StableMatchingPrDto request,
+  public ResponseEntity<Response> getInsights(StableMatchingProblemDto request,
       String sessionCode) {
     String[] algorithms = MatchingConst.ALLOWED_INSIGHT_ALGORITHMS;
     simpMessagingTemplate.convertAndSendToUser(sessionCode,

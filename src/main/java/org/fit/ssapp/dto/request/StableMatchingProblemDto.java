@@ -28,7 +28,7 @@ import org.fit.ssapp.dto.validator.ValidRequirementSyntax;
 @ValidIndividualArraysSize
 @ValidEvaluateFunctionCount
 @ValidIndividualArrayPropertyCount
-public class StableMatchingPrDto implements ProblemRequestDto {
+public class StableMatchingProblemDto implements ProblemRequestDto {
 
   @Size(max = 255, message = ErrMessage.PROBLEM_NAME)
   private String problemName;
@@ -84,7 +84,7 @@ public class StableMatchingPrDto implements ProblemRequestDto {
 
   @Override
   public String toString() {
-    return "StableMatchingPrDto{" + "problemName='" + problemName + '\'' + ", numberOfSets="
+    return "StableMatchingProblemDto{" + "problemName='" + problemName + '\'' + ", numberOfSets="
         + numberOfSets + ", numberOfIndividuals=" + numberOfIndividuals + ", numberOfProperty="
         + numberOfProperty + ", individualSetIndices=" + Arrays.toString(individualSetIndices)
         + ", individualCapacities=" + Arrays.toString(individualCapacities) + Arrays.toString(

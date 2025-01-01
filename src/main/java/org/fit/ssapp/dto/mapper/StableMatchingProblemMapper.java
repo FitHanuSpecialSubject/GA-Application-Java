@@ -1,6 +1,6 @@
 package org.fit.ssapp.dto.mapper;
 
-import org.fit.ssapp.dto.request.StableMatchingPrDto;
+import org.fit.ssapp.dto.request.StableMatchingProblemDto;
 import org.fit.ssapp.ss.smt.MatchingData;
 import org.fit.ssapp.ss.smt.evaluator.FitnessEvaluator;
 import org.fit.ssapp.ss.smt.evaluator.impl.TwoSetFitnessEvaluator;
@@ -22,7 +22,7 @@ import org.fit.ssapp.util.EvaluatorUtils;
  */
 public class StableMatchingProblemMapper {
 
-  public static OTOProblem toOTO(StableMatchingPrDto dto) {
+  public static OTOProblem toOTO(StableMatchingProblemDto dto) {
     Requirement[][] requirements = RequirementDecoder.decode(dto.getIndividualRequirements());
     MatchingData data = new MatchingData(
         dto.getNumberOfIndividuals(),
@@ -51,7 +51,7 @@ public class StableMatchingProblemMapper {
   }
 
 
-  public static OTMProblem toOTM(StableMatchingPrDto request) {
+  public static OTMProblem toOTM(StableMatchingProblemDto request) {
     Requirement[][] requirements = RequirementDecoder.decode(request.getIndividualRequirements());
     MatchingData data = new MatchingData(request.getNumberOfIndividuals(),
         request.getNumberOfProperty(),
@@ -74,7 +74,7 @@ public class StableMatchingProblemMapper {
         fitnessEvaluator);
   }
 
-  public static MTMProblem toMTM(StableMatchingPrDto request) {
+  public static MTMProblem toMTM(StableMatchingProblemDto request) {
     Requirement[][] requirements = RequirementDecoder.decode(request.getIndividualRequirements());
     MatchingData data = new MatchingData(request.getNumberOfIndividuals(),
         request.getNumberOfProperty(),
@@ -98,7 +98,7 @@ public class StableMatchingProblemMapper {
         fitnessEvaluator);
   }
 
-  public static TripletOTOProblem toTripletOTO(StableMatchingPrDto request) {
+  public static TripletOTOProblem toTripletOTO(StableMatchingProblemDto request) {
     Requirement[][] requirements = RequirementDecoder.decode(request.getIndividualRequirements());
     MatchingData data = new MatchingData(request.getNumberOfIndividuals(),
         request.getNumberOfProperty(),
