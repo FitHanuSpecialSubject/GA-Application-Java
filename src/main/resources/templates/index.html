@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server Status</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            background: #f4f4f4;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: #444;
+        }
+
+        p, span {
+            display: block;
+            margin: 10px 0;
+            text-align: center;
+        }
+
+        .contact-info .info {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .contact-info .info:last-child {
+            border-bottom: none;
+        }
+
+        .info-name {
+            flex: 1;
+            text-align: left;
+            width: 100%;
+            font-size: 18px;
+            white-space: nowrap;
+        }
+
+        .status {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .status:last-child {
+            border-bottom: none;
+        }
+
+        .status-name {
+            flex: 1;
+            text-align: left;
+            font-size: 18px;
+        }
+
+        .status-indicator {
+            flex: 0 0 20px;
+            height: 20px;
+            border-radius: 50%;
+        }
+
+        .status-ok {
+            background-color: #28a745;
+        }
+
+        .status-warning {
+            background-color: #ffc107;
+        }
+
+        .status-error {
+            background-color: #dc3545;
+        }
+
+        .status-details {
+            flex: 2;
+            text-align: right;
+            font-size: 16px;
+        }
+
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Có Tín Hiệu!</h1>
+    <p>Server đang ổn nhé đồng chí !</p>
+    <span>Chạy mãi mà không ra kết quả thì khả lăng là do máy bạn chứ không phải máy tôy =DD</span>
+    <span>Mọi vấn đề và phàn nàn xin liên hệ số nhà:</span>
+    <div class="contact-info">
+        <div class="info">
+            <div class="info-name">Trưởng nhóm (Liên hệ khả thi nhất):</div>
+            <div class="status-details"><a href="https://www.facebook.com/100080353655439">Lê Tất Thành</a></div>
+        </div>
+        <div class="info">
+            <div class="info-name">Call, SMS:</div>
+            <div class="status-details">0899866930</div>
+        </div>
+        <div class="info">
+            <div class="info-name">Zalo:</div>
+            <div class="status-details">0364829936</div>
+        </div>
+        <div class="info">
+            <div class="info-name">Phở bò:</div>
+            <div class="status-details"><a href="https://www.facebook.com/quylaptrinh">biến hình!</a></div>
+        </div>
+        <div class="info">
+            <div class="info-name">Hoặc qua kênh chat của LOL VN ig: quylaptrinh#9999 Nếu ko liên lạc đc qua các hình thức trên.</div>
+        </div>
+    </div>
+
+    <h1>Server Status</h1>
+    <div class="status">
+        <div class="status-name">Web Server</div>
+        <div class="status-indicator status-ok"></div>
+        <div class="status-details">Ổn</div>
+    </div>
+    <div class="status">
+        <div class="status-name">API Gateway</div>
+        <div class="status-indicator status-warning"></div>
+        <div class="status-details">Hơi bất ổn</div>
+    </div>
+    <div class="status">
+        <div class="status-name">Game Theory Service</div>
+        <div class="status-indicator status-ok"></div>
+        <div class="status-details">Tuyệt vời</div>
+    </div>
+    <div class="status">
+        <div class="status-name">Stable Matching Service</div>
+        <div class="status-indicator status-warning"></div>
+        <div class="status-details">Hơi bất ổn</div>
+    </div>
+    <div class="status">
+        <div class="status-name">Thêm dòng cho có màu đỏ</div>
+        <div class="status-indicator status-error"></div>
+        <div class="status-details">Ổn lòi lìa</div>
+    </div>
+</div>
+</body>
+</html>
