@@ -15,6 +15,9 @@
     <description>Demo project for Spring Boot</description>
     <properties>
         <java.version>17</java.version>
+        <maven-site-plugin.version>3.8.2</maven-site-plugin.version>
+        <checkstyle-maven-plugin.version>3.6.0</checkstyle-maven-plugin.version>
+        <checkstyle.version>10.21.1</checkstyle.version>
         <nodeVersion>v20.17.0</nodeVersion>
         <npmVersion>10.8.2</npmVersion>
         <frontend.dir.env>${project.basedir}/frontend</frontend.dir.env>
@@ -100,8 +103,57 @@
         </dependency>
     </dependencies>
 
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>${checkstyle-maven-plugin.version}</version>
+                <configuration>
+                    <configLocation>checkstyle.xml</configLocation>
+                    <sourceDirectories>
+                        <sourceDirectory>src/main/java</sourceDirectory>
+                    </sourceDirectories>
+                </configuration>
+            </plugin>
+        </plugins>
+    </reporting>
+
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>${maven-site-plugin.version}</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>${checkstyle-maven-plugin.version}</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.puppycrawl.tools</groupId>
+                        <artifactId>checkstyle</artifactId>
+                        <version>${checkstyle.version}</version>
+                    </dependency>
+                </dependencies>
+                <configuration>
+                    <configLocation>checkstyle.xml</configLocation>
+                    <failsOnError>false</failsOnError>
+                    <consoleOutput>true</consoleOutput>
+                    <includes>**\/*.java</includes>
+                    <excludes>**\/deps\/,**\/test\/,**\/target\/,**\/bin\/,**\/*.xml,**\/*.ini,**\/*.sh,**\/*.bat,**\/apidoc\/,**\/generated-sources\/,**\/generated-sources\/*,**\/generated-sources\/**,**\/generated-sources\/**\/*.*,**/generated-sources/**/*.*,**/generated-sources/**/*,**/generated-sources/**,**/generated-sources/*,**/generated-sources/*.*</excludes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>validate</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
@@ -261,7 +313,7 @@
                                     <goal>java</goal>
                                 </goals>
                                 <configuration>
-                                    <mainClass>com.example.SS2_Backend.Ss2BackendApplication</mainClass>
+                                    <mainClass>org.fit.ssapp.Ss2BackendApplication</mainClass>
                                     <arguments>
                                         <argument>-jar</argument>
                                         <argument>${project.build.directory}/${project.build.finalName}.jar</argument>
