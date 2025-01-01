@@ -5,7 +5,7 @@ services:
       - backend
     restart: always
     build:
-      dockerfile: nginx/Dockerfile
+      dockerfile: Dockerfile
       context: nginx
     ports:
       - "80:80"
@@ -17,4 +17,4 @@ services:
   backend:
     build:
       dockerfile: Dockerfile
-      context: ..
+      context: ./

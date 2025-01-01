@@ -208,7 +208,7 @@
                                     generate-resources
                                 </phase>
                                 <configuration>
-                                    <workingDirectory>../frontend</workingDirectory>
+                                    <workingDirectory>${frontend.dir.env}</workingDirectory>
                                     <nodeVersion>${nodeVersion}</nodeVersion>
                                     <npmVersion>${npmVersion}</npmVersion>
                                 </configuration>
@@ -225,7 +225,7 @@
                                         degit ${frontend.repo.url} ${frontend.dir.env} --force
                                     </arguments>
                                     <workingDirectory>
-                                      ../frontend
+                                        ${frontend.dir.env}
                                     </workingDirectory>
                                 </configuration>
                             </execution>
@@ -239,7 +239,7 @@
                                     <goal>npm</goal>
                                 </goals>
                                 <configuration>
-                                    <workingDirectory>../frontend</workingDirectory>
+                                    <workingDirectory>${frontend.dir.env}</workingDirectory>
                                     <arguments>install</arguments>
                                 </configuration>
                             </execution>
@@ -253,7 +253,7 @@
                                     <goal>npm</goal>
                                 </goals>
                                 <configuration>
-                                    <workingDirectory>../frontend</workingDirectory>
+                                    <workingDirectory>${frontend.dir.env}</workingDirectory>
                                     <arguments>run build</arguments>
                                 </configuration>
                             </execution>
@@ -350,7 +350,7 @@
                                     <goal>npx</goal>
                                 </goals>
                                 <configuration>
-                                    <workingDirectory>../frontend</workingDirectory>
+                                    <workingDirectory>${frontend.dir.env}</workingDirectory>
                                     <arguments>serve -s build</arguments>
                                 </configuration>
                             </execution>
