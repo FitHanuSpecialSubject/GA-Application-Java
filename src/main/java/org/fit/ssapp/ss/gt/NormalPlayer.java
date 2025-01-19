@@ -34,7 +34,7 @@ public class NormalPlayer implements Serializable {
     this.strategies = strategies;
   }
 
-  public List<BigDecimal> getPayoffValues() {
+  public List<BigDecimal> getValues() {
     return payoffValues;
   }
 
@@ -98,7 +98,6 @@ public class NormalPlayer implements Serializable {
   }
 
   public double getPurePayoff() {
-
     // return sum of all payoffs
     return strategies.stream()
         .map(Strategy::getPayoff)
