@@ -17,7 +17,7 @@ public class SimpleFileUtils {
 
   public static boolean isFileExist(String filePath) {
     File file = new File(filePath);
-    return file.exists();
+    return !file.exists();
   }
 
   public static boolean isObjectSerializable(Object obj) {

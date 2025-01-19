@@ -5,61 +5,24 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class SpecialPlayer implements Serializable {
 
+  /**
+   * -- SETTER --
+   */
+  @Setter
   private int numberOfProperties;
   private final List<Double> properties = new ArrayList<>();
   private final List<Double> weights = new ArrayList<>();
+  @Getter
   private double payoff;
-
-
-  /**
-   * @return properties size
-   */
-  public int getNumberOfProperties() {
-    return numberOfProperties;
-  }
-
-  /**
-   * @modifies properties
-   * @effects add more property into properties
-   */
-  public void addProperty(double property) {
-    properties.add(property);
-  }
-
-  /**
-   * @modifies weight
-   * @effects add more weight into weights
-   */
-  public void addWeight(double weight) {
-    weights.add(weight);
-  }
-
-  /**
-   * @modifies properties
-   * @effects set number of Properties
-   */
-  public void setNumberOfProperties(int numberOfProperties) {
-    this.numberOfProperties = numberOfProperties;
-  }
-
-  public void setPayoff() {
-    double newPayoff = 0;
-    for (int i = 0; i < properties.size(); ++i) {
-      newPayoff += properties.get(i) * weights.get(i);
-    }
-    this.payoff = newPayoff;
-  }
-
-  public double getPayoff() {
-    return payoff;
-  }
 
   public String toString() {
     StringBuilder SP = new StringBuilder("SPECIAL PLAYER: \nProperties: \n");

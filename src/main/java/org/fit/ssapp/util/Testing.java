@@ -3,24 +3,15 @@ package org.fit.ssapp.util;
 import java.util.Set;
 import org.fit.ssapp.ss.smt.Matches;
 
-/**
- * hmm, sau nay se xoa, chuyen het logic san co qua phan unit test
- */
 public class Testing {
-
-  private final int nums;
   private final Matches matches;
   private final int[] capacities;
 
-  public Testing(Matches matches, int num, int[] capacities) {
-    this.nums = num;
+  public Testing(Matches matches, int[] capacities) {
     this.capacities = capacities;
     this.matches = matches;
   }
 
-  //	public boolean isValidQuantity(){
-//
-//	}
   public boolean hasDuplicate() {
     int[] checkArr = capacities;
     int sz = matches.size();
@@ -32,7 +23,6 @@ public class Testing {
               return true;
           }
       }
-      //System.out.println(Arrays.toString(checkArr));
     }
     Set<Integer> lefts = matches.getLeftOvers();
     for (int elm : lefts) {
@@ -40,7 +30,6 @@ public class Testing {
         if (checkArr[elm] < 0) {
             return true;
         }
-      //System.out.println(Arrays.toString(checkArr));
     }
     return false;
   }
@@ -59,10 +48,8 @@ public class Testing {
     matches.addMatch(2, 7);
     matches.addMatch(2, 11);
 
-//        matches.addLeftOver(11);
-//        matches.addLeftOver(10);
-//        matches.addLeftOver(9);
-
+    Testing testing = new Testing(matches, check);
+    System.out.println("Has duplicates: " + testing.hasDuplicate());
   }
 
 }

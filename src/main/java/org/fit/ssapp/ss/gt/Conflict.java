@@ -4,8 +4,10 @@ import java.io.Serializable;
 import java.util.Arrays;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+@Getter
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -16,6 +18,9 @@ public class Conflict implements Serializable {
   private int leftPlayerStrategy;
   private int rightPlayerStrategy;
 
+  /**
+   *
+   */
   public Conflict(String conflict) {
     System.out.println("conflict = " + conflict);
     String[] conflictSet = conflict.split(",");
@@ -29,22 +34,6 @@ public class Conflict implements Serializable {
     leftPlayerStrategy = Integer.parseInt(conflictSet[1]) - 1;
     rightPlayer = Integer.parseInt(conflictSet[2]) - 1;
     rightPlayerStrategy = Integer.parseInt(conflictSet[3]) - 1;
-  }
-
-  public int getLeftPlayer() {
-    return leftPlayer;
-  }
-
-  public int getRightPlayer() {
-    return rightPlayer;
-  }
-
-  public int getLeftPlayerStrategy() {
-    return leftPlayerStrategy;
-  }
-
-  public int getRightPlayerStrategy() {
-    return rightPlayerStrategy;
   }
 
   public String toString() {

@@ -181,15 +181,19 @@ public class StringExpressionEvaluator {
   }
 
   private static double calMax(List<Double> values) {
-    return values.stream().mapToDouble(Double::doubleValue).max().getAsDouble();
+    return values.stream().
+        mapToDouble(Double::doubleValue).max()
+        .orElseThrow(() -> new IllegalArgumentException("Cannot calculate maximum of empty list"));
   }
 
   private static double calMin(List<Double> values) {
-    return values.stream().mapToDouble(Double::doubleValue).min().getAsDouble();
+    return values.stream().mapToDouble(Double::doubleValue).min()
+        .orElseThrow(() -> new IllegalArgumentException("Cannot calculate maximum of empty list"));
   }
 
   private static double calAverage(List<Double> values) {
-    return values.stream().mapToDouble(Double::doubleValue).average().getAsDouble();
+    return values.stream().mapToDouble(Double::doubleValue).average()
+        .orElseThrow(() -> new IllegalArgumentException("Cannot calculate maximum of empty list"));
   }
 
   private static double calMedian(List<Double> values) {
@@ -212,7 +216,6 @@ public class StringExpressionEvaluator {
     DefaultFunction function = (!StringUtils.isEmptyOrNull(defaultFunction))
         ? DefaultFunction.valueOf(defaultFunction.toUpperCase()) : DefaultFunction.SUM;
     double val = switch (function) {
-      case SUM -> calSum(values);
       case PRODUCT -> calProduct(values);
       case MAX -> calMax(values);
       case MIN -> calMin(values);
@@ -228,8 +231,6 @@ public class StringExpressionEvaluator {
 
 
   public static double eval(String strExpression) {
-//        System.out.println("Evaluating: ");
-//        System.out.println(strExpression);
 
     String formattedExpression = strExpression.replaceAll("NaN",
             "0")// Replace NaN(Not A Number) with 0, so that the expression can be evaluated
@@ -244,21 +245,12 @@ public class StringExpressionEvaluator {
         ch = (++pos < formattedExpression.length()) ? formattedExpression.charAt(pos) : -1;
       }
 
-      /*
-      void nextChar() {
-          if (++pos < formattedExpression.length()) {
-              ch = formattedExpression.charAt(pos);
-          } else {
-              ch = -1;
-          }
-          }
-       */
       boolean eat(int charToEat) {
         //ignore white space
-          while (ch == ' ') {
-              nextChar();
-          }
-        //return true if ăn phải charToEat
+        while (ch == ' ') {
+          nextChar();
+        }
+
         if (ch == charToEat) {
           nextChar();
           return true;
@@ -279,7 +271,7 @@ public class StringExpressionEvaluator {
 
       // Grammar:
       // expression = term | expression `+` term | expression `-` term
-      // term = factor | term `*` factor | term `/` factor
+      //  = factor | term `*` factor | term `/` factor
       // factor = `+` factor | `-` factor | `(` expression `)` | number
       //        | functionName `(` expression `)` | functionName factor
       //        | factor `^` factor
@@ -287,26 +279,26 @@ public class StringExpressionEvaluator {
       double parseExpression() {
         double x = parseTerm();
         for (; ; ) {
-            if (eat('+')) {
-                x += parseTerm(); // addition
-            } else if (eat('-')) {
-                x -= parseTerm(); // subtraction
-            } else {
-                return x;
-            }
+          if (eat('+')) {
+            x += parseTerm(); // addition
+          } else if (eat('-')) {
+            x -= parseTerm(); // subtraction
+          } else {
+            return x;
+          }
         }
       }
 
       double parseTerm() {
         double x = parseFactor();
         for (; ; ) {
-            if (eat('*')) {
-                x *= parseFactor(); // multiplication
-            } else if (eat('/')) {
-                x /= parseFactor(); // division
-            } else {
-                return x;
-            }
+          if (eat('*')) {
+            x *= parseFactor(); // multiplication
+          } else if (eat('/')) {
+            x /= parseFactor(); // division
+          } else {
+            return x;
+          }
         }
       }
 
@@ -318,9 +310,9 @@ public class StringExpressionEvaluator {
           } else {
             a = parseExpression();
           }
-            if (!eat(')')) {
-                throw new RuntimeException("Missing ')' after argument to log");
-            }
+          if (!eat(')')) {
+            throw new RuntimeException("Missing ')' after argument to log");
+          }
         } else {
           throw new RuntimeException("Incorrect arguments for log function");
         }
@@ -328,12 +320,12 @@ public class StringExpressionEvaluator {
       }
 
       double parseFactor() {
-          if (eat('+')) {
-              return +parseFactor(); // unary plus
-          }
-          if (eat('-')) {
-              return -parseFactor(); // unary minus
-          }
+        if (eat('+')) {
+          return +parseFactor(); // unary plus
+        }
+        if (eat('-')) {
+          return -parseFactor(); // unary minus
+        }
 
         double x;
         int startPos = this.pos;
@@ -345,14 +337,14 @@ public class StringExpressionEvaluator {
             throw new RuntimeException("Missing ')'");
           }
         } else if ((ch >= '0' && ch <= '9') || ch == '.') { // numbers
-            while ((ch >= '0' && ch <= '9') || ch == '.') {
-                nextChar();
-            }
+          while ((ch >= '0' && ch <= '9') || ch == '.') {
+            nextChar();
+          }
           x = Double.parseDouble(formattedExpression.substring(startPos, this.pos));
         } else if (ch >= 'a' && ch <= 'z') { // functions
-            while (ch >= 'a' && ch <= 'z') {
-                nextChar();
-            }
+          while (ch >= 'a' && ch <= 'z') {
+            nextChar();
+          }
           String func = formattedExpression.substring(startPos, this.pos);
           if (Objects.equals(func, "log")) {
             double a = getArgForFunction();
@@ -361,9 +353,9 @@ public class StringExpressionEvaluator {
           }
           if (eat('(')) {
             x = parseExpression();
-              if (!eat(')')) {
-                  throw new RuntimeException("Missing ')' after argument to " + func);
-              }
+            if (!eat(')')) {
+              throw new RuntimeException("Missing ')' after argument to " + func);
+            }
           } else {
             x = parseFactor();
           }
@@ -379,9 +371,9 @@ public class StringExpressionEvaluator {
           System.out.println("wrong expression: " + formattedExpression);
           throw new RuntimeException("Unexpected: " + (char) ch);
         }
-          if (eat('^')) {
-              x = Math.pow(x, parseFactor()); // exponentiation
-          }
+        if (eat('^')) {
+          x = Math.pow(x, parseFactor()); // exponentiation
+        }
         return x;
       }
     }.parse();

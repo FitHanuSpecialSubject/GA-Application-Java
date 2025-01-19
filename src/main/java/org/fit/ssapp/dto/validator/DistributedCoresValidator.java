@@ -6,6 +6,9 @@ import jakarta.validation.ConstraintValidatorContext;
 public class DistributedCoresValidator implements
     ConstraintValidator<ValidDistributedCores, String> {
 
+  /**
+   * @param annotation annotation instance for a given constraint declaration
+   */
   @Override
   public void initialize(ValidDistributedCores annotation) {
   }

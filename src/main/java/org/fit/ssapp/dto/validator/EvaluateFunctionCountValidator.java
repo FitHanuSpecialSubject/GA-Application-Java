@@ -7,6 +7,9 @@ import org.fit.ssapp.dto.request.StableMatchingProblemDto;
 public class EvaluateFunctionCountValidator implements
     ConstraintValidator<ValidEvaluateFunctionCount, StableMatchingProblemDto> {
 
+  /**
+   * @param annotation annotation instance for a given constraint declaration
+   */
   @Override
   public void initialize(ValidEvaluateFunctionCount annotation) {
   }
