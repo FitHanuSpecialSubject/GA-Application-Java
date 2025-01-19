@@ -1,13 +1,14 @@
 # **1\. Introduction**
 
-### **Abstract**
+### **Introduction**
 
 This application is developed to assist in calculating and finding optimal solutions in Game Theory and Stable Matching Theory problems. Aiming to address the complex issues in these problems, the application applies advanced optimization algorithms such as Genetic Algorithms, which help estimate and achieve accurate results, thereby providing effective solutions for users. The technologies used in the application include: the Java programming language, the Spring Boot Framework (used to build and deploy the backend of the application, supporting the Model-View-Controller architecture), and the MOEA Framework (a library that supports evolutionary optimization algorithms, particularly for multi-objective optimization problems).
 
 The primary goal of this manual is to provide a detailed, easy-to-understand guide for users to effectively utilize the application and make the most of its features. This guide will walk users through the process of installing the application on various operating systems, the system requirements necessary for the application to function, how to create and validate the data forms required for the problems, detailed installation steps, running the application via command-line tools or IDEs, and analyzing the output results. Additionally, the manual offers optimization tips, ways to customize output results to meet user requirements, and troubleshooting common issues during the usage of the application. This ensures that users can maximize the application's performance and achieve highly accurate output results.
 
 # **2\. Table of Contents**
-1. [Introduction](#1-introduction)  
+1. [Introduction](#1-introduction)
+   - [Introduction](#introduction)   
 2. [Table of Contents](#2-table-of-contents)  
 3. [Module Specifications](#3-module-specifications)  
    - [SMT (Stable Matching Theory)](#31-stable-matching-theory)  
