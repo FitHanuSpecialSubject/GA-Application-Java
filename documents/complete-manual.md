@@ -9,54 +9,30 @@ This paper introduces a backend application designed to solve problems in game t
 The GAMETHEORY \+ STABLEMATCHING Solver Backend Application is a Java-based platform designed to solve optimization problems related to game theory and stable matching. The application leverages Springboot MVC for robust backend services and integrates the MOEA Framework for advanced computational problem-solving.
 
 # **2\. Table of Contents**
-
-### **1\. Abstract**
-
-### **2\. Table of Contents**
-
-### **3\. Module Specifications**
-
-**3.1 SMT (Stable Matching Theory)**
-
-**3.2 GT (Game Theory)**
-
-### **4\. Local Installation**
-
-**4.1 System Requirements**
-
-**4.2 Installation Steps**
-
-**4.3 Troubleshooting**
-
-### **5\. Data Form Creation**
-
-### **6\. Solve**
-
-**6.1 Overview**
-
-**6.2 Step-by-step Execution**
-
-**6.3 Optimization Tips**
-
-### **7\. Get Result Insight**
-
-**7.1 Analyzing Results**
-
-**7.2 Customization**
-
-**7.3 Common Issues**
-
-### **8\. Deployment**
-
-**8.1 Supported Environments**
-
-**8.2 Deployment Steps**
-
-**8.3 Best Practices**
-
-### **9\. Contributors**
-
-### **10\. End**
+1. [Introduction](#1-introduction)  
+2. [Table of Contents](#2-table-of-contents)  
+3. [Module Specifications](#3-module-specifications)  
+   - [SMT (Stable Matching Theory)](#31-stable-matching-theory)  
+   - [GT (Game Theory)](#32-gt-game-theory)  
+4. [Local Installation](#4-local-installation)  
+   - [System Requirements](#41-system-requirements)  
+   - [Installation Steps](#42-installation-steps-) 
+   - [Troubleshooting](#43-troubleshooting)  
+5. [Data Form Creation](#5-data-form-creation)  
+6. [Solve](#6-solve)  
+   - [Overview](#61-overview)  
+   - [ Step-by-step Execution](#62-step-by-step-excution) 
+   - [Optimization Tips](#63-optimization-tips)  
+7. [Get Result Insight](#7-get-result-insight)
+   - [Analyzing Results](#71-analyzing-results)  
+   - [Customization](#72-customization) 
+   - [Common Issues](#73-common-issues)    
+8. [Deployment](#8-deployment)
+   - [Supported Environments](#81-supported-environments)  
+   - [Deployment Steps](#82-deployment-steps) 
+   - [Best Practices](#83-best-pratices)      
+9. [Contributors](#9-contributors)  
+10. [End](#10-end)
 
 # **3\. Module Specifications**
 
