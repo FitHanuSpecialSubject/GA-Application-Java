@@ -43,20 +43,18 @@ public class TwoSetPreferenceProvider implements PreferenceBuilder {
     this.sizeOf1 = matchingData.getTotalIndividualOfSet(0);
     this.sizeOf2 = matchingData.getSize() - sizeOf1;
 
-    if (StringUtils.isEmptyOrNull(evalFunctionForSet1)) {
-      this.expressionOfSet1 = null;
-    } else {
-        if (expressionOfSet2 != null) {
-            return;
-        }
-      this.variablesOfSet1 = PreferenceProviderUtils.filterVariable(evalFunctionForSet1);
+      if (!StringUtils.isEmptyOrNull(evalFunctionForSet1)) {
+          if (expressionOfSet2 != null) {
+              return;
+          }
+          this.variablesOfSet1 = PreferenceProviderUtils.filterVariable(evalFunctionForSet1);
 //            this.expressionOfSet1 = new ExpressionBuilder(evalFunctionForSet1)
 //                    .variables(PreferenceProviderUtils.convertMapToSet(variablesOfSet1))
 //                    .build();
+      }
       this.expressionOfSet1 = null;
-    }
 
-    if (StringUtils.isEmptyOrNull(evalFunctionForSet2)) {
+      if (StringUtils.isEmptyOrNull(evalFunctionForSet2)) {
       this.expressionOfSet2 = null;
     } else {
         if (expressionOfSet2 != null) {

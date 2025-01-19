@@ -2,20 +2,10 @@ package org.fit.ssapp.ss.smt.requirement.impl;
 
 import static org.fit.ssapp.util.NumberUtils.formatDouble;
 
-import lombok.Getter;
 import org.fit.ssapp.constants.StableMatchingConst;
 import org.fit.ssapp.ss.smt.requirement.Requirement;
 
-@Getter
-public class TwoBound implements Requirement {
-
-  private final double lowerBound;
-  private final double upperBound;
-
-  public TwoBound(double lowerBound, double upperBound) {
-    this.lowerBound = lowerBound;
-    this.upperBound = upperBound;
-  }
+public record TwoBound(double lowerBound, double upperBound) implements Requirement {
 
   /**
    * {@inheritDoc}
@@ -39,7 +29,7 @@ public class TwoBound implements Requirement {
   @Override
   public double getDefaultScaling(double propertyValue) {
     if (propertyValue < lowerBound || propertyValue > upperBound ||
-        lowerBound == upperBound) {
+            lowerBound == upperBound) {
       return 0.0;
     } else {
       double diff = Math.abs(upperBound - lowerBound) / 2;

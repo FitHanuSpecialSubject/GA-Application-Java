@@ -1,6 +1,5 @@
 package org.fit.ssapp.ss.smt.preference.impl.list;
 
-import java.util.Map;
 import java.util.Set;
 import lombok.AccessLevel;
 import lombok.Data;
@@ -55,20 +54,6 @@ public class TripletPreferenceList implements PreferenceList {
     } else {
       return newNode;
     }
-  }
-
-  public int[] getPreferenceForSpecificSet(int currentSet, int setNumber,
-      Map<Integer, Integer> setSizes) {
-    int startIndex = 0;   // 1 2 3
-    for (int i = 0; i < setNumber; i++) {
-      if (setSizes.containsKey(i) && i != currentSet) {
-        startIndex += setSizes.get(i);
-      }
-    }
-    int setLength = setSizes.getOrDefault(setNumber, 0);
-    int[] result = new int[setLength];
-    System.arraycopy(positions, startIndex, result, 0, setLength);
-    return result;
   }
 
   @Override

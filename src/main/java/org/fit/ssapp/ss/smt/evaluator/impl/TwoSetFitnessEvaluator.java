@@ -94,19 +94,18 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
       char ch = expression.charAt(i);
       if (ch == 'S') {
         char set = expression.charAt(i + 1);
-        switch (set) {
-          case '1':
-            streamValue = getSatisfactoryOfASetByDefault(satisfactions, 0);
-            regex = "S1";
-            break;
-          case '2':
-            streamValue = getSatisfactoryOfASetByDefault(satisfactions, 1);
-            regex = "S2";
-            break;
-          default:
-            throw new IllegalArgumentException(
-                "Illegal value after S regex in sigma calculation: " + expression);
-        }
+          regex = switch (set) {
+              case '1' -> {
+                  streamValue = getSatisfactoryOfASetByDefault(satisfactions, 0);
+                  yield "S1";
+              }
+              case '2' -> {
+                  streamValue = getSatisfactoryOfASetByDefault(satisfactions, 1);
+                  yield "S2";
+              }
+              default -> throw new IllegalArgumentException(
+                      "Illegal value after S regex in sigma calculation: " + expression);
+          };
       }
     }
     if (regex == null) {

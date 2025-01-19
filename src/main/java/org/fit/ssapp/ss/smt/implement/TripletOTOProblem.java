@@ -158,14 +158,15 @@ public class TripletOTOProblem implements MatchingProblem {
       int[] otherSets = getOtherSets(currentSet);
 
       TripletPreferenceList nodePreference = (TripletPreferenceList) preferenceLists.get(newNode);
-      List<Integer> matchedGroup = new ArrayList<>();   // chứa những cá thể ghép với nhau trong lượt ghép
+      // including all the matched incoming pairs
+      List<Integer> matchedGroup = new ArrayList<>();
       matchedGroup.add(newNode);
-
-      for (int targetSet : otherSets) {    // ghép với từng set khác
+      // integrate through each of opposite sets
+      for (int targetSet : otherSets) {
         int preferNodeOfTargetSet = matchWithTargetSet(newNode, targetSet, nodePreference, matches,
             unMatchedNode);
 
-        // if can not match with any node in target set, add to leftovers
+        // add to leftover if current individual unavailable to match with any preferNode
         if (preferNodeOfTargetSet == -1) {
 //                    matches.addLeftOver(preferNodeOfTargetSet);
           break;
@@ -191,16 +192,17 @@ public class TripletOTOProblem implements MatchingProblem {
 
   }
 
-
+  /**
+   * find and match with a prefer node in the target set
+   * return the prefer node of target set
+   * @param nodePreferences is the preferList of current node
+   */
   private int matchWithTargetSet(int newNode, int targetSet,
       TripletPreferenceList nodePreferences,
       Matches matches,
       Queue<Integer> unmatchedNodes) {
     // -1 is not find yet
     int result = -1;
-
-//        int[] preferPartForTargetSet = nodePreferences.getPreferenceForSpecificSet(
-//                matchingData.getSetNoOf(newNode), targetSet, matchingData.getSetNums());
 
     int sizeOfTargetSet = matchingData.getSetNums().get(targetSet);
 
@@ -209,16 +211,18 @@ public class TripletOTOProblem implements MatchingProblem {
     int calPosition = calculatePosition(targetSet, currentNewNodeSet);
     nodePreferences.setPadding(padding);
 
-    for (int i = 0; i < sizeOfTargetSet; i++) {     // ghép với 1 cá thể trong preferList
+    // integrate through preferList and find the preferNode
+    for (int i = 0; i < sizeOfTargetSet; i++) {
 
       int preferNode = nodePreferences.getPositionByRank(UNUSED_VAL, calPosition + i);
 
       if (!matches.isFull(preferNode, matchingData.getCapacityOf(preferNode))) {
-        result = preferNode;    // ghép thành công với preferNode thì dừng vòng lặp
-        break;   //
+        //stop if successfully matched with preferNode
+        result = preferNode;
+        break;
       } else {
         if (breakPreviousMatch(newNode, preferNode, matches, unmatchedNodes)) {
-          result = preferNode;    // ghép thành công với preferNode thì dừng vòng lặp
+          result = preferNode;
           break;
         }
       }
@@ -228,18 +232,25 @@ public class TripletOTOProblem implements MatchingProblem {
 
   }
 
+
+  /**
+   * whether break the previous match of the preferNode when preferNode already matched
+   * return boolean value when preferNode choose newNode or currentNode(old one)
+   */
+
   private boolean breakPreviousMatch(int newNode, int preferNode,
       Matches matches, Queue<Integer> unmatchedNodes) {
     Integer[] individualMatches = matches.getSetOf(preferNode).toArray(new Integer[0]);
-    // các cá thể mà preferNode đã ghép với trước đó
-    for (int currentNode : individualMatches) {    // ví dụ 1 ghép với 4, 4 đã có [2,8] ghép với --> 1 so với 2
+    // Iterate through existing matches
+    for (int currentNode : individualMatches) {
       if (matchingData.getSetNoOf(currentNode) == matchingData.getSetNoOf(
-          newNode)) { // so sánh 2 cá thể cùng set
+          newNode)) {
+        // Check if newNode is more preferred than currentNode
         if (preferenceLists.isPreferredOver(newNode, currentNode, preferNode)) {
           Collection<Integer> allMatched = matches.getMatchesAndTarget(preferNode);
 
           for (int matched : allMatched) {
-            matches.disMatch(matched, allMatched);    // hủy ghép cặp cũ nếu chọn cá thể mới
+            matches.disMatch(matched, allMatched);    // unmatched previous pairs
               if (matched != preferNode) {
                   unmatchedNodes.add(matched);
               }
@@ -259,6 +270,11 @@ public class TripletOTOProblem implements MatchingProblem {
         .toArray();
   }
 
+  /**
+   * calculate the padding for a set that stored in preferList of a  newNode
+   * @param targetSet         is the number of set that calculate padding to get
+   * @param currentNewNodeSet is the current set can get with the current padding
+   */
   private int calculatePadding(int targetSet, int currentNewNodeSet) {
     Map<Integer, Integer> setNums = matchingData.getSetNums();
       if (currentNewNodeSet == setNum - 1) {
@@ -274,15 +290,14 @@ public class TripletOTOProblem implements MatchingProblem {
       }
 
     int paddingSize = 0;
-//        if(targetSet > currentNewNodeSet){
-//            for(int i = 0 ; i < currentNewNodeSet ; i++){
-//                paddingSize += setNums.get(i);
-//            }
-//        }
     paddingSize += setNums.get(targetSet);
     return paddingSize;
   }
 
+
+  /**
+   * calculate the position of the preferNode in the preferList of a newNode
+   */
   private int calculatePosition(int targetSet, int currentNewNodeSet) {
     Map<Integer, Integer> setNums = matchingData.getSetNums();
 
