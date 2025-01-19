@@ -22,15 +22,16 @@ public class PreferenceListWrapper {
   }
 
   /**
-   * lấy thằng học dốt nhất
+   * Get the weakest student
    *
-   * @param set                set tổ (tổ 1, tổ 2, tổ 3, ...)
-   * @param preferNode         thằng đánh giá (chấm điểm)
-   * @param proposeNode        thằng mới đi học
-   * @param setOfPreferNode    các thằng đang trong tổ
-   * @param preferNodeCapacity sĩ số tổ
-   * @return thằng học dốt nhất
+   * @param set                the group (group 1, group 2, group 3, ...)
+   * @param preferNode         the evaluator (the one grading)
+   * @param proposeNode        the new student
+   * @param setOfPreferNode    the current members of the group
+   * @param preferNodeCapacity the group's capacity
+   * @return the weakest student
    */
+
   public int getLeastScoreNode(int set,
       int preferNode,
       int proposeNode,
@@ -73,7 +74,7 @@ public class PreferenceListWrapper {
   }
 
   /**
-   * Lấy bảng điểm của cả lớp get all satisfaction based on matches
+   * Get the grade point of class, get all satisfaction based on matches
    *
    * @param matches matching result
    * @return satisfactions

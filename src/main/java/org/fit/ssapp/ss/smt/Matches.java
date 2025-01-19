@@ -101,16 +101,6 @@ public class Matches implements Serializable {
   }
 
   /**
-   * remove match bidirectionally
-   *
-   * @param node         as name
-   * @param nodeToRemove as name
-   */
-  public void removeMatch(int node, int nodeToRemove) {
-    matches[node].remove(nodeToRemove);
-  }
-
-  /**
    * add match bidirectionally
    *
    * @param node1 index of node1
@@ -132,18 +122,6 @@ public class Matches implements Serializable {
     matches[node2].remove(node1);
   }
 
-  /**
-   * Get the single match of a node if it exists
-   *
-   * @param targetNode the node to query
-   * @return the single matched node or -1 if none exists
-   */
-  public int getSingleMatch(int targetNode) {
-    if (matches[targetNode].size() == 1) {
-      return matches[targetNode].iterator().next();
-    }
-    return -1; // Indicating no single match exists
-  }
 
   /**
    * as name
@@ -172,7 +150,7 @@ public class Matches implements Serializable {
       }
     }
 
-    return new TreeSet(leftOvers);
+    return new TreeSet<>(leftOvers);
   }
 
   /**
@@ -193,7 +171,7 @@ public class Matches implements Serializable {
   /**
    * add all nodes that is matched in each turn
    *
-   * @param nodes
+   * @param nodes are all individual to match
    */
 
   public void addMatchForGroup(List<Integer> nodes) {
@@ -210,8 +188,8 @@ public class Matches implements Serializable {
   /**
    * get matches of target node
    *
-   * @param target
-   * @return
+   * @param target the individual to get its matched group
+   * @return the collection includes target with its matched group
    */
   public Collection<Integer> getMatchesAndTarget(int target) {
     Collection<Integer> nodesToRemove = new HashSet<>();
@@ -221,10 +199,10 @@ public class Matches implements Serializable {
   }
 
   /**
-   * dismatch target node from a collection of nodes that was matched with target
+   * remove target node from a collection of nodes that was matched with target
    *
-   * @param target
-   * @param nodeToRemove
+   * @param target that are about to be unmatched
+   * @param nodeToRemove are individuals in the match group with target
    */
   public void disMatch(int target, Collection<Integer> nodeToRemove) {
     matches[target].removeAll(nodeToRemove);

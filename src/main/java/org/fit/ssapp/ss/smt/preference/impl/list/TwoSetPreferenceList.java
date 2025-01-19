@@ -145,19 +145,7 @@ public class TwoSetPreferenceList implements PreferenceList {
   }
 
   void heapify(double[] array, int heapSize, int rootIndex) {
-    int smallestIndex = rootIndex; // Initialize smallest as root
-    int leftChildIndex = 2 * rootIndex + 1; // left = 2*rootIndex + 1
-    int rightChildIndex = 2 * rootIndex + 2; // right = 2*rootIndex + 2
-
-    // If left child is smaller than root
-    if (leftChildIndex < heapSize && array[leftChildIndex] < array[smallestIndex]) {
-      smallestIndex = leftChildIndex;
-    }
-
-    // If right child is smaller than smallest so far
-    if (rightChildIndex < heapSize && array[rightChildIndex] < array[smallestIndex]) {
-      smallestIndex = rightChildIndex;
-    }
+    int smallestIndex = getSmallestIndex(array, heapSize, rootIndex);
 
     // If smallest is not root
     if (smallestIndex != rootIndex) {
@@ -173,6 +161,23 @@ public class TwoSetPreferenceList implements PreferenceList {
       // Recursively heapify the affected sub-tree
       heapify(array, heapSize, smallestIndex);
     }
+  }
+
+  private static int getSmallestIndex(double[] array, int heapSize, int rootIndex) {
+    int smallestIndex = rootIndex; // Initialize smallest as root
+    int leftChildIndex = 2 * rootIndex + 1; // left = 2*rootIndex + 1
+    int rightChildIndex = 2 * rootIndex + 2; // right = 2*rootIndex + 2
+
+    // If left child is smaller than root
+    if (leftChildIndex < heapSize && array[leftChildIndex] < array[smallestIndex]) {
+      smallestIndex = leftChildIndex;
+    }
+
+    // If right child is smaller than smallest so far
+    if (rightChildIndex < heapSize && array[rightChildIndex] < array[smallestIndex]) {
+      smallestIndex = rightChildIndex;
+    }
+    return smallestIndex;
   }
 
   @Override
