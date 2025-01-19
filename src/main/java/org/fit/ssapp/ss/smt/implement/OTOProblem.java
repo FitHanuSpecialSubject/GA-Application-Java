@@ -175,7 +175,7 @@ public class OTOProblem implements MatchingProblem {
           // Find b's current partner(s)
           Set<Integer> bPartners = matches.getSetOf(b);
 
-          // If b prefers an over any current partner
+          // If b prefers a over any current partner
           for (int bPartner : bPartners) {
             if (bLikeAMore(a, b, bPartner)) {
               singleQueue.add(bPartner);
