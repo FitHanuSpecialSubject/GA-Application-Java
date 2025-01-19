@@ -76,36 +76,19 @@ public class AlgorithmsBenchmarking {
 
   public static void main(String[] args) {
 
-//        SampleDataGenerator generator = new SampleDataGenerator(10, 10);
-//        String[] propNames = {"Prop1", "Prop2", "Prop3", "Prop4"};
-//        generator.setPropNames(propNames);
-//        generator.setSet1Cap(20);
-//        generator.setSet2Cap(1000);
-//        generator.setRandCapSet1(false);
-//        generator.setRandCapSet2(false);
-//        generator.setF1("none");
-//        generator.setF2("none");
-//        generator.setFnf("none");
-//        // Generate the StableMatchingProblem instance
-//        StableMatchingProblem problem = generator.generate();
-//        String logFileName = "smt_log";
-
     String problemSerializedFilePath = ".data/gt_data.ser";
-    String logFileName = "gt_log";
     StandardGameTheoryProblem problem = (StandardGameTheoryProblem) ProblemUtils.readProblemFromFile(
         problemSerializedFilePath);
 
     double runtime = run(problem, "OMOPSO");
 
     log.info("{}", runtime);
-//        AlgorithmsBenchmarking algo = new AlgorithmsBenchmarking();
-//        algo.start(problem, logFileName);
 
   }
 
   public static boolean logData(String path, String[][] data, CSVFormat format) {
 
-    if (!SimpleFileUtils.isFileExist(path)) {
+    if (SimpleFileUtils.isFileExist(path)) {
       try {
         FileUtils.touch(new File(path));
       } catch (IOException e) {

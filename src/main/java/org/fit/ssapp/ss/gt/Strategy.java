@@ -9,7 +9,9 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Data
 @NoArgsConstructor
@@ -17,21 +19,11 @@ import lombok.NoArgsConstructor;
 public class Strategy implements Serializable {
 
   private String name;
+  @Getter
   private List<Double> properties = new ArrayList<>();
+  @Setter
+  @Getter
   private double payoff;
-
-  public List<Double> getProperties() {
-
-    return properties;
-  }
-
-  public double getPayoff() {
-    return payoff;
-  }
-
-  public void setPayoff(double payoff) {
-    this.payoff = payoff;
-  }
 
 
   private double evaluateStringExpression(String expression) {

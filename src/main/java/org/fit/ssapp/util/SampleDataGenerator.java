@@ -12,10 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.fit.ssapp.constants.StableMatchingConst.ReqTypes;
 import org.fit.ssapp.dto.mapper.StableMatchingProblemMapper;
 import org.fit.ssapp.dto.request.StableMatchingProblemDto;
-import org.fit.ssapp.ss.smt.Matches;
 import org.fit.ssapp.ss.smt.MatchingProblem;
-import org.fit.ssapp.ss.smt.requirement.Requirement;
-import org.fit.ssapp.ss.smt.requirement.RequirementDecoder;
 import org.moeaframework.Executor;
 import org.moeaframework.core.NondominatedPopulation;
 import org.moeaframework.core.Solution;
@@ -29,16 +26,13 @@ import org.moeaframework.core.Solution;
 public class SampleDataGenerator {
 
   private static final Random RANDOM = new Random(); // Random generator
-  public Map<Integer, Integer> setCapacities = new HashMap<Integer, Integer>();
-  // capRandomize: Căn cứ với set Capacities để generate capacity cho matching data
-  // Mặc định để xử lý MTM Problem nên sẽ để cả hai đều là `true`
+  public Map<Integer, Integer> setCapacities = new HashMap<>();
   boolean[] capRandomize = {true, true};
   // Configuration parameters
-  private MatchingProblemType matchingProblemType = MatchingProblemType.MTM;
+  private MatchingProblemType matchingProblemType;
   // problemSize
   private int individualNum;
   private int numberOfProperties;
-  // max capacity tiêu chuẩn cho mỗi set dạng map<int, int>, vd: với MTM: {0: 2, 1: 10}, 3Set: {0: 1, 1: 10, 2: 12}
   private int[] numberForeachSet;
   private String[] evaluateFunctions = {DEFAULT_EVALUATE_FUNC, DEFAULT_EVALUATE_FUNC};
   private String fnf = DEFAULT_FITNESS_FUNC; // Fitness function
@@ -115,7 +109,7 @@ public class SampleDataGenerator {
 
     // Process and print the results
     for (Solution solution : result) {
-      Matches matches = (Matches) solution.getAttribute("matches");
+      System.out.println("Matches: " + solution.getAttribute("matches"));
       System.out.println("Fitness Score: " + -solution.getObjective(0));
     }
     System.out.println("\nExecution time: " + runtime + " Second(s) with Algorithm: " + algo);
@@ -152,15 +146,9 @@ public class SampleDataGenerator {
 
     StableMatchingProblemDto newDto = this.generateDto();
     switch (this.matchingProblemType) {
-      case MTM -> {
-        matchingProblem = StableMatchingProblemMapper.toMTM(newDto);
-      }
-      case OTM -> {
-        matchingProblem = StableMatchingProblemMapper.toOTM(newDto);
-      }
-      case OTO -> {
-        matchingProblem = StableMatchingProblemMapper.toOTO(newDto);
-      }
+      case MTM -> matchingProblem = StableMatchingProblemMapper.toMTM(newDto);
+      case OTM -> matchingProblem = StableMatchingProblemMapper.toOTM(newDto);
+      case OTO -> matchingProblem = StableMatchingProblemMapper.toOTO(newDto);
       default -> {
         log.info("[ERROR] Match Problem Type hasn't been initialized yet. Terminated...");
         matchingProblem = null;
@@ -205,13 +193,10 @@ public class SampleDataGenerator {
         if (ReqTypes.ONE_BOUND == randomType) {
           int randomExpression = RANDOM.nextInt(2) + 1;
           requirement = propertyBound + expression[randomExpression];
-        } else if (ReqTypes.TWO_BOUND == randomType) {
+        } else {
           double propertyBound2 = RANDOM.nextDouble() * (70.0 - 20.0) + 20.0;
           requirement = propertyBound + ":" + propertyBound2;
           //  if (ReqTypes.SCALE_TARGET == randomType)
-        } else {
-          int requirementScale = 1 + (10 - 1) * RANDOM.nextInt();
-          requirement = String.valueOf(requirementScale);
         }
         individualRequirements[i][j] = requirement;
       }
@@ -220,19 +205,6 @@ public class SampleDataGenerator {
     return individualRequirements;
   }
 
-  //    private int[] generateSetIndices() {
-//        int[] setIndices = new int[individualNum];
-//        /* Finish this function
-//        * */
-//        return setIndices;
-//    }
-//
-//    private int[] generateCapacities() {
-//        int[] capacities = new int[individualNum];
-//        /* Finish this function
-//         * */
-//        return capacities;
-//    }
   private int[] generateSetIndices() {
     int[] setIndices = new int[individualNum];
     int currentIndex = 0;
@@ -261,14 +233,6 @@ public class SampleDataGenerator {
       }
     }
     return capacities;
-  }
-
-
-  private Requirement[][] generateRequirement() {
-    String[][] requirementString = generateRequirementString();
-    Requirement[][] individualRequirements = new Requirement[this.individualNum][this.numberOfProperties];
-    individualRequirements = RequirementDecoder.decode(requirementString);
-    return individualRequirements;
   }
 
 

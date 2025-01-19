@@ -40,15 +40,16 @@ public class EvaluatorUtils {
    *                      Cases:
    *                                       <ol>
    *                                       	<li>
-   *                                          		<i>S1</i>represents satisfactions of set 1 (array)
+   *                                          		<i></i>Represents satisfactions of set 1 (array)
    *                                       	</li>
    *                                       	<li>
-   *                                      		<i>S2</i>represents satisfactions of set 2 (array)
+   *                                      		<i></i>Represents satisfactions of set 2 (array)
    *                                      	 </li>
    *                                       </ol>
    *                      </i>
    * @return double value - Sum of satisfactions of the whole set sequentially
    */
+
   public static double sigmaCalculate(double[] satisfactions, String expression,
       int numberOfIndividuals, int numberOfIndividualOfSet0) {
     System.out.println("sigma calculating...");
@@ -58,21 +59,20 @@ public class EvaluatorUtils {
       char ch = expression.charAt(i);
       if (ch == 'S') {
         char set = expression.charAt(i + 1);
-        switch (set) {
-          case '1':
+        regex = switch (set) {
+          case '1' -> {
             streamValue = getSatisfactoryOfASetByDefault(satisfactions, 0, numberOfIndividuals,
                 numberOfIndividualOfSet0);
-            regex = "S1";
-            break;
-          case '2':
+            yield "S1";
+          }
+          case '2' -> {
             streamValue = getSatisfactoryOfASetByDefault(satisfactions, 1, numberOfIndividuals,
                 numberOfIndividualOfSet0);
-            regex = "S2";
-            break;
-          default:
-            throw new IllegalArgumentException(
-                "Illegal value after S regex in sigma calculation: " + expression);
-        }
+            yield "S2";
+          }
+          default -> throw new IllegalArgumentException(
+              "Illegal value after S regex in sigma calculation: " + expression);
+        };
       }
     }
     if (regex == null) {
@@ -114,9 +114,6 @@ public class EvaluatorUtils {
 
   /**
    * temp
-   *
-   * @param func
-   * @return
    */
   public static String getValidEvaluationFunction(String func) {
     func = func.trim();
@@ -128,9 +125,6 @@ public class EvaluatorUtils {
 
   /**
    * temp
-   *
-   * @param func
-   * @return
    */
   public static String getIfDefaultFunction(String func) {
     if (AppConst.DEFAULT_FUNC.equalsIgnoreCase(func)) {
@@ -141,9 +135,6 @@ public class EvaluatorUtils {
 
   /**
    * temp
-   *
-   * @param func
-   * @return
    */
   public static String getValidFitnessFunction(String func) {
     func = func.trim();

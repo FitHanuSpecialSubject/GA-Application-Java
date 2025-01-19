@@ -4,7 +4,6 @@ import static org.fit.ssapp.util.StringExpressionEvaluator.evaluateFitnessValue;
 import static org.fit.ssapp.util.StringExpressionEvaluator.evaluatePayoffFunctionNoRelative;
 import static org.fit.ssapp.util.StringExpressionEvaluator.evaluatePayoffFunctionWithRelativeToOtherPlayers;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -12,6 +11,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+
+import lombok.Getter;
+import lombok.Setter;
 import org.fit.ssapp.ss.gt.Conflict;
 import org.fit.ssapp.ss.gt.GameTheoryProblem;
 import org.fit.ssapp.ss.gt.NormalPlayer;
@@ -58,24 +60,42 @@ import org.moeaframework.core.variable.BinaryIntegerVariable;
 */
 
 public class StandardGameTheoryProblem implements GameTheoryProblem, Serializable {
-
+  @Getter
+  @Setter
   private SpecialPlayer specialPlayer;
+  @Getter
   private List<NormalPlayer> normalPlayers;
+  @Getter
+  @Setter
   private List<NormalPlayer> oldNormalPlayers = new ArrayList<>(); // this is for problem with dynamic data
+  @Setter
+  @Getter
   private List<Conflict> conflictSet = new ArrayList<>();
 
   //Store average pure payoff differences
+  @Setter
   private List<Double> playerAvgDiffs;
+  @Getter
+  @Setter
   private String fitnessFunction;
-  private String defaultPayoffFunction;
+    /**
+     * -- GETTER --
+     *
+     */
+    @Setter
+    @Getter
+    private String defaultPayoffFunction;
   private boolean isMaximizing;
+  @Getter
+  @Setter
   int[] bestResponses = new int[4];
 
 
   public StandardGameTheoryProblem() {
   }
 
-  public StandardGameTheoryProblem(String path, int startRow) throws IOException {
+  @SuppressWarnings("unused")
+  public StandardGameTheoryProblem(String path, int startRow) {
     super();
 
     if (Objects.equals(path, "")) {
@@ -124,38 +144,12 @@ public class StandardGameTheoryProblem implements GameTheoryProblem, Serializabl
       }
   }
 
-  private List<Double> buildPayoffGlopses(List<NormalPlayer> players) {
-
-    List<Double> playerAvgDiffs = new ArrayList<>();
-    for (NormalPlayer player : players) {
-      double playerAvgDiff = 0;
-      for (NormalPlayer opponent : players) {
-        playerAvgDiff += Math.abs(player.getPurePayoff() - opponent.getPurePayoff());
-      }
-      playerAvgDiff /= normalPlayers.size();
-      playerAvgDiffs.add(playerAvgDiff);
-    }
-    return playerAvgDiffs;
-  }
-
   /**
    * @usage To get the smallest average pure payoff difference among players
    * @algorithm 1) Loop through normalPlayers and calculate player average differences
    * ______________with formula |playerPayoff - opponentPayoff| / normalPlayers.size() ___________2)
    * Save result in a list ___________3) Assign result list to playerAvgDiffs property
    */
-  private double computeNashEquilibrium() {
-    double nash;
-    List<Double> playerAvgDiffs = buildPayoffGlopses(normalPlayers);
-    nash = Collections.min(playerAvgDiffs);
-
-      if (specialPlayer != null) {
-          nash = Math.abs(nash - specialPlayer.getPayoff());
-      }
-    this.playerAvgDiffs = playerAvgDiffs;
-
-    return nash;
-  }
 
 
   public boolean isMaximizing() {
@@ -166,22 +160,6 @@ public class StandardGameTheoryProblem implements GameTheoryProblem, Serializabl
     isMaximizing = maximizing;
   }
 
-  public List<NormalPlayer> getNormalPlayers() {
-    return normalPlayers;
-  }
-
-  /**
-   * @usage To get player index with the highest pure payoff
-   * @algorithm 1) Save all pure payoff values to a list ___________2) Get max value in payoffs list
-   * ___________3) Return max value index in list (Since pure payoff index == player index)
-   */
-  public int getDominantPlayerIndex() {
-    List<Double> payoffs = new ArrayList<>();
-    normalPlayers.forEach(player -> payoffs.add(player.getPurePayoff()));
-    double max = Collections.max(payoffs);
-    return payoffs.indexOf(max);
-  }
-
   /**
    * @usage Get user with the best response strategy ----> The lower payoff average difference, the
    * more equilibrium strategy is
@@ -190,6 +168,7 @@ public class StandardGameTheoryProblem implements GameTheoryProblem, Serializabl
     return playerAvgDiffs.indexOf(Collections.min(playerAvgDiffs));
   }
 
+  @SuppressWarnings("unused")
   public int[] getRemainAlliances() {
     int[] bestResponse = new int[normalPlayers.size()];
     Arrays.fill(bestResponse, 2);
@@ -198,9 +177,7 @@ public class StandardGameTheoryProblem implements GameTheoryProblem, Serializabl
     bestResponse[bestPlayerIndex] = bestStrategyIndex;
 
     if (bestStrategyIndex == normalPlayers.size() - 1) {
-        for (double p : bestResponse) {
-            p = bestStrategyIndex;
-        }
+        Arrays.fill(bestResponse, bestStrategyIndex);
     } else {
       for (int i = 0; i < normalPlayers.size(); ++i) {
         int upperBound = normalPlayers.size() - i;
@@ -215,28 +192,7 @@ public class StandardGameTheoryProblem implements GameTheoryProblem, Serializabl
     return bestResponse;
   }
 
-  /**
-   * @usage To set up evaluator for MOEA model every single time Evaluation run
-   */
-
-
-  public String getDefaultPayoffFunction() {
-    return defaultPayoffFunction;
-  }
-
-  public void setDefaultPayoffFunction(String defaultPayoffFunction) {
-    this.defaultPayoffFunction = defaultPayoffFunction;
-  }
-
-  public int[] getBestResponses() {
-    return bestResponses;
-  }
-
-  public void setBestResponses(int[] bestResponses) {
-    this.bestResponses = bestResponses;
-  }
-
-  public String toString() {
+    public String toString() {
     StringBuilder gameString = new StringBuilder();
     for (NormalPlayer normalPlayer : normalPlayers) {
       gameString.append("Normal player: ").append(normalPlayers.indexOf(normalPlayer) + 1)
@@ -256,15 +212,7 @@ public class StandardGameTheoryProblem implements GameTheoryProblem, Serializabl
     return normalPlayers.size();
   }
 
-  public SpecialPlayer getSpecialPlayer() {
-    return specialPlayer;
-  }
-
-  public void setSpecialPlayer(SpecialPlayer specialPlayer) {
-    this.specialPlayer = specialPlayer;
-  }
-
-  public void setNormalPlayers(List<NormalPlayer> normalPlayers) {
+    public void setNormalPlayers(List<NormalPlayer> normalPlayers) {
     this.normalPlayers = normalPlayers;
 
     for (NormalPlayer player : normalPlayers) {
@@ -290,39 +238,7 @@ public class StandardGameTheoryProblem implements GameTheoryProblem, Serializabl
     }
   }
 
-  public List<Conflict> getConflictSet() {
-    return conflictSet;
-  }
-
-  public void setConflictSet(List<Conflict> conflictSet) {
-    this.conflictSet = conflictSet;
-  }
-
-  public List<Double> getPlayerAvgDiffs() {
-    return playerAvgDiffs;
-  }
-
-  public void setPlayerAvgDiffs(List<Double> playerAvgDiffs) {
-    this.playerAvgDiffs = playerAvgDiffs;
-  }
-
-  public String getFitnessFunction() {
-    return fitnessFunction;
-  }
-
-  public void setFitnessFunction(String fitnessFunction) {
-    this.fitnessFunction = fitnessFunction;
-  }
-
-  public List<NormalPlayer> getOldNormalPlayers() {
-    return oldNormalPlayers;
-  }
-
-  public void setOldNormalPlayers(List<NormalPlayer> oldNormalPlayers) {
-    this.oldNormalPlayers = oldNormalPlayers;
-  }
-
-  @Override
+    @Override
   public int getNumberOfObjectives() {
     return 1;
   }
@@ -370,7 +286,7 @@ public class StandardGameTheoryProblem implements GameTheoryProblem, Serializabl
           solution.setConstraint(i, -1); // this solution violates the constraints[i]
         }
       } else {
-        // this conflict is between 2 strategies of the 2 players at the a iteration
+        // this conflict is between 2 strategies of the 2 players at the iteration
         if (chosenStrategyIndices[leftPlayerIndex - 1] == leftPlayerStrategy &&
             chosenStrategyIndices[rightPlayerIndex - 1] == rightPlayerStrategy) {
           solution.setConstraint(i, -1); // this solution violates the constraints[i]
@@ -391,7 +307,7 @@ public class StandardGameTheoryProblem implements GameTheoryProblem, Serializabl
         payoffFunction = defaultPayoffFunction;
       }
 
-      BigDecimal chosenStrategyPayoff = new BigDecimal(0);
+      BigDecimal chosenStrategyPayoff;
       if (payoffFunction.contains("P")) {
         // if the payoff function is relative to other players, then it must be calculated in the evaluation
 
@@ -416,7 +332,7 @@ public class StandardGameTheoryProblem implements GameTheoryProblem, Serializabl
     );
 
     if (isMaximizing) {
-      fitnessValue = fitnessValue.negate(); // because the MOEA Framework only support minimization, for maximization problem, we need to negate the fitness value
+      fitnessValue = fitnessValue.negate();
     }
 
     solution.setObjective(0, fitnessValue.doubleValue());
@@ -431,12 +347,12 @@ public class StandardGameTheoryProblem implements GameTheoryProblem, Serializabl
     // the variables[0] is the strategy index of each normalPlayers[0] choose
     // the variable 1 is the strategy index of each player1 choose
     // the variable 2 is the strategy index of each player2 choose
-    // ..
+    // .
 
-    int numbeOfNP = normalPlayers.size();
-    Solution solution = new Solution(numbeOfNP, 1, conflictSet.size());
+    int numberOfNP = normalPlayers.size();
+    Solution solution = new Solution(numberOfNP, 1, conflictSet.size());
 
-    for (int i = 0; i < numbeOfNP; i++) {
+    for (int i = 0; i < numberOfNP; i++) {
       NormalPlayer player = normalPlayers.get(i);
       BinaryIntegerVariable variable = new BinaryIntegerVariable(0,
           player.getStrategies().size() - 1);

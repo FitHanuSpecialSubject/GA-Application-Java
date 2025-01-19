@@ -47,7 +47,7 @@ public class ProblemUtils {
   }
 
   public static Problem readProblemFromFile(String dataFilePath) {
-    if (!SimpleFileUtils.isFileExist(dataFilePath)) {
+    if (SimpleFileUtils.isFileExist(dataFilePath)) {
       return null;
     }
     try {
