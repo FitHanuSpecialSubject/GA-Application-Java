@@ -55,7 +55,7 @@ public class TwoSetPreferenceProvider implements PreferenceBuilder {
 //                    .variables(PreferenceProviderUtils.convertMapToSet(variablesOfSet1))
 //                    .build();
     }
-    this.expressionOfSet1 = null;
+   this.expressionOfSet1 = null;
 
     if (StringUtils.isEmptyOrNull(evalFunctionForSet2)) {
       this.expressionOfSet2 = null;
