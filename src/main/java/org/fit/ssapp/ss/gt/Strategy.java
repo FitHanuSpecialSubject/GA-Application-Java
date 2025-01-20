@@ -37,10 +37,6 @@ public class Strategy implements Serializable {
     }
   }
 
-  public void addProperty(double property) {
-    properties.add(property);
-  }
-
   @Override
   public String toString() {
     StringBuilder props = new StringBuilder("[ ");
