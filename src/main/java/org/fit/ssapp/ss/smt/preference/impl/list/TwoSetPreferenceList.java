@@ -20,6 +20,12 @@ public class TwoSetPreferenceList implements PreferenceList {
   private int current;
   private final int padding;
 
+  /**
+   * TwoSetPreferenceList
+   *
+   * @param size    int
+   * @param padding int
+   */
   public TwoSetPreferenceList(int size, int padding) {
     scores = new double[size];
     positions = new int[size];
@@ -186,14 +192,14 @@ public class TwoSetPreferenceList implements PreferenceList {
     for (int i = 0; i < scores.length; i++) {
       int pos = positions[i];
       result
-          .append("[")
-          .append(pos)
-          .append(" -> ")
-          .append(formatDouble(scores[pos]))
-          .append("]");
-        if (i < scores.length - 1) {
-            result.append(", ");
-        }
+              .append("[")
+              .append(pos)
+              .append(" -> ")
+              .append(formatDouble(scores[pos]))
+              .append("]");
+      if (i < scores.length - 1) {
+        result.append(", ");
+      }
     }
     result.append("}");
     return result.toString();

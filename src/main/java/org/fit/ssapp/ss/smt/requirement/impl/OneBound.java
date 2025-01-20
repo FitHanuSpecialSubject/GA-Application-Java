@@ -7,6 +7,9 @@ import lombok.Getter;
 import org.fit.ssapp.constants.StableMatchingConst;
 import org.fit.ssapp.ss.smt.requirement.Requirement;
 
+/**
+ * OneBound
+ */
 @Getter
 public class OneBound implements Requirement {
 
@@ -16,6 +19,10 @@ public class OneBound implements Requirement {
   private final boolean INCREASING = true;
   private final boolean DECREASING = false;
 
+  /**
+   * @param bound double
+   * @param expression boolean
+   */
   public OneBound(double bound, boolean expression) {
     this.bound = bound;
     this.expression = expression;
@@ -55,9 +62,9 @@ public class OneBound implements Requirement {
       if (propertyValue < bound) {
         return 0.0;
       } else {
-          if (bound == 0) {
-              return 2.0;
-          }
+        if (bound == 0) {
+          return 2.0;
+        }
         double distance = Math.abs(propertyValue - bound);
         return (bound + distance) / bound;
       }
@@ -65,9 +72,9 @@ public class OneBound implements Requirement {
       if (propertyValue > bound) {
         return 0.0;
       } else {
-          if (bound == 0) {
-              return 2.0;
-          }
+        if (bound == 0) {
+          return 2.0;
+        }
         double distance = Math.abs(propertyValue - bound);
         return (bound + distance) / bound;
       }

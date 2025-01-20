@@ -28,11 +28,11 @@ public class RequirementDecoder {
    */
   public static Requirement[][] decode(String[][] requirements) {
     return Arrays.stream(requirements)
-        .map(row -> Arrays.stream(row)
-            .map(RequirementDecoder::decodeInputRequirement)
-            .map(RequirementDecoder::toRequirement)
-            .toArray(Requirement[]::new))
-        .toArray(Requirement[][]::new);
+            .map(row -> Arrays.stream(row)
+                    .map(RequirementDecoder::decodeInputRequirement)
+                    .map(RequirementDecoder::toRequirement)
+                    .toArray(Requirement[]::new))
+            .toArray(Requirement[][]::new);
   }
 
   private static Requirement toRequirement(String[] array) {

@@ -7,27 +7,42 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.stereotype.Component;
 
+/**
+ * LoggingAspect
+ */
 @Aspect
 @Component
 @Slf4j
 public class LoggingAspect {
 
+  /**
+   * gameTheorySolver
+   */
   @Pointcut("execution(* org.fit.ssapp.service.*.*(..))")
   public void gameTheorySolver() {
   }
 
+  /**
+   * stableMatchingSolver
+   */
   @Pointcut("execution(* org.fit.ssapp.service.*.*(..))")
   public void stableMatchingSolver() {
   }
 
+  /**
+   * logAroundGameTheorySolver
+   * @param joinPoint ?
+   * @return Object
+   * @throws Throwable error
+   */
   @Around("gameTheorySolver()")
   public Object logAroundGameTheorySolver(ProceedingJoinPoint joinPoint) throws Throwable {
     String className = joinPoint
-        .getSignature()
-        .getDeclaringTypeName();
+            .getSignature()
+            .getDeclaringTypeName();
     String methodName = joinPoint
-        .getSignature()
-        .getName();
+            .getSignature()
+            .getName();
 
     log.info("{}.{}() is started", className, methodName);
     Object result = joinPoint.proceed();
@@ -36,14 +51,21 @@ public class LoggingAspect {
   }
 
 
+  /**
+   * logAroundStableMatchingSolver
+   *
+   * @param joinPoint ?
+   * @return Object
+   * @throws Throwable error
+   */
   @Around("stableMatchingSolver()")
   public Object logAroundStableMatchingSolver(ProceedingJoinPoint joinPoint) throws Throwable {
     String className = joinPoint
-        .getSignature()
-        .getDeclaringTypeName();
+            .getSignature()
+            .getDeclaringTypeName();
     String methodName = joinPoint
-        .getSignature()
-        .getName();
+            .getSignature()
+            .getName();
 
     log.info("{}.{}() is started", className, methodName);
     Object result = joinPoint.proceed();

@@ -54,14 +54,16 @@ public class MatchingData {
   private final double[][] weights;
   private final Requirement[][] requirements;
 
-
+  /**
+   * MatchingData constructor
+   */
   public MatchingData(int size,
-      int propertyNum,
-      int[] sets,
-      int[] capacities,
-      double[][] propertyValues,
-      double[][] weights,
-      Requirement[][] requirements) {
+                      int propertyNum,
+                      int[] sets,
+                      int[] capacities,
+                      double[][] propertyValues,
+                      double[][] weights,
+                      Requirement[][] requirements) {
 
     Map<Integer, Integer> setNums = new HashMap<>();
     for (int set : sets) {
@@ -186,7 +188,7 @@ public class MatchingData {
       ss.append(String.format("%33s", "Requirement: | "));
       for (int j = 0; j < this.propertyNum; j++) {
         ss.append(String.format("%-16s| ",
-            this.getRequirementOf(i, j).toString()));
+                this.getRequirementOf(i, j).toString()));
       }
       sb.append(ss).append("\n");
       ss.delete(0, sb.length());

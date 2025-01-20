@@ -5,6 +5,9 @@ import static org.fit.ssapp.util.NumberUtils.formatDouble;
 import org.fit.ssapp.constants.StableMatchingConst;
 import org.fit.ssapp.ss.smt.requirement.Requirement;
 
+/**
+ * TwoBound
+ */
 public record TwoBound(double lowerBound, double upperBound) implements Requirement {
 
   /**

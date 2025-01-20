@@ -21,6 +21,9 @@ import org.moeaframework.core.Variable;
 import org.moeaframework.core.variable.EncodingUtils;
 import org.moeaframework.core.variable.Permutation;
 
+/**
+ * OTMProblem
+ */
 @Slf4j
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -103,7 +106,7 @@ public class MTMProblem implements MatchingProblem {
     double fitnessScore;
     if (this.hasFitnessFunc()) {
       fitnessScore = fitnessEvaluator
-          .withFitnessFunctionEvaluation(satisfactions, this.fitnessFunction);
+              .withFitnessFunctionEvaluation(satisfactions, this.fitnessFunction);
     } else {
       fitnessScore = fitnessEvaluator.defaultFitnessEvaluation(satisfactions);
     }
@@ -126,7 +129,9 @@ public class MTMProblem implements MatchingProblem {
   }
 
   /**
-   * {@inheritDoc}
+   * stableMatching
+   *
+   * @return Matches
    */
   @Override
   public Matches stableMatching(Variable var) {
@@ -165,11 +170,11 @@ public class MTMProblem implements MatchingProblem {
         // The node that rightNode has the least preference considering
         // its currents matches and leftNode
         int rightLoser = preferenceLists.getLeastScoreNode(
-            UNUSED_VAL,
-            rightNode,
-            leftNode,
-            matches.getSetOf(rightNode),
-            matchingData.getCapacityOf(rightNode));
+                UNUSED_VAL,
+                rightNode,
+                leftNode,
+                matches.getSetOf(rightNode),
+                matchingData.getCapacityOf(rightNode));
 
         // rightNode likes its current matches more than leftNode
         if (rightLoser == leftNode) {

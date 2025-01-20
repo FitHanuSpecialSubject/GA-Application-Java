@@ -13,7 +13,7 @@ public interface ProblemService {
    * solve
    *
    * @param problem StableMatchingProblemDto
-   * @return ResponseEntity<Response>
+   * @return ResponseEntity
    */
   ResponseEntity<Response> solve(StableMatchingProblemDto problem);
 
@@ -22,7 +22,7 @@ public interface ProblemService {
    *
    * @param problem     StableMatchingProblemDto
    * @param sessionCode String
-   * @return ResponseEntity<Response>
+   * @return ResponseEntity
    */
   ResponseEntity<Response> getInsights(StableMatchingProblemDto problem, String sessionCode);
 }

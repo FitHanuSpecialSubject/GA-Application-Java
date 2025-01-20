@@ -10,34 +10,37 @@ import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 import org.fit.ssapp.constants.StableMatchingConst;
 
+/**
+ * EvaluateFunctionValidator.
+ */
 public class EvaluateFunctionValidator implements
-    ConstraintValidator<ValidEvaluateFunction, String[]> {
+        ConstraintValidator<ValidEvaluateFunction, String[]> {
 
   private static final Pattern VARIABLE_PATTERN = Pattern.compile("(P\\d+|W\\d+|R\\d+)");
 
   @Override
   public boolean isValid(String[] values, ConstraintValidatorContext context) {
     for (String func : values) {
-        if (func.equalsIgnoreCase(StableMatchingConst.DEFAULT_EVALUATE_FUNC)) {
-            continue;
-        }
+      if (func.equalsIgnoreCase(StableMatchingConst.DEFAULT_EVALUATE_FUNC)) {
+        continue;
+      }
       String cleanFunc = func.replaceAll("\\s+", "");
       try {
         Set<String> variables = extractVariables(cleanFunc);
         ExpressionBuilder builder = new ExpressionBuilder(cleanFunc);
-          for (String var : variables) {
-              builder.variable(var);
-          }
+        for (String var : variables) {
+          builder.variable(var);
+        }
         Expression expression = builder.build();
-          for (String var : variables) {
-              expression.setVariable(var, 1.0);
-          }
+        for (String var : variables) {
+          expression.setVariable(var, 1.0);
+        }
         expression.evaluate();
       } catch (Exception e) {
         context.disableDefaultConstraintViolation();
         context.buildConstraintViolationWithTemplate(
-                "Invalid evaluate function syntax: '" + func + "'")
-            .addConstraintViolation();
+                        "Invalid evaluate function syntax: '" + func + "'")
+                .addConstraintViolation();
         return false;
       }
     }
@@ -47,9 +50,9 @@ public class EvaluateFunctionValidator implements
   private Set<String> extractVariables(String func) {
     Set<String> variables = new HashSet<>();
     Matcher matcher = VARIABLE_PATTERN.matcher(func);
-      while (matcher.find()) {
-          variables.add(matcher.group(1));
-      }
+    while (matcher.find()) {
+      variables.add(matcher.group(1));
+    }
     return variables;
   }
 }

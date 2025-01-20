@@ -8,6 +8,10 @@ import org.fit.ssapp.ss.gt.implement.StandardGameTheoryProblem;
 import org.fit.ssapp.util.EvaluatorUtils;
 import org.fit.ssapp.util.StringUtils;
 
+/**
+ * Mapper layer, xử lý các công việc sau đối với từng loại matching problem: 1. map problem data từ
+ * dto vào GameTheoryProblem 2. tính toán các preference list và set vào StableMatchingProblem
+ */
 public class GameTheoryProblemMapper {
 
   /**
@@ -20,15 +24,15 @@ public class GameTheoryProblemMapper {
     GameTheoryProblem problem;
     String algorithm = request.getAlgorithm();
     if (!StringUtils.isEmptyOrNull(algorithm)
-        && AppConst.PSO_BASED_ALGOS.contains(algorithm)) {
+            && AppConst.PSO_BASED_ALGOS.contains(algorithm)) {
       problem = new PSOCompatibleGameTheoryProblem();
     } else {
       problem = new StandardGameTheoryProblem();
     }
     problem.setDefaultPayoffFunction(EvaluatorUtils
-        .getIfDefaultFunction(request.getDefaultPayoffFunction()));
+            .getIfDefaultFunction(request.getDefaultPayoffFunction()));
     problem.setFitnessFunction(EvaluatorUtils
-        .getValidFitnessFunction(request.getFitnessFunction()));
+            .getValidFitnessFunction(request.getFitnessFunction()));
     problem.setSpecialPlayer(request.getSpecialPlayer());
     problem.setNormalPlayers(request.getNormalPlayers());
     problem.setConflictSet(request.getConflictSet());
@@ -46,9 +50,9 @@ public class GameTheoryProblemMapper {
   public static PSOCompatibleGameTheoryProblem toPSOProblem(StandardGameTheoryProblem problem) {
     PSOCompatibleGameTheoryProblem result = new PSOCompatibleGameTheoryProblem();
     result.setDefaultPayoffFunction(EvaluatorUtils
-        .getIfDefaultFunction(problem.getDefaultPayoffFunction()));
+            .getIfDefaultFunction(problem.getDefaultPayoffFunction()));
     result.setFitnessFunction(EvaluatorUtils
-        .getValidFitnessFunction(problem.getFitnessFunction()));
+            .getValidFitnessFunction(problem.getFitnessFunction()));
     result.setSpecialPlayer(problem.getSpecialPlayer());
     result.setNormalPlayers(problem.getNormalPlayers());
     result.setConflictSet(problem.getConflictSet());
@@ -63,12 +67,12 @@ public class GameTheoryProblemMapper {
    * @return PSOCompatibleGameTheoryProblem
    */
   public static StandardGameTheoryProblem toStandardProblem(
-      PSOCompatibleGameTheoryProblem problem) {
+          PSOCompatibleGameTheoryProblem problem) {
     StandardGameTheoryProblem result = new StandardGameTheoryProblem();
     result.setDefaultPayoffFunction(EvaluatorUtils
-        .getIfDefaultFunction(problem.getDefaultPayoffFunction()));
+            .getIfDefaultFunction(problem.getDefaultPayoffFunction()));
     result.setFitnessFunction(EvaluatorUtils
-        .getValidFitnessFunction(problem.getFitnessFunction()));
+            .getValidFitnessFunction(problem.getFitnessFunction()));
     result.setSpecialPlayer(problem.getSpecialPlayer());
     result.setNormalPlayers(problem.getNormalPlayers());
     result.setConflictSet(problem.getConflictSet());

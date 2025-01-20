@@ -27,6 +27,9 @@ import org.moeaframework.core.Solution;
 import org.moeaframework.core.Variable;
 import org.moeaframework.core.variable.Permutation;
 
+/**
+ * TripletOTOProblem
+ */
 @Slf4j
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -109,7 +112,7 @@ public class TripletOTOProblem implements MatchingProblem {
     double fitnessScore;
     if (this.hasFitnessFunc()) {
       fitnessScore = fitnessEvaluator
-          .withFitnessFunctionEvaluation(satisfactions, this.fitnessFunction);
+              .withFitnessFunctionEvaluation(satisfactions, this.fitnessFunction);
     } else {
       fitnessScore = fitnessEvaluator.defaultFitnessEvaluation(satisfactions);
     }
@@ -133,7 +136,9 @@ public class TripletOTOProblem implements MatchingProblem {
   }
 
   /**
-   * {@inheritDoc}
+   * stableMatching
+   *
+   * @return Matches
    */
   @Override
   public Matches stableMatching(Variable var) {
@@ -150,9 +155,9 @@ public class TripletOTOProblem implements MatchingProblem {
     while (!unMatchedNode.isEmpty()) {
       int newNode = unMatchedNode.poll();
 
-        if (matchedNode.contains(newNode)) {
-            continue;
-        }
+      if (matchedNode.contains(newNode)) {
+        continue;
+      }
 
       int currentSet = matchingData.getSetNoOf(newNode);
       int[] otherSets = getOtherSets(currentSet);
@@ -164,11 +169,10 @@ public class TripletOTOProblem implements MatchingProblem {
       // integrate through each of opposite sets
       for (int targetSet : otherSets) {
         int preferNodeOfTargetSet = matchWithTargetSet(newNode, targetSet, nodePreference, matches,
-            unMatchedNode);
+                unMatchedNode);
 
         // add to leftover if current individual unavailable to match with any preferNode
         if (preferNodeOfTargetSet == -1) {
-//                    matches.addLeftOver(preferNodeOfTargetSet);
           break;
         }
         matchedGroup.add(preferNodeOfTargetSet);
@@ -195,12 +199,13 @@ public class TripletOTOProblem implements MatchingProblem {
   /**
    * find and match with a prefer node in the target set
    * return the prefer node of target set
+   *
    * @param nodePreferences is the preferList of current node
    */
   private int matchWithTargetSet(int newNode, int targetSet,
-      TripletPreferenceList nodePreferences,
-      Matches matches,
-      Queue<Integer> unmatchedNodes) {
+                                 TripletPreferenceList nodePreferences,
+                                 Matches matches,
+                                 Queue<Integer> unmatchedNodes) {
     // -1 is not find yet
     int result = -1;
 
@@ -239,21 +244,21 @@ public class TripletOTOProblem implements MatchingProblem {
    */
 
   private boolean breakPreviousMatch(int newNode, int preferNode,
-      Matches matches, Queue<Integer> unmatchedNodes) {
+                                     Matches matches, Queue<Integer> unmatchedNodes) {
     Integer[] individualMatches = matches.getSetOf(preferNode).toArray(new Integer[0]);
     // Iterate through existing matches
     for (int currentNode : individualMatches) {
       if (matchingData.getSetNoOf(currentNode) == matchingData.getSetNoOf(
-          newNode)) {
+              newNode)) {
         // Check if newNode is more preferred than currentNode
         if (preferenceLists.isPreferredOver(newNode, currentNode, preferNode)) {
           Collection<Integer> allMatched = matches.getMatchesAndTarget(preferNode);
 
           for (int matched : allMatched) {
             matches.disMatch(matched, allMatched);    // unmatched previous pairs
-              if (matched != preferNode) {
-                  unmatchedNodes.add(matched);
-              }
+            if (matched != preferNode) {
+              unmatchedNodes.add(matched);
+            }
           }
 
           return true;
@@ -266,28 +271,29 @@ public class TripletOTOProblem implements MatchingProblem {
 
   private int[] getOtherSets(int currentSet) {
     return IntStream.range(0, setNum)
-        .filter(set -> set != currentSet)
-        .toArray();
+            .filter(set -> set != currentSet)
+            .toArray();
   }
 
   /**
    * calculate the padding for a set that stored in preferList of a  newNode
+   *
    * @param targetSet         is the number of set that calculate padding to get
    * @param currentNewNodeSet is the current set can get with the current padding
    */
   private int calculatePadding(int targetSet, int currentNewNodeSet) {
     Map<Integer, Integer> setNums = matchingData.getSetNums();
-      if (currentNewNodeSet == setNum - 1) {
-          return 0;
-      }
-      if (currentNewNodeSet == 0) {
-          return setNums.get(currentNewNodeSet);
-      }
+    if (currentNewNodeSet == setNum - 1) {
+      return 0;
+    }
+    if (currentNewNodeSet == 0) {
+      return setNums.get(currentNewNodeSet);
+    }
 
     // if smaller than newNode set, return 0 to get all name of previous set before current's
-      if (targetSet < currentNewNodeSet) {
-          return 0;
-      }
+    if (targetSet < currentNewNodeSet) {
+      return 0;
+    }
 
     int paddingSize = 0;
     paddingSize += setNums.get(targetSet);

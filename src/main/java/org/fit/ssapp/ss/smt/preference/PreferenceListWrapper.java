@@ -17,6 +17,10 @@ public class PreferenceListWrapper {
    */
   private final List<PreferenceList> lists;
 
+
+  /**
+   * @param lists List
+   */
   public PreferenceListWrapper(List<PreferenceList> lists) {
     this.lists = lists;
   }
@@ -33,13 +37,13 @@ public class PreferenceListWrapper {
    */
 
   public int getLeastScoreNode(int set,
-      int preferNode,
-      int proposeNode,
-      Set<Integer> setOfPreferNode,
-      int preferNodeCapacity) {
-      if (setOfPreferNode.isEmpty()) {
-          return -1;
-      }
+                               int preferNode,
+                               int proposeNode,
+                               Set<Integer> setOfPreferNode,
+                               int preferNodeCapacity) {
+    if (setOfPreferNode.isEmpty()) {
+      return -1;
+    }
 
     PreferenceList prefOfSelectorNode = this.lists.get(preferNode);
     // Lớp có một thằng
@@ -65,18 +69,26 @@ public class PreferenceListWrapper {
     return lists.get(idx);
   }
 
-  // Stable Matching Algorithm Component: isPreferredOver
+  /**
+   * Stable Matching Algorithm Component: isPreferredOver
+   *
+   * @param proposeNode           int
+   * @param preferNodeCurrentNode int
+   * @param preferNode            int
+   * @return boolean
+   */
   public boolean isPreferredOver(int proposeNode, int preferNodeCurrentNode, int preferNode) {
     PreferenceList preferenceOfSelectorNode = lists.get(preferNode);
     return preferenceOfSelectorNode.isScoreGreater(StableMatchingConst.UNUSED_VALUE,
-        proposeNode,
-        preferNodeCurrentNode);
+            proposeNode,
+            preferNodeCurrentNode);
   }
 
   /**
    * Get the grade point of class, get all satisfaction based on matches
    *
-   * @param matches matching result
+   * @param matches      matching result
+   * @param matchingData MatchingData
    * @return satisfactions
    */
   public double[] getMatchesSatisfactions(Matches matches, MatchingData matchingData) {
@@ -98,16 +110,13 @@ public class PreferenceListWrapper {
   /**
    * get last option of target
    *
+   * @param set    int
    * @param target position of individual
    * @return last option
    */
   public int getLastChoiceOf(int set, int target) {
     PreferenceList pref = lists.get(target);
     return pref.getPositionByRank(set, pref.size(set) - 1);
-  }
-
-  public double getPreferenceScore(int target, int option) {
-    return lists.get(target).getScore(option);
   }
 
 }

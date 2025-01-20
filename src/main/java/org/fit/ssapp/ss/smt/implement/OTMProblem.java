@@ -22,6 +22,9 @@ import org.moeaframework.core.Variable;
 import org.moeaframework.core.variable.EncodingUtils;
 import org.moeaframework.core.variable.Permutation;
 
+/**
+ * OTMProblem
+ */
 @Slf4j
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -105,7 +108,7 @@ public class OTMProblem implements MatchingProblem {
     double fitnessScore;
     if (this.hasFitnessFunc()) {
       fitnessScore = fitnessEvaluator
-          .withFitnessFunctionEvaluation(satisfactions, this.fitnessFunction);
+              .withFitnessFunctionEvaluation(satisfactions, this.fitnessFunction);
     } else {
       fitnessScore = fitnessEvaluator.defaultFitnessEvaluation(satisfactions);
     }
@@ -113,9 +116,12 @@ public class OTMProblem implements MatchingProblem {
     solution.setObjective(0, -fitnessScore);
   }
 
+  /**
+   * @return boolean
+   */
   public boolean hasFitnessFunc() {
     return !this.fitnessFunction.equalsIgnoreCase("default") && !StringUtils.isEmptyOrNull(
-        this.fitnessFunction);
+            this.fitnessFunction);
   }
 
   @Override
@@ -146,20 +152,20 @@ public class OTMProblem implements MatchingProblem {
     Matches matches = new Matches(matchingData.getSize());
     int[] decodeVar = EncodingUtils.getPermutation(var);
     Queue<Integer> queue = new LinkedList<>();
-      for (int val : decodeVar) {
-          queue.add(val);
-      }
+    for (int val : decodeVar) {
+      queue.add(val);
+    }
     while (!queue.isEmpty()) {
       int leftNode = queue.poll();
-        if (matches.isMatched(leftNode)) {
-            continue;
-        }
+      if (matches.isMatched(leftNode)) {
+        continue;
+      }
       PreferenceList nodePreference = preferenceLists.get(leftNode);
       for (int i = 0; i < nodePreference.size(UNUSED_VAL); i++) {
         int rightNode = nodePreference.getPositionByRank(UNUSED_VAL, i);
-          if (matches.isMatched(rightNode, leftNode)) {
-              continue;
-          }
+        if (matches.isMatched(rightNode, leftNode)) {
+          continue;
+        }
         boolean rightIsFull = matches.isFull(rightNode, matchingData.getCapacityOf(rightNode));
         if (!rightIsFull) {
           matches.addMatchBi(leftNode, rightNode);
@@ -167,10 +173,10 @@ public class OTMProblem implements MatchingProblem {
         } else {
           Set<Integer> currentMatches = matches.getSetOf(rightNode);
           int leastPreferredNode = preferenceLists.getLeastScoreNode(
-              UNUSED_VAL, rightNode, leftNode, currentMatches, matchingData.getCapacityOf(rightNode)
+                  UNUSED_VAL, rightNode, leftNode, currentMatches, matchingData.getCapacityOf(rightNode)
           );
           if (leastPreferredNode != -1 && preferenceLists.isPreferredOver(leftNode,
-              leastPreferredNode, rightNode)) {
+                  leastPreferredNode, rightNode)) {
             matches.removeMatchBi(rightNode, leastPreferredNode);
             matches.addMatchBi(leftNode, rightNode);
             queue.add(leastPreferredNode);

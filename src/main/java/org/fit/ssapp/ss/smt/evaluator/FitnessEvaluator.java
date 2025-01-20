@@ -13,6 +13,11 @@ public interface FitnessEvaluator {
 
   double defaultFitnessEvaluation(double[] satisfactions);
 
+  /**
+   * @param satisfactions double[]
+   * @param fnf           String
+   * @return Matches
+   */
   double withFitnessFunctionEvaluation(double[] satisfactions, String fnf);
 
 }

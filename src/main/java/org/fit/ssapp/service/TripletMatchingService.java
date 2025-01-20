@@ -30,6 +30,9 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
 
+/**
+ * TripletMatchingService.
+ */
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -38,6 +41,10 @@ public class TripletMatchingService {
   private static final int RUN_COUNT_PER_ALGORITHM = 10;
   private final SimpMessagingTemplate simpMessagingTemplate;
 
+  /**
+   * @param request StableMatchingProblemDto
+   * @return ResponseEntity
+   */
   public ResponseEntity<Response> solve(StableMatchingProblemDto request) {
 
     try {
@@ -45,27 +52,27 @@ public class TripletMatchingService {
       BindingResult bindingResult = ValidationUtils.validate(request);
       if (bindingResult.hasErrors()) {
         return ResponseEntity
-            .status(HttpStatus.BAD_REQUEST)
-            .body(Response
-                .builder()
-                .data(ValidationUtils.getAllErrorDetails(bindingResult))
-                .build());
+                .status(HttpStatus.BAD_REQUEST)
+                .body(Response
+                        .builder()
+                        .data(ValidationUtils.getAllErrorDetails(bindingResult))
+                        .build());
       }
       log.info("Building preference list...");
 
       MatchingProblem problem = StableMatchingProblemMapper.toTripletOTO(request);
       log.info("Start solving: {}, problem name: {}, problem size: {}",
-          problem.getMatchingTypeName(),
-          problem.getName(),
-          problem.getMatchingData().getSize());
+              problem.getMatchingTypeName(),
+              problem.getName(),
+              problem.getMatchingData().getSize());
       long startTime = System.currentTimeMillis();
 
       NondominatedPopulation results = solveProblem(problem,
-          request.getAlgorithm(),
-          request.getPopulationSize(),
-          request.getGeneration(),
-          request.getMaxTime(),
-          request.getDistributedCores());
+              request.getAlgorithm(),
+              request.getPopulationSize(),
+              request.getGeneration(),
+              request.getMaxTime(),
+              request.getDistributedCores());
 
       assert results != null;
 //            Testing tester = new Testing((Matches) results.get(0).getAttribute("matches"),
@@ -82,36 +89,36 @@ public class TripletMatchingService {
 
       MatchingSolution matchingSolution = formatSolution(algorithm, results, runtime);
       matchingSolution.setSetSatisfactions(problem.getMatchesSatisfactions((Matches) results
-          .get(0)
-          .getAttribute(StableMatchingConst.MATCHES_KEY)));
+              .get(0)
+              .getAttribute(StableMatchingConst.MATCHES_KEY)));
 
       return ResponseEntity.ok(Response
-          .builder()
-          .status(200)
-          .message(
-              "[Service] Stable Matching: Solve stable matching problem successfully!")
-          .data(matchingSolution)
-          .build());
+              .builder()
+              .status(200)
+              .message(
+                      "[Service] Stable Matching: Solve stable matching problem successfully!")
+              .data(matchingSolution)
+              .build());
     } catch (Exception e) {
       log.error("[Service] Stable Matching: Error solving stable matching problem: {}",
-          e.getMessage(),
-          e);
+              e.getMessage(),
+              e);
       // Handle exceptions and return an error response
       return ResponseEntity
-          .status(HttpStatus.INTERNAL_SERVER_ERROR)
-          .body(Response
-              .builder()
-              .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-              .message(
-                  "[Service] Stable Matching: Error solving stable matching problem.")
-              .data(null)
-              .build());
+              .status(HttpStatus.INTERNAL_SERVER_ERROR)
+              .body(Response
+                      .builder()
+                      .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                      .message(
+                              "[Service] Stable Matching: Error solving stable matching problem.")
+                      .data(null)
+                      .build());
     }
   }
 
   private MatchingSolution formatSolution(String algorithm,
-      NondominatedPopulation result,
-      double Runtime) {
+                                          NondominatedPopulation result,
+                                          double Runtime) {
     Solution solution = result.get(0);
     MatchingSolution matchingSolution = new MatchingSolution();
     double fitnessValue = solution.getObjective(0);
@@ -127,11 +134,11 @@ public class TripletMatchingService {
 
 
   private NondominatedPopulation solveProblem(Problem problem,
-      String algorithm,
-      int populationSize,
-      int generation,
-      int maxTime,
-      String distributedCores) {
+                                              String algorithm,
+                                              int populationSize,
+                                              int generation,
+                                              int maxTime,
+                                              String distributedCores) {
     NondominatedPopulation result;
     if (algorithm == null) {
       algorithm = "PESA2";
@@ -146,23 +153,23 @@ public class TripletMatchingService {
     try {
       if (distributedCores.equals("all")) {
         result = new Executor()
-            .withProblem(problem)
-            .withAlgorithm(algorithm)
-            .withMaxEvaluations(generation * populationSize)
-            .withTerminationCondition(maxEval)
-            .withProperties(properties)
-            .distributeOnAllCores()
-            .run();
+                .withProblem(problem)
+                .withAlgorithm(algorithm)
+                .withMaxEvaluations(generation * populationSize)
+                .withTerminationCondition(maxEval)
+                .withProperties(properties)
+                .distributeOnAllCores()
+                .run();
       } else {
         int numberOfCores = Integer.parseInt(distributedCores);
         result = new Executor()
-            .withProblem(problem)
-            .withAlgorithm(algorithm)
-            .withMaxEvaluations(generation * populationSize)
-            .withTerminationCondition(maxEval)
-            .withProperties(properties)
-            .distributeOn(numberOfCores)
-            .run();
+                .withProblem(problem)
+                .withAlgorithm(algorithm)
+                .withMaxEvaluations(generation * populationSize)
+                .withTerminationCondition(maxEval)
+                .withProperties(properties)
+                .distributeOn(numberOfCores)
+                .run();
       }
       //log.info("[Service] Stable Matching: Problem solved successfully!");
       return result;
@@ -172,12 +179,17 @@ public class TripletMatchingService {
     }
   }
 
+  /**
+   * @param request     StableMatchingProblemDto
+   * @param sessionCode String
+   * @return ResponseEntity
+   */
   public ResponseEntity<Response> getInsights(StableMatchingProblemDto request,
-      String sessionCode) {
+                                              String sessionCode) {
     String[] algorithms = StableMatchingConst.ALLOWED_INSIGHT_ALGORITHMS;
     simpMessagingTemplate.convertAndSendToUser(sessionCode,
-        "/progress",
-        createProgressMessage("Initializing the problem..."));
+            "/progress",
+            createProgressMessage("Initializing the problem..."));
     TripletOTOProblem problem = StableMatchingProblemMapper.toTripletOTO(request);
 
     log.info("Start benchmarking {} session code {}", problem.getName(), sessionCode);
@@ -189,8 +201,8 @@ public class TripletMatchingService {
     // solve the problem with different algorithms and then evaluate the performance of the algorithms
 //        log.info("Start benchmarking the algorithms...");
     simpMessagingTemplate.convertAndSendToUser(sessionCode,
-        "/progress",
-        createProgressMessage("Start benchmarking the algorithms..."));
+            "/progress",
+            createProgressMessage("Start benchmarking the algorithms..."));
 
     for (String algorithm : algorithms) {
       for (int i = 0; i < RUN_COUNT_PER_ALGORITHM; i++) {
@@ -198,11 +210,11 @@ public class TripletMatchingService {
         long start = System.currentTimeMillis();
 
         NondominatedPopulation results = solveProblem(problem,
-            algorithm,
-            request.getPopulationSize(),
-            request.getGeneration(),
-            request.getMaxTime(),
-            request.getDistributedCores());
+                algorithm,
+                request.getPopulationSize(),
+                request.getGeneration(),
+                request.getMaxTime(),
+                request.getDistributedCores());
 
         long end = System.currentTimeMillis();
         assert results != null;
@@ -211,8 +223,8 @@ public class TripletMatchingService {
 
         // send the progress to the client
         String message =
-            "Algorithm " + algorithm + " finished iteration: #" + (i + 1) + "/" +
-                RUN_COUNT_PER_ALGORITHM;
+                "Algorithm " + algorithm + " finished iteration: #" + (i + 1) + "/" +
+                        RUN_COUNT_PER_ALGORITHM;
         Progress progress = createProgress(message, runtime, runCount, maxRunCount);
         System.out.println(progress);
         simpMessagingTemplate.convertAndSendToUser(sessionCode, "/progress", progress);
@@ -226,15 +238,15 @@ public class TripletMatchingService {
     }
     log.info("Benchmark finished! {} session code {}", problem.getName(), sessionCode);
     simpMessagingTemplate.convertAndSendToUser(sessionCode,
-        "/progress",
-        createProgressMessage("Benchmarking finished!"));
+            "/progress",
+            createProgressMessage("Benchmarking finished!"));
 
     return ResponseEntity.ok(Response
-        .builder()
-        .status(200)
-        .message("Get problem result insights successfully!")
-        .data(matchingSolutionInsights)
-        .build());
+            .builder()
+            .status(200)
+            .message("Get problem result insights successfully!")
+            .data(matchingSolutionInsights)
+            .build());
   }
 
   private MatchingSolutionInsights initMatchingSolutionInsights(String[] algorithms) {
@@ -255,28 +267,28 @@ public class TripletMatchingService {
 
   private Progress createProgressMessage(String message) {
     return Progress
-        .builder()
-        .inProgress(
-            false) // this object is just to send a message to the client, not to show the progress
-        .message(message)
-        .build();
+            .builder()
+            .inProgress(
+                    false) // this object is just to send a message to the client, not to show the progress
+            .message(message)
+            .build();
   }
 
   private Progress createProgress(String message,
-      Double runtime,
-      Integer runCount,
-      int maxRunCount) {
+                                  Double runtime,
+                                  Integer runCount,
+                                  int maxRunCount) {
     int percent = runCount * 100 / maxRunCount;
     int minuteLeft = (int) Math.ceil(
-        ((maxRunCount - runCount) * runtime) / 60); // runtime is in seconds
+            ((maxRunCount - runCount) * runtime) / 60); // runtime is in seconds
     return Progress
-        .builder()
-        .inProgress(true) // this object is just to send to the client to show the progress
-        .message(message)
-        .runtime(runtime)
-        .minuteLeft(minuteLeft)
-        .percentage(percent)
-        .build();
+            .builder()
+            .inProgress(true) // this object is just to send to the client to show the progress
+            .message(message)
+            .runtime(runtime)
+            .minuteLeft(minuteLeft)
+            .percentage(percent)
+            .build();
   }
 
   private double getFitnessValue(NondominatedPopulation result) {
@@ -286,8 +298,8 @@ public class TripletMatchingService {
 
 
   private MatchingSolution formatSolutionOTO(String algorithm,
-      NondominatedPopulation result,
-      double Runtime) {
+                                             NondominatedPopulation result,
+                                             double Runtime) {
     Solution solution = result.get(0);
     MatchingSolution matchingSolution = new MatchingSolution();
     double fitnessValue = solution.getObjective(0);

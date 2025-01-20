@@ -23,6 +23,7 @@ import org.moeaframework.core.Solution;
 import org.moeaframework.core.Variable;
 import org.moeaframework.core.variable.Permutation;
 
+
 @Slf4j
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -114,6 +115,11 @@ public class OTOProblem implements MatchingProblem {
     solution.setObjective(0, -fitnessScore);
   }
 
+  /**
+   * check exists fitness function
+   *
+   * @return true if exists
+   */
   public boolean hasFitnessFunc() {
     return StringUtils.isEmptyOrNull(this.fitnessFunction);
   }
@@ -142,13 +148,15 @@ public class OTOProblem implements MatchingProblem {
   }
 
   /**
-   * {@inheritDoc}
+   * stableMatching
+   *
+   * @return Matches
    */
   @Override
   public Matches stableMatching(Variable var) {
     int[] order = ((Permutation) var).toArray();
     Queue<Integer> singleQueue = Arrays.stream(order).boxed()
-        .collect(Collectors.toCollection(LinkedList::new));
+            .collect(Collectors.toCollection(LinkedList::new));
     Matches matches = new Matches(getProblemSize());
 
     while (!singleQueue.isEmpty()) {
@@ -162,9 +170,9 @@ public class OTOProblem implements MatchingProblem {
         int b = aPreference.getPositionByRank(UNUSED_VAL, i);
 
         // If already matched to each other, skip
-          if (matches.isMatched(a, b)) {
-              break;
-          }
+        if (matches.isMatched(a, b)) {
+          break;
+        }
 
         if (!matches.isMatched(b)) {
           // Case 1: b is unmatched
@@ -186,9 +194,9 @@ public class OTOProblem implements MatchingProblem {
             }
           }
 
-            if (foundMatch) {
-                break;
-            }
+          if (foundMatch) {
+            break;
+          }
         }
       }
     }

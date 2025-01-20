@@ -6,7 +6,9 @@ import lombok.Data;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.fit.ssapp.ss.smt.preference.PreferenceList;
-
+/**
+ * TripletPreferenceList
+ */
 @Slf4j
 @Data
 @FieldDefaults(level = AccessLevel.PROTECTED)
@@ -19,6 +21,12 @@ public class TripletPreferenceList implements PreferenceList {
   int current; // Tracks the current index in the list.
   int padding; // Used for index adjustments.
 
+  /**
+   * TripletPreferenceList
+   *
+   * @param size    int
+   * @param padding int
+   */
   public TripletPreferenceList(int size, int padding) {
     scores = new double[size];
     positions = new int[size];
@@ -71,6 +79,12 @@ public class TripletPreferenceList implements PreferenceList {
     return 0;
   }
 
+  /**
+   * addArray
+   *
+   * @param scoreTMP    double[]
+   * @param positionTMP int[]
+   */
   public void addArray(double[] scoreTMP, int[] positionTMP) {
     for (int i = 0; i < scoreTMP.length; i++) {
       this.scores[current] = scoreTMP[i];

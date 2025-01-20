@@ -16,6 +16,9 @@ import org.fit.ssapp.ss.smt.preference.impl.list.TripletPreferenceList;
 import org.fit.ssapp.ss.smt.requirement.Requirement;
 import org.fit.ssapp.util.PreferenceProviderUtils;
 
+/**
+ * TripletPreferenceProvider
+ */
 public class TripletPreferenceProvider implements PreferenceBuilder {
 
   private final MatchingData individuals;
@@ -27,6 +30,12 @@ public class TripletPreferenceProvider implements PreferenceBuilder {
   private final Map<Integer, Expression> expressions;
   private final Map<Integer, Map<String, Set<Integer>>> variables;
 
+  /**
+   * TripletPreferenceProvider
+   *
+   * @param individuals    MatchingData
+   * @param evaluationFunctions String[]
+   */
   public TripletPreferenceProvider(MatchingData individuals, String[] evaluationFunctions) {
     this.individuals = individuals;
     this.setSizes = new HashMap<>();
@@ -45,8 +54,8 @@ public class TripletPreferenceProvider implements PreferenceBuilder {
       String evalFunction = evaluationFunctions[set];
       Map<String, Set<Integer>> vars = PreferenceProviderUtils.filterVariable(evalFunction);
       Expression expr = new ExpressionBuilder(evalFunction)
-          .variables(PreferenceProviderUtils.convertMapToSet(vars))
-          .build();
+              .variables(PreferenceProviderUtils.convertMapToSet(vars))
+              .build();
       variables.put(set, vars);
       expressions.put(set, expr);
     }
@@ -66,7 +75,7 @@ public class TripletPreferenceProvider implements PreferenceBuilder {
       }
       if (set == 0) {
         a = new TripletPreferenceList(size,
-            setSizes.get(0));    // khởi tạo preferlist với size = 2 set còn lại + vào
+                setSizes.get(0));    // khởi tạo preferlist với size = 2 set còn lại + vào
       } else {
         a = new TripletPreferenceList(size, 0);
       }
@@ -166,13 +175,13 @@ public class TripletPreferenceProvider implements PreferenceBuilder {
   }
 
   public Map<String, Double> getVariableValuesForSet(int set, int indexOfEvaluator,
-      int indexOfBeEvaluated) {
+                                                     int indexOfBeEvaluated) {
     return getVariableValues(this.variables.get(set), indexOfEvaluator, indexOfBeEvaluated);
   }
 
   private Map<String, Double> getVariableValues(Map<String, Set<Integer>> variables,
-      int idx1,
-      int idx2) {
+                                                int idx1,
+                                                int idx2) {
     Map<String, Double> variablesValues = new HashMap<>();
     for (Map.Entry<String, Set<Integer>> entry : variables.entrySet()) {
       String key = entry.getKey();
@@ -193,8 +202,8 @@ public class TripletPreferenceProvider implements PreferenceBuilder {
         case "R":
           for (Integer value : values) {
             double val = individuals
-                .getRequirementOf(idx1, value - 1)
-                .getValueForFunction();
+                    .getRequirementOf(idx1, value - 1)
+                    .getValueForFunction();
             variablesValues.put(key + value, val);
           }
           break;
@@ -221,7 +230,7 @@ public class TripletPreferenceProvider implements PreferenceBuilder {
       }
       if (set == 0) {
         a = new TripletPreferenceList(size,
-            setSizes.get(0));    // khởi tạo preferlist với size = 2 set còn lại + vào
+                setSizes.get(0));    // khởi tạo preferlist với size = 2 set còn lại + vào
       } else {
         a = new TripletPreferenceList(size, 0);
       }

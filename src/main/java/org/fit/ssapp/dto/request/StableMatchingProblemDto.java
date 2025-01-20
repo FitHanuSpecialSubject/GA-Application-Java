@@ -85,15 +85,15 @@ public class StableMatchingProblemDto implements ProblemRequestDto {
   @Override
   public String toString() {
     return "StableMatchingProblemDto{" + "problemName='" + problemName + '\'' + ", numberOfSets="
-        + numberOfSets + ", numberOfIndividuals=" + numberOfIndividuals + ", numberOfProperty="
-        + numberOfProperty + ", individualSetIndices=" + Arrays.toString(individualSetIndices)
-        + ", individualCapacities=" + Arrays.toString(individualCapacities) + Arrays.toString(
-        individualRequirements) + ", individualRequirements=" + ", individualWeights="
-        + Arrays.toString(individualWeights) + ", individualProperties=" + Arrays.toString(
-        individualProperties) + ", evaluateFunctions=" + Arrays.toString(evaluateFunctions)
-        + ", fitnessFunction='" + fitnessFunction + '\'' + ", excludedPairs=" + Arrays.toString(
-        excludedPairs) + ", populationSize=" + populationSize + ", generation=" + generation
-        + ", maxTime=" + maxTime + ", algorithm='" + algorithm + '\'' + ", distributedCores='"
-        + distributedCores + '\'' + '}';
+            + numberOfSets + ", numberOfIndividuals=" + numberOfIndividuals + ", numberOfProperty="
+            + numberOfProperty + ", individualSetIndices=" + Arrays.toString(individualSetIndices)
+            + ", individualCapacities=" + Arrays.toString(individualCapacities) + Arrays.toString(
+            individualRequirements) + ", individualRequirements=" + ", individualWeights="
+            + Arrays.toString(individualWeights) + ", individualProperties=" + Arrays.toString(
+            individualProperties) + ", evaluateFunctions=" + Arrays.toString(evaluateFunctions)
+            + ", fitnessFunction='" + fitnessFunction + '\'' + ", excludedPairs=" + Arrays.toString(
+            excludedPairs) + ", populationSize=" + populationSize + ", generation=" + generation
+            + ", maxTime=" + maxTime + ", algorithm='" + algorithm + '\'' + ", distributedCores='"
+            + distributedCores + '\'' + '}';
   }
 }
