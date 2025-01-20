@@ -42,7 +42,7 @@ The primary goal of this manual is to provide a detailed, easy-to-understand gui
 # **4\. Local Installation**
 
 ### **4.1 System Requirements**
-
+asdasdas
 #### **Hardware Prerequisites**
 
 - CPU: Minimum 2 GHz (multi-core recommended).
