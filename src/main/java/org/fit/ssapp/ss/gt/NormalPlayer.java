@@ -34,7 +34,7 @@ public class NormalPlayer implements Serializable {
     this.strategies = strategies;
   }
 
-  public List<BigDecimal> getValues() {
+  public List<BigDecimal> getPayoffValues() {
     return payoffValues;
   }
 

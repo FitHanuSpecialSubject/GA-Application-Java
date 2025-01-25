@@ -67,7 +67,7 @@ public class StandardGameTheoryProblem implements GameTheoryProblem, Serializabl
   //Store average pure payoff differences
   private List<Double> playerAvgDiffs;
   private String fitnessFunction;
-  private String defaultPayoffFunction = "default";
+  private String defaultPayoffFunction;
   private boolean isMaximizing;
   int[] bestResponses = new int[4];
 
