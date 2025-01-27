@@ -10,25 +10,16 @@ import org.fit.ssapp.ss.smt.requirement.Requirement;
  */
 public record TwoBound(double lowerBound, double upperBound) implements Requirement {
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public int getType() {
     return StableMatchingConst.ReqTypes.TWO_BOUND;
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public double getValueForFunction() {
     return (lowerBound + upperBound) / 2;
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public double getDefaultScaling(double propertyValue) {
     if (propertyValue < lowerBound || propertyValue > upperBound ||

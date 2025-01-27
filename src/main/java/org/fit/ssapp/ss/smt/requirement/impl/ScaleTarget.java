@@ -8,25 +8,16 @@ import org.fit.ssapp.ss.smt.requirement.Requirement;
  */
 public record ScaleTarget(int targetValue) implements Requirement {
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public int getType() {
     return StableMatchingConst.ReqTypes.SCALE_TARGET;
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public double getValueForFunction() {
     return this.targetValue;
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public double getDefaultScaling(double propertyValue) {
     if (propertyValue < 0 || propertyValue > 10) {

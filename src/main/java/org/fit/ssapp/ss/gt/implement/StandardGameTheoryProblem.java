@@ -75,7 +75,7 @@ public class StandardGameTheoryProblem implements GameTheoryProblem, Serializabl
   public StandardGameTheoryProblem() {
   }
 
-  public StandardGameTheoryProblem(String path, int startRow) throws IOException {
+  public StandardGameTheoryProblem(String path, int startRow) {
     super();
 
     if (Objects.equals(path, "")) {
@@ -370,7 +370,7 @@ public class StandardGameTheoryProblem implements GameTheoryProblem, Serializabl
           solution.setConstraint(i, -1); // this solution violates the constraints[i]
         }
       } else {
-        // this conflict is between 2 strategies of the 2 players at the a iteration
+        // this conflict is between 2 strategies of the 2 players at the iteration
         if (chosenStrategyIndices[leftPlayerIndex - 1] == leftPlayerStrategy &&
             chosenStrategyIndices[rightPlayerIndex - 1] == rightPlayerStrategy) {
           solution.setConstraint(i, -1); // this solution violates the constraints[i]
@@ -431,7 +431,6 @@ public class StandardGameTheoryProblem implements GameTheoryProblem, Serializabl
     // the variables[0] is the strategy index of each normalPlayers[0] choose
     // the variable 1 is the strategy index of each player1 choose
     // the variable 2 is the strategy index of each player2 choose
-    // ..
 
     int numbeOfNP = normalPlayers.size();
     Solution solution = new Solution(numbeOfNP, 1, conflictSet.size());

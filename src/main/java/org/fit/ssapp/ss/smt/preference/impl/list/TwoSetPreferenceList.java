@@ -33,9 +33,6 @@ public class TwoSetPreferenceList implements PreferenceList {
     this.padding = padding;
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public int size(int set) {
     // ignore set param
@@ -43,9 +40,6 @@ public class TwoSetPreferenceList implements PreferenceList {
   }
 
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public int getNumberOfOtherSets() {
     return 0;
@@ -63,9 +57,6 @@ public class TwoSetPreferenceList implements PreferenceList {
     this.current++;
   }
 
-  /**
-   * {@inheritDoc}
-   */
   public int getLeastNode(int set, int newNode, Set<Integer> currentNodes) {
     int leastNode = newNode - this.padding;
     for (int currentNode : currentNodes) {
@@ -76,9 +67,6 @@ public class TwoSetPreferenceList implements PreferenceList {
     return leastNode + this.padding;
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public int getLeastNode(int set, int newNode, int oldNode) {
     if (isScoreGreater(set, newNode, oldNode)) {
@@ -89,9 +77,6 @@ public class TwoSetPreferenceList implements PreferenceList {
   }
 
 
-  /**
-   * {@inheritDoc}
-   */
   public boolean isScoreGreater(int set, int node, int nodeToCompare) {
     return this.scores[node - this.padding] > this.scores[nodeToCompare - this.padding];
   }
@@ -112,18 +97,21 @@ public class TwoSetPreferenceList implements PreferenceList {
     }
   }
 
-  /**
-   * {@inheritDoc}
-   */
   public int getLastOption(int set) {
     return this.getPositionByRank(set, this.positions.length - 1);
   }
 
 
+  /**
+   *
+   */
   public void sort() {
     sortDescendingByScores();
   }
 
+  /**
+   *
+   */
   public void sortDescendingByScores() {
     double[] cloneScores = scores.clone(); //copy to new array
     int size = cloneScores.length;
@@ -205,9 +193,6 @@ public class TwoSetPreferenceList implements PreferenceList {
     return result.toString();
   }
 
-  /**
-   * {@inheritDoc}
-   */
   public double getScore(int position) {
     try {
       return scores[position - this.padding];

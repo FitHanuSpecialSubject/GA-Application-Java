@@ -15,6 +15,7 @@ public interface MatchingProblem extends Problem {
 
   /**
    * Get Matching type name
+   * @return String
    */
   String getMatchingTypeName();
 

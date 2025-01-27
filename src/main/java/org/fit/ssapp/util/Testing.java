@@ -18,9 +18,6 @@ public class Testing {
     this.matches = matches;
   }
 
-  //	public boolean isValidQuantity(){
-//
-//	}
   public boolean hasDuplicate() {
     int[] checkArr = capacities;
     int sz = matches.size();
@@ -59,9 +56,6 @@ public class Testing {
     matches.addMatch(2, 7);
     matches.addMatch(2, 11);
 
-//        matches.addLeftOver(11);
-//        matches.addLeftOver(10);
-//        matches.addLeftOver(9);
 
   }
 

@@ -29,6 +29,9 @@ public class Matches implements Serializable {
    */
   final TreeSet<Integer>[] matches;
 
+  /**
+   * @param size int
+   */
   @SuppressWarnings("unchecked")
   public Matches(int size) {
     this.size = size;
@@ -141,6 +144,9 @@ public class Matches implements Serializable {
     return sb;
   }
 
+  /**
+   * @return Set
+   */
   public Set<Integer> getLeftOvers() {
     ArrayList<Integer> leftOvers = new ArrayList<>();
 
@@ -164,6 +170,9 @@ public class Matches implements Serializable {
   }
 
 
+  /**
+   * @return matches
+   */
   public TreeSet<Integer>[] getAllMatches() {
     return matches;
   }

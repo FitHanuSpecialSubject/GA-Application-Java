@@ -169,11 +169,17 @@ public class TripletPreferenceProvider implements PreferenceBuilder {
       tempPositions[rootIndex] = tempPositions[smallestIndex];
       tempPositions[smallestIndex] = swapPos;
 
-      // Recursively heapify the affected sub-tree
+      // Recursively heapify the affected subtree
       heapify(tempScores, tempPositions, heapSize, smallestIndex);
     }
   }
 
+  /**
+   * @param set int
+   * @param indexOfEvaluator int
+   * @param indexOfBeEvaluated int
+   * @return Map
+   */
   public Map<String, Double> getVariableValuesForSet(int set, int indexOfEvaluator,
                                                      int indexOfBeEvaluated) {
     return getVariableValues(this.variables.get(set), indexOfEvaluator, indexOfBeEvaluated);

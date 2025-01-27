@@ -72,11 +72,21 @@ public class TwoSetPreferenceProvider implements PreferenceBuilder {
   }
 
 
+  /**
+   * @param indexOfEvaluator int
+   * @param indexOfBeEvaluated int
+   * @return Map
+   */
   public Map<String, Double> getVariableValuesForSet1(int indexOfEvaluator,
                                                       int indexOfBeEvaluated) {
     return getVariableValues(this.variablesOfSet1, indexOfEvaluator, indexOfBeEvaluated);
   }
 
+  /**
+   * @param indexOfEvaluator int
+   * @param indexOfBeEvaluated int
+   * @return Map
+   */
   public Map<String, Double> getVariableValuesForSet2(int indexOfEvaluator,
                                                       int indexOfBeEvaluated) {
     return getVariableValues(this.variablesOfSet2, indexOfEvaluator, indexOfBeEvaluated);

@@ -37,25 +37,16 @@ public class OneBound implements Requirement {
     return expression ? "++" : "--";
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public int getType() {
     return StableMatchingConst.ReqTypes.ONE_BOUND;
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public double getValueForFunction() {
     return this.bound;
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public double getDefaultScaling(double propertyValue) {
     if (Objects.equals(this.expression, INCREASING)) {

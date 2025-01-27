@@ -8,6 +8,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.fit.ssapp.dto.response.ComputerSpecs;
 
+/**
+ *
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

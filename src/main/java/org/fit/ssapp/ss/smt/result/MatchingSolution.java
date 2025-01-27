@@ -7,6 +7,9 @@ import lombok.NoArgsConstructor;
 import org.fit.ssapp.dto.response.ComputerSpecs;
 import org.fit.ssapp.ss.smt.Matches;
 
+/**
+ *
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

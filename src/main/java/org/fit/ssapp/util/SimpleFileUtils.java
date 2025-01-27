@@ -15,7 +15,7 @@ public class SimpleFileUtils {
   }
 
 
-  public static boolean isFileExist(String filePath) {
+  public static boolean isFileNotExist(String filePath) {
     File file = new File(filePath);
     return file.exists();
   }

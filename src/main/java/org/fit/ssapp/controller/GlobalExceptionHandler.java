@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-  Logger logger = Logger.getLogger("GlobalExceptionHandler");
+  final Logger logger = Logger.getLogger("GlobalExceptionHandler");
 
   /**
    * Server busy exception handler.

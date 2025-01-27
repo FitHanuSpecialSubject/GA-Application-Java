@@ -41,7 +41,7 @@ public class TripletPreferenceList implements PreferenceList {
 
   @Override
   public int getNumberOfOtherSets() {
-    return 0;
+    return 2;
   }
 
   @Override

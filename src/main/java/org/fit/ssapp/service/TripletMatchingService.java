@@ -75,16 +75,11 @@ public class TripletMatchingService {
               request.getDistributedCores());
 
       assert results != null;
-//            Testing tester = new Testing((Matches) results.get(0).getAttribute("matches"),
-//                    problem.getMatchingData(), problem.getMatchingData().getCapacities());
-//            System.out.println("[Testing] Solution has duplicate: " + tester.hasDuplicate());
       long endTime = System.currentTimeMillis();
 
       double runtime = ((double) (endTime - startTime) / 1000);
       runtime = (runtime * 1000.0);
       log.info("Runtime: {} Millisecond(s).", runtime);
-      //problem.printIndividuals();
-      //System.out.println(problem.printPreferenceLists());
       String algorithm = request.getAlgorithm();
 
       MatchingSolution matchingSolution = formatSolution(algorithm, results, runtime);
@@ -297,17 +292,5 @@ public class TripletMatchingService {
   }
 
 
-  private MatchingSolution formatSolutionOTO(String algorithm,
-                                             NondominatedPopulation result,
-                                             double Runtime) {
-    Solution solution = result.get(0);
-    MatchingSolution matchingSolution = new MatchingSolution();
-    double fitnessValue = solution.getObjective(0);
-    matchingSolution.setMatches(((Matches) solution.getAttribute("matches")));
-    matchingSolution.setFitnessValue(-fitnessValue);
-    matchingSolution.setAlgorithm(algorithm);
-    matchingSolution.setRuntime(Runtime);
-    return matchingSolution;
-  }
 
 }

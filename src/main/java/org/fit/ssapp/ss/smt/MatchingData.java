@@ -56,6 +56,13 @@ public class MatchingData {
 
   /**
    * MatchingData constructor
+   * @param size int
+   * @param propertyNum int
+   * @param sets int[]
+   * @param capacities int[]
+   * @param propertyValues double[][]
+   * @param weights double[][]
+   * @param requirements requirement
    */
   public MatchingData(int size,
                       int propertyNum,
