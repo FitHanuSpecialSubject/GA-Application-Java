@@ -199,7 +199,7 @@ public class TripletOTOProblem implements MatchingProblem {
   /**
    * find and match with a prefer node in the target set
    * return the prefer node of target set
-   *
+
    * @param nodePreferences is the preferList of current node
    */
   private int matchWithTargetSet(int newNode, int targetSet,
@@ -277,7 +277,7 @@ public class TripletOTOProblem implements MatchingProblem {
 
   /**
    * calculate the padding for a set that stored in preferList of a  newNode
-   *
+
    * @param targetSet         is the number of set that calculate padding to get
    * @param currentNewNodeSet is the current set can get with the current padding
    */
