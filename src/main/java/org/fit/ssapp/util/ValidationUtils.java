@@ -17,9 +17,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.validation.beanvalidation.SpringValidatorAdapter;
 
-/**
- * Validation class
- */
+@SuppressWarnings("checkstyle:MissingJavadocType")
 public class ValidationUtils {
 
   static MessageSource messageSource;
@@ -27,29 +25,30 @@ public class ValidationUtils {
   private ValidationUtils() {
   }
 
-
   /**
    * Validate DTO request Object.
    *
    * @param target DTO object
    * @return bindingResult
    */
+
   public static BindingResult validate(Object target) {
-    ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-    Validator validator = factory.getValidator();
-    BindingResult bindingResult = new BeanPropertyBindingResult(target, "");
-    SpringValidatorAdapter springValidator = new SpringValidatorAdapter(validator);
-    springValidator.validate(target, bindingResult);
-    return bindingResult;
+    try (ValidatorFactory factory = Validation.buildDefaultValidatorFactory()) {
+      Validator validator = factory.getValidator();
+      BindingResult bindingResult = new BeanPropertyBindingResult(target, "");
+      SpringValidatorAdapter springValidator = new SpringValidatorAdapter(validator);
+      springValidator.validate(target, bindingResult);
+      return bindingResult;
+    }
   }
 
 
   /**
-   * Get all errors out of bindingResult as Map
+   * Get all errors out of bindingResult as Map.
    *
-   * @param bindingResult Validate result
-   * @return Map<String, String [ ]>
+   * @param bindingResult Validate result.
    */
+
   public static Map<String, List<String>> getAllErrorDetails(BindingResult bindingResult) {
     List<ObjectError> listObjectError = bindingResult.getAllErrors();
     if (CollectionUtils.isEmpty(listObjectError)) {
@@ -66,12 +65,13 @@ public class ValidationUtils {
 
 
   /**
-   * Get message by key and params, currently not using, update later
+   * Get message by key and params, currently not using, update later.
    *
    * @param defaultMessage String
    * @param params         Object...
    * @return String
    */
+  @SuppressWarnings("unused")
   public static String getMessage(String defaultMessage, String... params) {
     try {
       return messageSource.getMessage(defaultMessage, params, Locale.ENGLISH);

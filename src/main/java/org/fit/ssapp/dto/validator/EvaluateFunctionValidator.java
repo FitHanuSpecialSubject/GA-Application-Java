@@ -10,11 +10,13 @@ import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 import org.fit.ssapp.constants.StableMatchingConst;
 
+@SuppressWarnings("checkstyle:MissingJavadocType")
 public class EvaluateFunctionValidator implements
     ConstraintValidator<ValidEvaluateFunction, String[]> {
 
   private static final Pattern VARIABLE_PATTERN = Pattern.compile("(P\\d+|W\\d+|R\\d+)");
 
+  @SuppressWarnings("checkstyle:Indentation")
   @Override
   public boolean isValid(String[] values, ConstraintValidatorContext context) {
     for (String func : values) {
@@ -44,6 +46,7 @@ public class EvaluateFunctionValidator implements
     return true;
   }
 
+  @SuppressWarnings("checkstyle:Indentation")
   private Set<String> extractVariables(String func) {
     Set<String> variables = new HashSet<>();
     Matcher matcher = VARIABLE_PATTERN.matcher(func);

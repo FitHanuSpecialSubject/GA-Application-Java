@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+@SuppressWarnings({"checkstyle:MissingJavadocType", "checkstyle:SummaryJavadoc"})
 @Getter
 @Data
 @NoArgsConstructor
@@ -21,13 +22,13 @@ public class Conflict implements Serializable {
   /**
    *
    */
+  @SuppressWarnings("unused")
   public Conflict(String conflict) {
     System.out.println("conflict = " + conflict);
     String[] conflictSet = conflict.split(",");
     System.out.println("Arrays.toString(conflictSet) = " + Arrays.toString(conflictSet));
     if (conflictSet.length != 4) {
-      System.err.print(
-          "Invalid Conflict input data format, it should be: 'left player, left player strategy, right player, right player strategy'");
+      System.err.print("Invalid Conflict input data format");
       return;
     }
     leftPlayer = Integer.parseInt(conflictSet[0]) - 1;
@@ -36,6 +37,7 @@ public class Conflict implements Serializable {
     rightPlayerStrategy = Integer.parseInt(conflictSet[3]) - 1;
   }
 
+  @SuppressWarnings("checkstyle:MissingJavadocMethod")
   public String toString() {
     return String.format("Player: %s, Strategy: %s, Player: %s, Strategy: %s", leftPlayer + 1,
         leftPlayerStrategy + 1, rightPlayer + 1, rightPlayerStrategy + 1);

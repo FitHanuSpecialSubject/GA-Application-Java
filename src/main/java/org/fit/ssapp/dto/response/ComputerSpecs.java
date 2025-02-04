@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+@SuppressWarnings("checkstyle:MissingJavadocType")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

@@ -29,21 +29,17 @@ import org.moeaframework.core.NondominatedPopulation;
 import org.moeaframework.core.Problem;
 
 
+@SuppressWarnings("checkstyle:MissingJavadocType")
 @Slf4j
 public class AlgorithmsBenchmarking {
 
+  @SuppressWarnings({"checkstyle:CommentsIndentation", "checkstyle:LineLength",
+      "checkstyle:MissingJavadocMethod"})
   public static double run(Problem problem, String algo) {
     List<String> algorithms = Arrays.asList(AppConst.SUPPORTED_ALGOS);
     if (!algorithms.contains(algo)) {
       throw new IllegalArgumentException("Algorithm not supported: " + algo);
     }
-
-//        System.out.println("\n[ Randomly Generated Population ]\n");
-//        problem.printIndividuals();
-//
-//        System.out.println("Number Of Individuals: " + problem.getIndividuals().getNumberOfIndividual());
-//
-//        System.out.println("\n[ Algorithm Output Solution ]\n");
 
     // Run the algorithm
     long startTime = System.currentTimeMillis();
@@ -59,23 +55,11 @@ public class AlgorithmsBenchmarking {
     runtime = Math.round(runtime * 100.0) / 100.0;
 
     log.info(result.iterator().next().toString());
-
-//        // Process and print the results
-//        for (Solution solution : result) {
-//            Matches matches = (Matches) solution.getAttribute("matches");
-////            System.out.println("Output Matches (by Gale Shapley):\n" + matches.toString());
-////            System.out.println("Randomized Individuals Input Order (by MOEA): " + solution.getVariable(0).toString());
-//            System.out.println("Fitness Score: " + -solution.getObjective(0));
-//            Testing tester = new Testing(matches,
-//                    problem.getIndividuals().getNumberOfIndividual(),
-//                    problem.getIndividuals().getCapacities());
-//            System.out.println("Solution has duplicate individual? : " + tester.hasDuplicate());
-//        }
     return runtime;
   }
 
+  @SuppressWarnings({"checkstyle:LineLength", "checkstyle:MissingJavadocMethod"})
   public static void main(String[] args) {
-
     String problemSerializedFilePath = ".data/gt_data.ser";
     StandardGameTheoryProblem problem = (StandardGameTheoryProblem) ProblemUtils.readProblemFromFile(
         problemSerializedFilePath);
@@ -83,12 +67,12 @@ public class AlgorithmsBenchmarking {
     double runtime = run(problem, "OMOPSO");
 
     log.info("{}", runtime);
-
   }
 
+  @SuppressWarnings("checkstyle:MissingJavadocMethod")
   public static boolean logData(String path, String[][] data, CSVFormat format) {
 
-    if (SimpleFileUtils.isFileExist(path)) {
+    if (!SimpleFileUtils.isFileExist(path)) {
       try {
         FileUtils.touch(new File(path));
       } catch (IOException e) {
@@ -118,6 +102,7 @@ public class AlgorithmsBenchmarking {
     return List.of(CSVFormat.DEFAULT, CSVFormat.TDF).contains(format);
   }
 
+  @SuppressWarnings("checkstyle:MissingJavadocMethod")
   public void start(Problem problem) {
     String logFileName = "log";
     FastDateFormat dateFormat = FastDateFormat.getInstance("MMddHHss");
@@ -126,6 +111,7 @@ public class AlgorithmsBenchmarking {
     start(problem, logFileName);
   }
 
+  @SuppressWarnings("checkstyle:MissingJavadocMethod")
   public void start(Problem problem, String logFileName) {
     String[] algorithms = AppConst.SUPPORTED_ALGOS;
     List<AlgorithmRunResult> runResults = new ArrayList<>();
@@ -174,6 +160,7 @@ public class AlgorithmsBenchmarking {
     System.exit(0);
   }
 
+  @SuppressWarnings({"checkstyle:SummaryJavadoc", "checkstyle:MissingJavadocType"})
   @AllArgsConstructor
   @NoArgsConstructor
   @Data
@@ -192,6 +179,7 @@ public class AlgorithmsBenchmarking {
      */
     double runtime;
 
+    @SuppressWarnings("checkstyle:MissingJavadocMethod")
     public String[] toDataPoint() {
 
       String algorithmNameStr = Objects.nonNull(this.algorithmName) ? this.algorithmName : "null";

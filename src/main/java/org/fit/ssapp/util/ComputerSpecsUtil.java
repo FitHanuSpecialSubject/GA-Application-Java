@@ -9,9 +9,11 @@ import oshi.hardware.HardwareAbstractionLayer;
 import oshi.software.os.OperatingSystem;
 import oshi.util.FormatUtil;
 
+@SuppressWarnings("checkstyle:MissingJavadocType")
 @Slf4j
 public class ComputerSpecsUtil {
 
+  @SuppressWarnings("checkstyle:MissingJavadocMethod")
   public static ComputerSpecs getComputerSpecs() {
     ComputerSpecs computerSpecs;
     try {

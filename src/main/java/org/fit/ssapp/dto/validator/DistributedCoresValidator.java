@@ -3,6 +3,7 @@ package org.fit.ssapp.dto.validator;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
+@SuppressWarnings({"checkstyle:SummaryJavadoc", "checkstyle:MissingJavadocType"})
 public class DistributedCoresValidator implements
     ConstraintValidator<ValidDistributedCores, String> {
 
@@ -13,6 +14,7 @@ public class DistributedCoresValidator implements
   public void initialize(ValidDistributedCores annotation) {
   }
 
+  @SuppressWarnings("checkstyle:Indentation")
   @Override
   public boolean isValid(String value, ConstraintValidatorContext context) {
     int availableCores = Runtime.getRuntime().availableProcessors();

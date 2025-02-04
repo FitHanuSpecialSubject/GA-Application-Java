@@ -14,7 +14,7 @@ import org.fit.ssapp.dto.response.Progress;
 import org.fit.ssapp.dto.response.Response;
 import org.fit.ssapp.ss.gt.GameTheoryProblem;
 import org.fit.ssapp.ss.gt.NormalPlayer;
-import org.fit.ssapp.ss.gt.implement.PSOCompatibleGameTheoryProblem;
+import org.fit.ssapp.ss.gt.implement.PsoCompatibleGameTheoryProblem;
 import org.fit.ssapp.ss.gt.implement.StandardGameTheoryProblem;
 import org.fit.ssapp.ss.gt.result.GameSolution;
 import org.fit.ssapp.ss.gt.result.GameSolutionInsights;
@@ -30,6 +30,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+@SuppressWarnings("ALL")
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -203,6 +204,7 @@ public class GameTheoryService {
     return gameSolution;
   }
 
+  @SuppressWarnings("checkstyle:MissingJavadocMethod")
   public ResponseEntity<Response> getProblemResultInsights(GameTheoryProblemDto request,
       String sessionCode) {
     log.info("Received request: " + request);
@@ -232,13 +234,13 @@ public class GameTheoryService {
         if (problem instanceof StandardGameTheoryProblem
             && AppConst.PSO_BASED_ALGOS.contains(algorithm)) {
           problem = GameTheoryProblemMapper
-              .toPSOProblem((StandardGameTheoryProblem) problem);
+              .toPsoProblem((StandardGameTheoryProblem) problem);
         }
 
-        if (problem instanceof PSOCompatibleGameTheoryProblem
+        if (problem instanceof PsoCompatibleGameTheoryProblem
             && !AppConst.PSO_BASED_ALGOS.contains(algorithm)) {
           problem = GameTheoryProblemMapper
-              .toStandardProblem((PSOCompatibleGameTheoryProblem) problem);
+              .toStandardProblem((PsoCompatibleGameTheoryProblem) problem);
         }
 
         NondominatedPopulation results = solveProblem(problem,

@@ -4,6 +4,7 @@ import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import org.fit.ssapp.dto.request.StableMatchingProblemDto;
 
+@SuppressWarnings({"checkstyle:SummaryJavadoc", "checkstyle:MissingJavadocType"})
 public class EvaluateFunctionCountValidator implements
     ConstraintValidator<ValidEvaluateFunctionCount, StableMatchingProblemDto> {
 

@@ -25,7 +25,7 @@ import org.moeaframework.core.Solution;
 @AllArgsConstructor
 public class SampleDataGenerator {
 
-  private static final Random RANDOM = new Random(); // Random generator
+  private static final Random RANDOM = new Random();
   public Map<Integer, Integer> setCapacities = new HashMap<>();
   boolean[] capRandomize = {true, true};
   // Configuration parameters
@@ -35,8 +35,16 @@ public class SampleDataGenerator {
   private int numberOfProperties;
   private int[] numberForeachSet;
   private String[] evaluateFunctions = {DEFAULT_EVALUATE_FUNC, DEFAULT_EVALUATE_FUNC};
-  private String fnf = DEFAULT_FITNESS_FUNC; // Fitness function
+  private String fnf = DEFAULT_FITNESS_FUNC;
 
+  /**
+   * Constructs a SampleDataGenerator with the specified matching problem type and parameters.
+   *
+   * @param matchingProblemType The type of matching problem (MTM, OTM, OTO).
+   * @param numberOfSet1        Number of individuals in the first set.
+   * @param numberOfSet2        Number of individuals in the second set.
+   * @param numberOfProperties  Number of properties per individual.
+   */
   public SampleDataGenerator(MatchingProblemType matchingProblemType, int numberOfSet1,
       int numberOfSet2, int numberOfProperties) {
     if (numberOfSet1 <= 0 || numberOfSet2 <= 0 || numberOfProperties <= 0) {
@@ -58,9 +66,14 @@ public class SampleDataGenerator {
       case MTM -> this.capRandomize = new boolean[]{true, true};
       case OTM -> this.capRandomize = new boolean[]{true, false};
       case OTO -> this.capRandomize = new boolean[]{false, false};
+      default -> log.warn("Unknown Matching Problem Type");
     }
   }
 
+  /**
+   * Generates a StableMatchingProblemDto instance based on the configured parameters.
+   */
+  @SuppressWarnings("unused")
   public SampleDataGenerator(MatchingProblemType matchingProblemType, int[] numberForeachSet,
       int numberOfProperties) {
     this.matchingProblemType = matchingProblemType;
@@ -75,6 +88,8 @@ public class SampleDataGenerator {
       case MTM -> this.capRandomize = new boolean[]{true, true};
       case OTM -> this.capRandomize = new boolean[]{true, false};
       case OTO -> this.capRandomize = new boolean[]{false, false};
+      default -> throw new IllegalArgumentException(
+          "Unknown Matching Problem Type:" + this.matchingProblemType);
     }
   }
 
@@ -122,18 +137,18 @@ public class SampleDataGenerator {
    * @return A StableMatchingProblemDto object
    */
   public StableMatchingProblemDto generateDto() {
-    StableMatchingProblemDto problemDTO = new StableMatchingProblemDto();
-    problemDTO.setNumberOfIndividuals(individualNum);
-    problemDTO.setNumberOfSets(numberForeachSet.length);
-    problemDTO.setNumberOfProperty(numberOfProperties);
-    problemDTO.setIndividualSetIndices(generateSetIndices());
-    problemDTO.setIndividualCapacities(generateCapacities());
-    problemDTO.setIndividualProperties((double[][]) generatePW().get("property"));
-    problemDTO.setIndividualWeights((double[][]) generatePW().get("weight"));
-    problemDTO.setIndividualRequirements(generateRequirementString());
-    problemDTO.setEvaluateFunctions(evaluateFunctions);
-    problemDTO.setFitnessFunction(fnf);
-    return problemDTO;
+    StableMatchingProblemDto problemDto = new StableMatchingProblemDto();
+    problemDto.setNumberOfIndividuals(individualNum);
+    problemDto.setNumberOfSets(numberForeachSet.length);
+    problemDto.setNumberOfProperty(numberOfProperties);
+    problemDto.setIndividualSetIndices(generateSetIndices());
+    problemDto.setIndividualCapacities(generateCapacities());
+    problemDto.setIndividualProperties((double[][]) generatePw().get("property"));
+    problemDto.setIndividualWeights((double[][]) generatePw().get("weight"));
+    problemDto.setIndividualRequirements(generateRequirementString());
+    problemDto.setEvaluateFunctions(evaluateFunctions);
+    problemDto.setFitnessFunction(fnf);
+    return problemDto;
   }
 
   /**
@@ -161,7 +176,7 @@ public class SampleDataGenerator {
   /**
    * Adds properties to an individual.
    */
-  private Map<String, Object> generatePW() {
+  private Map<String, Object> generatePw() {
     Map<String, Object> result = new HashMap<>();
     double[][] individualProperties = new double[this.individualNum][this.numberOfProperties];
     double[][] individualWeights = new double[this.individualNum][this.numberOfProperties];
@@ -204,6 +219,7 @@ public class SampleDataGenerator {
     }
     return individualRequirements;
   }
+
 
   private int[] generateSetIndices() {
     int[] setIndices = new int[individualNum];

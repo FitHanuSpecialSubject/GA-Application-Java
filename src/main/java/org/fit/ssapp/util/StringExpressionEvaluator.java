@@ -13,26 +13,39 @@ import java.util.regex.Pattern;
 import org.fit.ssapp.ss.gt.NormalPlayer;
 import org.fit.ssapp.ss.gt.Strategy;
 
+/**
+ * A utility class to evaluate mathematical expressions in string format. Supports variable
+ * replacement, basic arithmetic operations, and trigonometric functions.
+ */
 public class StringExpressionEvaluator {
 
   public static Pattern nonRelativePattern = Pattern.compile("p[0-9]+");
-  public static Pattern relativePattern = Pattern.compile("P[0-9]+p[0-9]+");
   public static Pattern fitnessPattern = Pattern.compile("u[0-9]+");
 
-
+  /**
+   * Evaluates a payoff function relative to other players.
+   */
   public enum DefaultFunction {
     SUM, AVERAGE, MIN, MAX, PRODUCT, MEDIAN, RANGE
   }
 
   static DecimalFormat decimalFormat = new DecimalFormat("#.##############");
 
+  /**
+   * Evaluates a payoff function relative to other players.
+   *
+   * @param strategy              The strategy of the current player.
+   * @param payoffFunction        The payoff function as a string.
+   * @param normalPlayers         List of all normal players.
+   * @param chosenStrategyIndices Indices of chosen strategies.
+   * @return The calculated payoff as a {@code BigDecimal}.
+   */
   public static BigDecimal evaluatePayoffFunctionWithRelativeToOtherPlayers(Strategy strategy,
       String payoffFunction,
       List<NormalPlayer> normalPlayers,
       int[] chosenStrategyIndices) {
     String expression = payoffFunction;
 
-    // match both relative and non-relative variables
     Pattern generalPattern = Pattern.compile("(P[0-9]+)?" + nonRelativePattern.pattern());
     Matcher generalMatcher = generalPattern.matcher(expression);
     while (generalMatcher.find()) {
@@ -63,11 +76,16 @@ public class StringExpressionEvaluator {
     return new BigDecimal(val).setScale(10, RoundingMode.HALF_UP);
   }
 
-
+  /**
+   * Evaluates a payoff function without relative variables.
+   *
+   * @param strategy       The strategy containing properties used in the function.
+   * @param payoffFunction The payoff function as a string.
+   * @return A {@code BigDecimal} result of the evaluated function.
+   * @throws IllegalArgumentException If the function contains invalid variables.
+   */
   public static BigDecimal evaluatePayoffFunctionNoRelative(Strategy strategy,
       String payoffFunction) {
-
-    // this method is for some players only take their own strategies into account when calculating their payoff
 
     String expression = payoffFunction;
 
@@ -98,6 +116,15 @@ public class StringExpressionEvaluator {
 
   }
 
+
+  /**
+   * Evaluates the fitness function based on given payoffs.
+   *
+   * @param payoffs         Array of payoff values.
+   * @param fitnessFunction The fitness function as a string.
+   * @return The computed fitness value as a {@code BigDecimal}.
+   * @throws IllegalArgumentException If the function contains invalid variables.
+   */
   public static BigDecimal evaluateFitnessValue(double[] payoffs, String fitnessFunction) {
     String expression = fitnessFunction;
     List<Double> payoffList = new ArrayList<>();
@@ -131,7 +158,14 @@ public class StringExpressionEvaluator {
 
   }
 
-  public static int AfterTokenLength(String function, int startIndex) {
+  /**
+   * Finds the length of a numeric token after a given index in a string.
+   *
+   * @param function   The input string containing numbers.
+   * @param startIndex The starting index to check after.
+   * @return The length of the numeric sequence following the startIndex.
+   */
+  public static int afterTokenLength(String function, int startIndex) {
     int length = 0;
     for (int c = startIndex + 1; c < function.length(); c++) {
       char ch = function.charAt(c);
@@ -144,11 +178,22 @@ public class StringExpressionEvaluator {
     return length;
   }
 
+  /**
+   * Checks if a character represents a numeric digit.
+   *
+   * @param c The character to check.
+   * @return {@code true} if the character is a digit, otherwise {@code false}.
+   */
   public static boolean isNumericValue(char c) {
     return c >= '0' && c <= '9';
   }
 
-
+  /**
+   * Converts a double to a string without scientific notation, ensuring proper formatting.
+   *
+   * @param value The double value to convert.
+   * @return A string representation of the value without scientific notation.
+   */
   public static String convertToStringWithoutScientificNotation(double value) {
     String stringValue;
     if (value > 9999999) {
@@ -161,7 +206,6 @@ public class StringExpressionEvaluator {
   }
 
   private static String formatDouble(double propertyValue) {
-    // if the property value is too small it can be written as for example 1.0E-4, so we need to format it to 0.0001
     return decimalFormat.format(propertyValue);
   }
 
@@ -181,19 +225,23 @@ public class StringExpressionEvaluator {
   }
 
   private static double calMax(List<Double> values) {
-    return values.stream().
-        mapToDouble(Double::doubleValue).max()
+    return values.stream()
+        .mapToDouble(Double::doubleValue)
+        .max()
         .orElseThrow(() -> new IllegalArgumentException("Cannot calculate maximum of empty list"));
   }
 
   private static double calMin(List<Double> values) {
-    return values.stream().mapToDouble(Double::doubleValue).min()
-        .orElseThrow(() -> new IllegalArgumentException("Cannot calculate maximum of empty list"));
+    return values.stream()
+        .mapToDouble(Double::doubleValue)
+        .min()
+        .orElseThrow(() -> new IllegalArgumentException("Cannot calculate minimum of empty list"));
   }
 
   private static double calAverage(List<Double> values) {
-    return values.stream().mapToDouble(Double::doubleValue).average()
-        .orElseThrow(() -> new IllegalArgumentException("Cannot calculate maximum of empty list"));
+    return values.stream().mapToDouble(Double::doubleValue)
+        .average()
+        .orElse(0.0);
   }
 
   private static double calMedian(List<Double> values) {
@@ -229,24 +277,29 @@ public class StringExpressionEvaluator {
 
   }
 
-
+  /**
+   * Evaluates a mathematical string expression.
+   *
+   * @param strExpression The expression to evaluate.
+   * @return The computed result as a double.
+   */
   public static double eval(String strExpression) {
 
     String formattedExpression = strExpression.replaceAll("NaN",
             "0")// Replace NaN(Not A Number) with 0, so that the expression can be evaluated
         .replaceAll("\\s+",
-            "")// Removes all NBSP characters from the string (NBSP: matches one or more whitespace characters (including spaces, tabs, and newlines)
+            "")
         .replaceAll(",", "."); // Replace , to . (default double decimal separator)
 
     return new Object() {
-      int pos = -1, ch;
+      int pos = -1;
+      int ch;
 
       void nextChar() {
         ch = (++pos < formattedExpression.length()) ? formattedExpression.charAt(pos) : -1;
       }
 
       boolean eat(int charToEat) {
-        //ignore white space
         while (ch == ' ') {
           nextChar();
         }
@@ -383,6 +436,11 @@ public class StringExpressionEvaluator {
     return Math.log(logNumber) / Math.log(base);
   }
 
+  /**
+   * Main method to demonstrate the conversion of a large number without scientific notation.
+   *
+   * @param args Command-line arguments (not used).
+   */
   public static void main(String[] args) {
     System.out.println(convertToStringWithoutScientificNotation(222222222222.2222222222222));
   }

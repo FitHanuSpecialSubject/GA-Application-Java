@@ -13,6 +13,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/**
+ * Represents a Strategy with a name, properties, and a payoff value. Implements Serializable for
+ * object persistence.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -26,6 +30,7 @@ public class Strategy implements Serializable {
   private double payoff;
 
 
+  @SuppressWarnings("unused")
   private double evaluateStringExpression(String expression) {
     ScriptEngineManager mgr = new ScriptEngineManager();
     ScriptEngine engine = mgr.getEngineByName("JavaScript");
