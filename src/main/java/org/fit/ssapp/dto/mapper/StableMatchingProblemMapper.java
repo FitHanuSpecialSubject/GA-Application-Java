@@ -23,7 +23,7 @@ import org.fit.ssapp.util.EvaluatorUtils;
 public class StableMatchingProblemMapper {
 
   /**
-   * Map from request to problem
+   * Map from request to problem.
    *
    * @param dto StableMatchingProblemDto
    * @return OTOProblem
@@ -57,7 +57,7 @@ public class StableMatchingProblemMapper {
   }
 
   /**
-   * Map from request to problem
+   * Map from request to problem.
    *
    * @param request StableMatchingProblemDto
    * @return OTMProblem
@@ -86,7 +86,7 @@ public class StableMatchingProblemMapper {
   }
 
   /**
-   * Map from request to problem
+   * Map from request to problem.
    *
    * @param request StableMatchingProblemDto
    * @return MTMProblem
@@ -116,7 +116,7 @@ public class StableMatchingProblemMapper {
   }
 
   /**
-   * Map from request to problem
+   * Map from request to problem.
    *
    * @param request StableMatchingProblemDto
    * @return TripletOTOProblem

@@ -17,7 +17,7 @@ import org.fit.ssapp.ss.smt.evaluator.FitnessEvaluator;
 import org.fit.ssapp.util.EvaluatorUtils;
 
 /**
- * Compatible with Two Set Matching Problems only
+ * Compatible with Two Set Matching Problems only.
  */
 @AllArgsConstructor
 @FieldDefaults(makeFinal = true, level = lombok.AccessLevel.PRIVATE)
@@ -54,7 +54,8 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
           }
         }
         // Check for F(index) pattern
-        if (c + 3 < fitnessFunction.length() && fitnessFunction.charAt(c + 1) == '(' &&
+        if (c + 3 < fitnessFunction.length() && fitnessFunction.charAt(c + 1) == '('
+                &&
                 fitnessFunction.charAt(c + 3) == ')') {
           if (isNumericValue(fitnessFunction.charAt(c + 2))) {
             int set = Character.getNumericValue(fitnessFunction.charAt(c + 2));

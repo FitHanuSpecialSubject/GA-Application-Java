@@ -11,7 +11,7 @@ import org.fit.ssapp.ss.smt.requirement.impl.ScaleTarget;
 import org.fit.ssapp.ss.smt.requirement.impl.TwoBound;
 
 /**
- * Decoder for requirement
+ * Decoder for requirement.
  * TODO: Hơi bị thừa logic do bê từ code cũ sang
  * TODO: tối giản hóa logic map
  */
@@ -21,7 +21,7 @@ public class RequirementDecoder {
   private static final boolean DECREMENT = false;
 
   /**
-   * Decode String[][] of requirements in request to Requirement[][]
+   * Decode String[][] of requirements in request to Requirement[][].
    *
    * @param requirements string representations of requirements
    * @return Requirement[][]

@@ -23,7 +23,7 @@ import org.moeaframework.core.variable.EncodingUtils;
 import org.moeaframework.core.variable.Permutation;
 
 /**
- * OTMProblem
+ * OTMProblem.
  */
 @Slf4j
 @Getter
@@ -32,42 +32,42 @@ import org.moeaframework.core.variable.Permutation;
 public class OTMProblem implements MatchingProblem {
 
   /**
-   * problem name
+   * problem name.
    */
   final String problemName;
 
   /**
-   * problem size (number of individuals in matching problem
+   * problem size (number of individuals in matching problem).
    */
   final int problemSize;
 
   /**
-   * number of set in matching problem
+   * number of set in matching problem.
    */
   final int setNum;
 
   /**
-   * Matching data
+   * Matching data.
    */
   final MatchingData matchingData;
 
   /**
-   * preference list
+   * preference list.
    */
   final PreferenceListWrapper preferenceLists;
 
   /**
-   * problem fitness function
+   * problem fitness function.
    */
   final String fitnessFunction;
 
   /**
-   * fitness evaluator
+   * fitness evaluator.
    */
   final FitnessEvaluator fitnessEvaluator;
 
   /**
-   * will not be used
+   * will not be used.
    */
   final int UNUSED_VAL = StableMatchingConst.UNUSED_VALUE;
 
@@ -117,6 +117,8 @@ public class OTMProblem implements MatchingProblem {
   }
 
   /**
+   * hasFitnessFunc.
+   *
    * @return boolean
    */
   public boolean hasFitnessFunc() {
@@ -173,7 +175,8 @@ public class OTMProblem implements MatchingProblem {
         } else {
           Set<Integer> currentMatches = matches.getSetOf(rightNode);
           int leastPreferredNode = preferenceLists.getLeastScoreNode(
-                  UNUSED_VAL, rightNode, leftNode, currentMatches, matchingData.getCapacityOf(rightNode)
+                  UNUSED_VAL, rightNode, leftNode, currentMatches,
+                  matchingData.getCapacityOf(rightNode)
           );
           if (leastPreferredNode != -1 && preferenceLists.isPreferredOver(leftNode,
                   leastPreferredNode, rightNode)) {

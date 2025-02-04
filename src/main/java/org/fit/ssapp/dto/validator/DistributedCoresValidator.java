@@ -18,7 +18,9 @@ public class DistributedCoresValidator implements
 
   /**
    * isValid .
-   * @return boolean
+   *
+   * @return boolean.
+   *
    */
   @Override
   public boolean isValid(String value, ConstraintValidatorContext context) {

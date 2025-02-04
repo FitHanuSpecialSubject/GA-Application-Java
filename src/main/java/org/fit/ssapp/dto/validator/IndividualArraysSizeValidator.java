@@ -19,16 +19,22 @@ public class IndividualArraysSizeValidator implements
 
   /**
    * isValid .
-   * @return boolean
+   *
+   * @return boolean.
+   *
    */
   @Override
   public boolean isValid(StableMatchingProblemDto dto, ConstraintValidatorContext context) {
     int expectedCount = dto.getNumberOfIndividuals();
     return
-            dto.getIndividualSetIndices().length == expectedCount &&
-                    dto.getIndividualCapacities().length == expectedCount &&
-                    dto.getIndividualRequirements().length == expectedCount &&
-                    dto.getIndividualWeights().length == expectedCount &&
+            dto.getIndividualSetIndices().length == expectedCount
+                    &&
+                    dto.getIndividualCapacities().length == expectedCount
+                    &&
+                    dto.getIndividualRequirements().length == expectedCount
+                    &&
+                    dto.getIndividualWeights().length == expectedCount
+                    &&
                     dto.getIndividualProperties().length == expectedCount;
   }
 }

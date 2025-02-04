@@ -19,7 +19,7 @@ import org.fit.ssapp.util.PreferenceProviderUtils;
 import org.fit.ssapp.util.StringUtils;
 
 /**
- * Standard implementation of PreferenceBuilder that uses Exp4j lib
+ * Standard implementation of PreferenceBuilder that uses Exp4j lib.
  */
 @Data
 public class TwoSetPreferenceProvider implements PreferenceBuilder {
@@ -34,7 +34,7 @@ public class TwoSetPreferenceProvider implements PreferenceBuilder {
 
 
   /**
-   * initialize Exp4j mathematical Expression & variables for each set
+   * initialize Exp4j mathematical Expression & variables for each set.
    *
    * @param evaluationFunctions String[]
    * @param matchingData        MatchingData
@@ -51,11 +51,11 @@ public class TwoSetPreferenceProvider implements PreferenceBuilder {
         return;
       }
       this.variablesOfSet1 = PreferenceProviderUtils.filterVariable(evalFunctionForSet1);
-//            this.expressionOfSet1 = new ExpressionBuilder(evalFunctionForSet1)
-//                    .variables(PreferenceProviderUtils.convertMapToSet(variablesOfSet1))
-//                    .build();
+      //            this.expressionOfSet1 = new ExpressionBuilder(evalFunctionForSet1)
+      //                    .variables(PreferenceProviderUtils.convertMapToSet(variablesOfSet1))
+      //                    .build();
     }
-   this.expressionOfSet1 = null;
+    this.expressionOfSet1 = null;
 
     if (StringUtils.isEmptyOrNull(evalFunctionForSet2)) {
       this.expressionOfSet2 = null;
@@ -73,6 +73,8 @@ public class TwoSetPreferenceProvider implements PreferenceBuilder {
 
 
   /**
+   * getVariableValuesForSet1.
+   *
    * @param indexOfEvaluator int
    * @param indexOfBeEvaluated int
    * @return Map
@@ -83,6 +85,8 @@ public class TwoSetPreferenceProvider implements PreferenceBuilder {
   }
 
   /**
+   * getVariableValuesForSet2.
+   *
    * @param indexOfEvaluator int
    * @param indexOfBeEvaluated int
    * @return Map
@@ -128,6 +132,12 @@ public class TwoSetPreferenceProvider implements PreferenceBuilder {
     return variablesValues;
   }
 
+  /**
+   * getPreferenceListByFunction.
+   *
+   * @param index int
+   * @return PreferenceList
+   */
   public PreferenceList getPreferenceListByFunction(int index) {
     int set = matchingData.getSetNoOf(index);
     TwoSetPreferenceList a;
@@ -159,6 +169,12 @@ public class TwoSetPreferenceProvider implements PreferenceBuilder {
     return a;
   }
 
+  /**
+   * getPreferenceListByDefault.
+   *
+   * @param index int
+   * @return PreferenceList
+   */
   public PreferenceList getPreferenceListByDefault(int index) {
     int set = matchingData.getSetNoOf(index);
     int numberOfProperties = matchingData.getPropertyNum();

@@ -4,7 +4,7 @@ import org.fit.ssapp.constants.StableMatchingConst;
 import org.fit.ssapp.ss.smt.requirement.Requirement;
 
 /**
- * ScaleTarget
+ * ScaleTarget.
  */
 public record ScaleTarget(int targetValue) implements Requirement {
 

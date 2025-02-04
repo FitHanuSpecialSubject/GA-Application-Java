@@ -21,7 +21,7 @@ public class TwoSetPreferenceList implements PreferenceList {
   private final int padding;
 
   /**
-   * TwoSetPreferenceList
+   * TwoSetPreferenceList.
    *
    * @param size    int
    * @param padding int
@@ -47,7 +47,10 @@ public class TwoSetPreferenceList implements PreferenceList {
 
 
   /**
+   * add.
+   *
    * @param score score of the respective competitor
+   *
    *              <p>
    *              this method registers new competitor instance to the preference list
    */
@@ -57,6 +60,13 @@ public class TwoSetPreferenceList implements PreferenceList {
     this.current++;
   }
 
+  /**
+   * add.
+   *
+   * @param set int
+   * @param newNode int
+   * @param currentNodes Set
+   */
   public int getLeastNode(int set, int newNode, Set<Integer> currentNodes) {
     int leastNode = newNode - this.padding;
     for (int currentNode : currentNodes) {
@@ -76,7 +86,13 @@ public class TwoSetPreferenceList implements PreferenceList {
     }
   }
 
-
+  /**
+   * isScoreGreater.
+   *
+   * @param set int
+   * @param node int
+   * @param nodeToCompare int
+   */
   public boolean isScoreGreater(int set, int node, int nodeToCompare) {
     return this.scores[node - this.padding] > this.scores[nodeToCompare - this.padding];
   }
@@ -86,7 +102,7 @@ public class TwoSetPreferenceList implements PreferenceList {
    *
    * @param rank position (rank best <-- 0, 1, 2, 3, ... --> worst) on the preference list
    * @return unique identifier of the competitor instance that holds the respective position on the
-   * list
+   * list.
    */
   public int getPositionByRank(int set, int rank) throws ArrayIndexOutOfBoundsException {
     try {
@@ -97,20 +113,25 @@ public class TwoSetPreferenceList implements PreferenceList {
     }
   }
 
+  /**
+   * getLastOption.
+   *
+   * @param set int
+   */
   public int getLastOption(int set) {
     return this.getPositionByRank(set, this.positions.length - 1);
   }
 
 
   /**
-   *
+   *sort.
    */
   public void sort() {
     sortDescendingByScores();
   }
 
   /**
-   *
+   *sortDescendingByScores.
    */
   public void sortDescendingByScores() {
     double[] cloneScores = scores.clone(); //copy to new array
@@ -193,6 +214,11 @@ public class TwoSetPreferenceList implements PreferenceList {
     return result.toString();
   }
 
+  /**
+   * getScore.
+   *
+   * @param position int
+   */
   public double getScore(int position) {
     try {
       return scores[position - this.padding];

@@ -20,7 +20,10 @@ public @interface ValidIndividualArraysSize {
    *
    * @return default message.
    */
-  String message() default "Individual arrays' size count (individualSetIndices, individualCapacities, individualRequirements, individualWeights, individualProperties) mismatch with number of individuals";
+  String message() default "Individual arrays' size count "
+          + "(individualSetIndices, individualCapacities, "
+          + "individualRequirements, individualWeights, individualProperties) "
+          + "mismatch with number of individuals";
 
   /**
    * groups .

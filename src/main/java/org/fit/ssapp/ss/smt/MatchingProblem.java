@@ -4,30 +4,31 @@ import org.moeaframework.core.Problem;
 import org.moeaframework.core.Variable;
 
 /**
- * base class for MatchingProblem
+ * base class for MatchingProblem.
  */
 public interface MatchingProblem extends Problem {
 
   /**
-   * Get problem name
+   * Get problem name.
    */
   String getName();
 
   /**
-   * Get Matching type name
+   * Get Matching type name.
+   *
    * @return String
    */
   String getMatchingTypeName();
 
   /**
-   * Get problem's matching data
+   * Get problem's matching data.
    *
    * @return matching data
    */
   MatchingData getMatchingData();
 
   /**
-   * Main matching logic for Stable Matching Problem Types
+   * Main matching logic for Stable Matching Problem Types.
    *
    * @param var Variable
    * @return Matches
@@ -35,7 +36,7 @@ public interface MatchingProblem extends Problem {
   Matches stableMatching(Variable var);
 
   /**
-   * Get all satisfactions of matches result
+   * Get all satisfactions of matches result.
    *
    * @param matches Matches
    * @return satisfactions

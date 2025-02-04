@@ -20,7 +20,9 @@ public @interface ValidIndividualArrayPropertyCount {
    *
    * @return default message.
    */
-  String message() default "Individual array property count (requirements, weights, properties) mismatch with number of property";
+  String message() default
+          "Individual array property count (requirements, weights, properties) "
+                  + "mismatch with number of property";
 
   /**
    * groups .

@@ -8,7 +8,7 @@ import org.fit.ssapp.dto.response.ComputerSpecs;
 import org.fit.ssapp.ss.smt.Matches;
 
 /**
- *
+ *MatchingSolution.
  */
 @Data
 @NoArgsConstructor

@@ -10,58 +10,65 @@ import lombok.Setter;
 import org.fit.ssapp.ss.smt.requirement.Requirement;
 
 /**
- * Matching Data
+ * Matching Data.
  */
 @Getter
 public class MatchingData {
 
   /**
-   * number of individuals
+   * number of individuals.
    */
   private final int size;
 
   /**
-   * number of properties
+   * number of properties.
    */
   private final int propertyNum;
 
   /**
-   * individual set
+   * individual set.
    */
   private final int[] sets;
 
   /**
-   * individual capacities
+   * individual capacities.
    */
   private final int[] capacities;
 
   /**
-   * total individual foreach set
+   * total individual foreach set.
    */
   private final Map<Integer, Integer> setNums;
 
   /**
-   * exclude/ conflict pairs, solution will be considered as NOT GOOD if Matches it produces
-   * contains one of the excludedPairs
+   * exclude/ conflict pairs, solution will be considered as NOT GOOD if Matches it produces,
+   * contains one of the excludedPairs.
    */
   @Setter
   int[][] excludedPairs;
 
   /**
-   * characteristic data
+   * characteristic data.
    */
   private final double[][] propertyValues;
   private final double[][] weights;
   private final Requirement[][] requirements;
 
   /**
-   * MatchingData constructor
+   * MatchingData constructor.
+   *
    * @param size int
+   *
    * @param propertyNum int
+   *
    * @param sets int[]
+   *
    * @param capacities int[]
+   *
    * @param propertyValues double[][]
+   *
    * @param weights double[][]
+   *
    * @param requirements requirement
    */
   public MatchingData(int size,
@@ -88,8 +95,8 @@ public class MatchingData {
   }
 
   /**
-   * get number of set in this MatchingData's Problem <br/> example: one-to-many (two set) -> return
-   * 2
+   * get number of set in this MatchingData's Problem <br/> example: one-to-many (two set)
+   * -> return 2.
    *
    * @return number of set
    */
@@ -98,7 +105,7 @@ public class MatchingData {
   }
 
   /**
-   * get set no of individual at idx
+   * get set no of individual at idx.
    *
    * @param idx idx
    * @return set
@@ -108,7 +115,7 @@ public class MatchingData {
   }
 
   /**
-   * get total of individual inside a given set
+   * get total of individual inside a given set.
    *
    * @param setNo set
    * @return total
@@ -118,7 +125,7 @@ public class MatchingData {
   }
 
   /**
-   * get capacity of individual
+   * get capacity of individual.
    *
    * @param idx position of individual
    * @return capacity
@@ -128,7 +135,7 @@ public class MatchingData {
   }
 
   /**
-   * get property value
+   * get property value.
    *
    * @param idx             position of individual
    * @param indexOfProperty position of property
@@ -139,7 +146,7 @@ public class MatchingData {
   }
 
   /**
-   * get property weight (importance) (inside [0, 10])
+   * get property weight (importance) (inside [0, 10]).
    *
    * @param idx             position of individual
    * @param indexOfProperty position of property
@@ -150,7 +157,7 @@ public class MatchingData {
   }
 
   /**
-   * get property Requirement
+   * get property Requirement.
    *
    * @param idx             position of individual
    * @param indexOfProperty position of property
@@ -161,7 +168,7 @@ public class MatchingData {
   }
 
   /**
-   * to String Builder
+   * to String Builder.
    *
    * @return StringBuilder
    */
@@ -209,6 +216,11 @@ public class MatchingData {
     return sb;
   }
 
+  /**
+   * to String .
+   *
+   * @return toString
+   */
   public String toString() {
     return this.toStringBuilder().toString();
   }

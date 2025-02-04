@@ -17,7 +17,7 @@ import org.fit.ssapp.ss.smt.requirement.Requirement;
 import org.fit.ssapp.util.PreferenceProviderUtils;
 
 /**
- * TripletPreferenceProvider
+ * TripletPreferenceProvider.
  */
 public class TripletPreferenceProvider implements PreferenceBuilder {
 
@@ -31,7 +31,7 @@ public class TripletPreferenceProvider implements PreferenceBuilder {
   private final Map<Integer, Map<String, Set<Integer>>> variables;
 
   /**
-   * TripletPreferenceProvider
+   * TripletPreferenceProvider.
    *
    * @param individuals    MatchingData
    * @param evaluationFunctions String[]
@@ -92,7 +92,8 @@ public class TripletPreferenceProvider implements PreferenceBuilder {
           int setSize = setSizes.get(otherSet);
 
           // tạo scores và position tạm thời cho 1 set cụ thể để sort
-          // ví dụ hiện tại Node 1 từ set 0 và cần tạo prefer líst đối với set 1 2 thì cần sort từng set trước khi thêm vào preferLíst
+          // ví dụ hiện tại Node 1 từ set 0 và cần tạo prefer líst đối với set 1 2
+          // thì cần sort từng set trước khi thêm vào preferLíst
           double[] tempScores = new double[setSize];
           int[] tempPositions = new int[setSize];
 
@@ -175,6 +176,8 @@ public class TripletPreferenceProvider implements PreferenceBuilder {
   }
 
   /**
+   * getVariableValuesForSet.
+   *
    * @param set int
    * @param indexOfEvaluator int
    * @param indexOfBeEvaluated int

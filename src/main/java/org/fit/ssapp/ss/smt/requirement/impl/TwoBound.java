@@ -6,7 +6,7 @@ import org.fit.ssapp.constants.StableMatchingConst;
 import org.fit.ssapp.ss.smt.requirement.Requirement;
 
 /**
- * TwoBound
+ * TwoBound.
  */
 public record TwoBound(double lowerBound, double upperBound) implements Requirement {
 
@@ -22,7 +22,8 @@ public record TwoBound(double lowerBound, double upperBound) implements Requirem
 
   @Override
   public double getDefaultScaling(double propertyValue) {
-    if (propertyValue < lowerBound || propertyValue > upperBound ||
+    if (propertyValue < lowerBound || propertyValue > upperBound
+            ||
             lowerBound == upperBound) {
       return 0.0;
     } else {
@@ -32,6 +33,9 @@ public record TwoBound(double lowerBound, double upperBound) implements Requirem
     }
   }
 
+  /**
+   * toString .
+   */
   public String toString() {
     return "[" + formatDouble(lowerBound) + ", " + formatDouble(upperBound) + "]";
   }

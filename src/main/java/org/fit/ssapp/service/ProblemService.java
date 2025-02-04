@@ -10,7 +10,7 @@ import org.springframework.http.ResponseEntity;
 public interface ProblemService {
 
   /**
-   * solve
+   * solve.
    *
    * @param problem StableMatchingProblemDto
    * @return ResponseEntity
@@ -18,7 +18,7 @@ public interface ProblemService {
   ResponseEntity<Response> solve(StableMatchingProblemDto problem);
 
   /**
-   * getInsights
+   * getInsights.
    *
    * @param problem     StableMatchingProblemDto
    * @param sessionCode String

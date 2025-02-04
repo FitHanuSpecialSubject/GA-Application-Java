@@ -42,6 +42,9 @@ public class TripletMatchingService {
   private final SimpMessagingTemplate simpMessagingTemplate;
 
   /**
+   * solve.
+   *
+   *
    * @param request StableMatchingProblemDto
    * @return ResponseEntity
    */
@@ -175,6 +178,9 @@ public class TripletMatchingService {
   }
 
   /**
+   * getInsights.
+   *
+   *
    * @param request     StableMatchingProblemDto
    * @param sessionCode String
    * @return ResponseEntity
@@ -193,8 +199,9 @@ public class TripletMatchingService {
 
     int runCount = 1;
     int maxRunCount = algorithms.length * RUN_COUNT_PER_ALGORITHM;
-    // solve the problem with different algorithms and then evaluate the performance of the algorithms
-//        log.info("Start benchmarking the algorithms...");
+    // solve the problem with different algorithms
+    // and then evaluate the performance of the algorithms
+    //        log.info("Start benchmarking the algorithms...");
     simpMessagingTemplate.convertAndSendToUser(sessionCode,
             "/progress",
             createProgressMessage("Start benchmarking the algorithms..."));
@@ -218,8 +225,8 @@ public class TripletMatchingService {
 
         // send the progress to the client
         String message =
-                "Algorithm " + algorithm + " finished iteration: #" + (i + 1) + "/" +
-                        RUN_COUNT_PER_ALGORITHM;
+                "Algorithm " + algorithm + " finished iteration: #" + (i + 1) + "/"
+                        + RUN_COUNT_PER_ALGORITHM;
         Progress progress = createProgress(message, runtime, runCount, maxRunCount);
         System.out.println(progress);
         simpMessagingTemplate.convertAndSendToUser(sessionCode, "/progress", progress);
@@ -264,7 +271,8 @@ public class TripletMatchingService {
     return Progress
             .builder()
             .inProgress(
-                    false) // this object is just to send a message to the client, not to show the progress
+                    false)
+            // this object is just to send a message to the client, not to show the progress
             .message(message)
             .build();
   }

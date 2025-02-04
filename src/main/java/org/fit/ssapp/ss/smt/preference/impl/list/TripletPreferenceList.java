@@ -7,7 +7,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.fit.ssapp.ss.smt.preference.PreferenceList;
 /**
- * TripletPreferenceList
+ * TripletPreferenceList.
  */
 @Slf4j
 @Data
@@ -22,7 +22,7 @@ public class TripletPreferenceList implements PreferenceList {
   int padding; // Used for index adjustments.
 
   /**
-   * TripletPreferenceList
+   * TripletPreferenceList.
    *
    * @param size    int
    * @param padding int
@@ -80,7 +80,7 @@ public class TripletPreferenceList implements PreferenceList {
   }
 
   /**
-   * addArray
+   * addArray.
    *
    * @param scoreTMP    double[]
    * @param positionTMP int[]

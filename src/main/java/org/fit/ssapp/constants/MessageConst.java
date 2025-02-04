@@ -31,27 +31,27 @@ public class MessageConst {
      */
     String MES_005 = "Must be greater than 1";
     /**
-     * validate array individual size
+     * validate array individual size.
      */
     String INVALID_ARR_SIZE = "The array's length doesn't match the number of individuals";
     /**
-     * validate problem name
+     * validate problem name.
      */
     String PROBLEM_NAME = "The problemName should only has 255 characters";
     /**
-     * validate population size
+     * validate population size.
      */
     String POPULATION_SIZE = "The populationSize should be less than 1000";
     /**
-     * validate generation
+     * validate generation.
      */
     String GENERATION = "The generation value should be less than 100";
     /**
-     * validate blank input
+     * validate blank input.
      */
     String NOT_BLANK = "must not be empty";
     /**
-     * validate evaluate function
+     * validate evaluate function.
      */
     String EVAL_FN_NUM = "The number of evaluateFunctions should be at least 2";
   }
@@ -61,27 +61,27 @@ public class MessageConst {
    */
   public interface ErrCode {
     /**
-     * NOT_EMPTY error
+     * NOT_EMPTY error.
      */
     String NOT_EMPTY = "NotEmpty";
     /**
-     * MIN_VALUE error
+     * MIN_VALUE error.
      */
     String MIN_VALUE = "MinValue";
     /**
-     * MAX_VALUE error
+     * MAX_VALUE error.
      */
     String MAX_VALUE = "MaxValue";
     /**
-     * INVALID_FUNCTION error
+     * INVALID_FUNCTION error.
      */
     String INVALID_FUNCTION = "InvalidFunction";
     /**
-     * INVALID_SIZE error
+     * INVALID_SIZE error.
      */
     String INVALID_SIZE = "InvalidSize";
     /**
-     * INVALID_LENGTH error
+     * INVALID_LENGTH error.
      */
     String INVALID_LENGTH = "InvalidLength";
   }

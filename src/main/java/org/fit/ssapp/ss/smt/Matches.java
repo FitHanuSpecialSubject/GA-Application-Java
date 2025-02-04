@@ -13,24 +13,28 @@ import lombok.experimental.FieldDefaults;
 
 /**
  * Data Structure for result of StableMatchingExtra algorithm Matches = {Match1, Match2, Match3,
- * ...} Match can be an Object of "Pair" or "MatchSet" Class, both Implement "MatchItem" Interface
+ * ...} Match can be an Object of "Pair" or "MatchSet" Class, both Implement "MatchItem" Interface.
  */
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Matches implements Serializable {
 
   /**
-   * size of Matches
+   * size of Matches.
    */
   final int size;
 
   /**
-   * matches data
+   * matches data.
    */
   final TreeSet<Integer>[] matches;
 
   /**
-   * @param size int
+   * Matches.
+   *
+   *
+   * @param size int.
+   *
    */
   @SuppressWarnings("unchecked")
   public Matches(int size) {
@@ -42,17 +46,19 @@ public class Matches implements Serializable {
   }
 
   /**
-   * get matched individual(s) of targetIndividual
+   * get matched individual(s) of targetIndividual.
    *
    * @param targetIndividual int
+   *
    * @return matched individual(s)
+   *
    */
   public Set<Integer> getSetOf(int targetIndividual) {
     return matches[targetIndividual];
   }
 
   /**
-   * as name
+   * as name.
    *
    * @return int
    */
@@ -61,32 +67,40 @@ public class Matches implements Serializable {
   }
 
   /**
-   * check if node is matched with other node(s)
+   * check if node is matched with other node(s).
    *
    * @param node to check
+   *
    * @return as title true
+   *
    */
   public boolean isMatched(int node) {
     return !matches[node].isEmpty();
   }
 
   /**
-   * check if two nodes is matched
+   * check if two nodes is matched.
    *
    * @param node1 node1
+   *
    * @param node2 node2
+   *
    * @return as title true
+   *
    */
   public boolean isMatched(int node1, int node2) {
     return matches[node1].contains(node2) || matches[node2].contains(node1);
   }
 
   /**
-   * check if node number of connections reach its capacity
+   * check if node number of connections reach its capacity.
    *
    * @param targetNode         node to check
+   *
    * @param targetNodeCapacity node cap
+   *
    * @return as title true
+   *
    */
   public boolean isFull(int targetNode, int targetNodeCapacity) {
     int currentSize = this.getSetOf(targetNode).size();
@@ -94,20 +108,24 @@ public class Matches implements Serializable {
   }
 
   /**
-   * add match
+   * add match.
    *
    * @param node      as name
+   *
    * @param nodeToAdd as name
+   *
    */
   public void addMatch(int node, int nodeToAdd) {
     matches[node].add(nodeToAdd);
   }
 
   /**
-   * add match bidirectionally
+   * add match bidirectionally.
    *
    * @param node1 index of node1
+   *
    * @param node2 index of node2
+   *
    */
   public void addMatchBi(int node1, int node2) {
     matches[node1].add(node2);
@@ -115,10 +133,12 @@ public class Matches implements Serializable {
   }
 
   /**
-   * remove match bidirectionally
+   * remove match bidirectionally.
    *
    * @param node1 index of node1
+   *
    * @param node2 index of node2
+   *
    */
   public void removeMatchBi(int node1, int node2) {
     matches[node1].remove(node2);
@@ -127,7 +147,7 @@ public class Matches implements Serializable {
 
 
   /**
-   * as name
+   * as name.
    *
    * @return StringBuilder
    */
@@ -145,7 +165,11 @@ public class Matches implements Serializable {
   }
 
   /**
-   * @return Set
+   * getLeftOvers.
+   *
+   *
+   * @return Set.
+   *
    */
   public Set<Integer> getLeftOvers() {
     ArrayList<Integer> leftOvers = new ArrayList<>();
@@ -160,7 +184,7 @@ public class Matches implements Serializable {
   }
 
   /**
-   * as name
+   * as name.
    *
    * @return String
    */
@@ -171,14 +195,18 @@ public class Matches implements Serializable {
 
 
   /**
-   * @return matches
+   * getAllMatches.
+   *
+   *
+   * @return matches.
+   *
    */
   public TreeSet<Integer>[] getAllMatches() {
     return matches;
   }
 
   /**
-   * add all nodes that is matched in each turn
+   * add all nodes that is matched in each turn.
    *
    * @param nodes are all individual to match
    */
@@ -195,10 +223,12 @@ public class Matches implements Serializable {
   }
 
   /**
-   * get matches of target node
+   * get matches of target node.
    *
    * @param target the individual to get its matched group
+   *
    * @return the collection includes target with its matched group
+   *
    */
   public Collection<Integer> getMatchesAndTarget(int target) {
     Collection<Integer> nodesToRemove = new HashSet<>();
@@ -208,10 +238,12 @@ public class Matches implements Serializable {
   }
 
   /**
-   * remove target node from a collection of nodes that was matched with target
+   * remove target node from a collection of nodes that was matched with target.
    *
    * @param target that are about to be unmatched
+   *
    * @param nodeToRemove are individuals in the match group with target
+   *
    */
   public void disMatch(int target, Collection<Integer> nodeToRemove) {
     matches[target].removeAll(nodeToRemove);

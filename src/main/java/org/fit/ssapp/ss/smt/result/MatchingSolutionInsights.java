@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 import org.fit.ssapp.dto.response.ComputerSpecs;
 
 /**
- *
+ *MatchingSolutionInsights.
  */
 @Data
 @NoArgsConstructor

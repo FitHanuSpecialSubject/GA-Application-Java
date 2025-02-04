@@ -8,17 +8,20 @@ import org.fit.ssapp.ss.smt.Matches;
 import org.fit.ssapp.ss.smt.MatchingData;
 
 /**
- * Wrapper class provides methods to interact with big list of preference list
+ * Wrapper class provides methods to interact with big list of preference list.
  */
 public class PreferenceListWrapper {
 
   /**
-   * preference lists
+   * preference lists.
    */
   private final List<PreferenceList> lists;
 
 
   /**
+   * PreferenceListWrapper.
+   *
+   *
    * @param lists List
    */
   public PreferenceListWrapper(List<PreferenceList> lists) {
@@ -26,7 +29,7 @@ public class PreferenceListWrapper {
   }
 
   /**
-   * Get the weakest student
+   * Get the weakest student.
    *
    * @param set                the group (group 1, group 2, group 3, ...)
    * @param preferNode         the evaluator (the one grading)
@@ -60,7 +63,7 @@ public class PreferenceListWrapper {
   }
 
   /**
-   * get preference list
+   * get preference list.
    *
    * @param idx position of individual
    * @return Preference list
@@ -70,7 +73,7 @@ public class PreferenceListWrapper {
   }
 
   /**
-   * Stable Matching Algorithm Component: isPreferredOver
+   * Stable Matching Algorithm Component: isPreferredOver.
    *
    * @param proposeNode           int
    * @param preferNodeCurrentNode int
@@ -85,7 +88,7 @@ public class PreferenceListWrapper {
   }
 
   /**
-   * Get the grade point of class, get all satisfaction based on matches
+   * Get the grade point of class, get all satisfaction based on matches.
    *
    * @param matches      matching result
    * @param matchingData MatchingData
@@ -108,7 +111,7 @@ public class PreferenceListWrapper {
   }
 
   /**
-   * get last option of target
+   * get last option of target.
    *
    * @param set    int
    * @param target position of individual

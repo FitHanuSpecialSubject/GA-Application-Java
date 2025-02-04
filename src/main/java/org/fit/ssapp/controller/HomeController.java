@@ -65,13 +65,13 @@ public class HomeController {
     return CompletableFuture.completedFuture(stableMatchingSolver.solve(object));
   }
 
-//  @Async("taskExecutor")
-//  @PostMapping("/stable-matching-oto-solver")
-//  public CompletableFuture<ResponseEntity<Response>> solveStableMatchingOTO(
-//  @RequestBody StableMatchingProblemDto object) {
-//      return CompletableFuture
-//      .completedFuture(stableMatchingSolver.solveStableMatchingOTO(object));
-//      }
+  //  @Async("taskExecutor")
+  //  @PostMapping("/stable-matching-oto-solver")
+  //  public CompletableFuture<ResponseEntity<Response>> solveStableMatchingOTO(
+  //  @RequestBody StableMatchingProblemDto object) {
+  //      return CompletableFuture
+  //      .completedFuture(stableMatchingSolver.solveStableMatchingOTO(object));
+  //      }
 
   /**
    * Solve OTM matching problem.

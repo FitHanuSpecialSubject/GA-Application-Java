@@ -28,9 +28,11 @@ public class IndividualArrayPropertyCountValidator implements
     int expectedPropertyCount = dto.getNumberOfProperty();
 
     return Arrays.stream(dto.getIndividualRequirements())
-            .allMatch(row -> row.length == expectedPropertyCount) &&
+            .allMatch(row -> row.length == expectedPropertyCount)
+            &&
             Arrays.stream(dto.getIndividualWeights())
-                    .allMatch(row -> row.length == expectedPropertyCount) &&
+                    .allMatch(row -> row.length == expectedPropertyCount)
+            &&
             Arrays.stream(dto.getIndividualProperties())
                     .allMatch(row -> row.length == expectedPropertyCount);
   }

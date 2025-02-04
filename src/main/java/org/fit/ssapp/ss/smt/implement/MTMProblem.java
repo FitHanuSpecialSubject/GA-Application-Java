@@ -22,7 +22,7 @@ import org.moeaframework.core.variable.EncodingUtils;
 import org.moeaframework.core.variable.Permutation;
 
 /**
- * OTMProblem
+ * OTMProblem.
  */
 @Slf4j
 @Getter
@@ -31,48 +31,48 @@ import org.moeaframework.core.variable.Permutation;
 public class MTMProblem implements MatchingProblem {
 
   /**
-   * problem name
+   * problem name.
    */
   final String problemName;
 
   /**
-   * problem size (number of individuals in matching problem
+   * problem size (number of individuals in matching problem.
    */
   final int problemSize;
 
   /**
-   * number of set in matching problem
+   * number of set in matching problem.
    */
   final int setNum;
 
   /**
-   * Matching data
+   * Matching data.
    */
   final MatchingData matchingData;
 
   /**
-   * preference list
+   * preference list.
    */
   final PreferenceListWrapper preferenceLists;
 
   /**
-   * problem fitness function
+   * problem fitness function.
    */
   final String fitnessFunction;
 
   /**
-   * fitness evaluator
+   * fitness evaluator.
    */
   final FitnessEvaluator fitnessEvaluator;
 
   /**
-   * will not be used
+   * will not be used.
    */
   final int UNUSED_VAL = StableMatchingConst.UNUSED_VALUE;
 
 
   /**
-   * generate new solution
+   * generate new solution.
    *
    * @return Solution contains Variable(s)
    */
@@ -85,7 +85,7 @@ public class MTMProblem implements MatchingProblem {
   }
 
   /**
-   * evaluate function for matching problem
+   * evaluate function for matching problem.
    *
    * @param solution Solution contains Variable(s)
    */
@@ -116,7 +116,7 @@ public class MTMProblem implements MatchingProblem {
 
 
   /**
-   * check exists fitness function
+   * check exists fitness function.
    *
    * @return true if exists
    */
@@ -124,12 +124,17 @@ public class MTMProblem implements MatchingProblem {
     return !StringUtils.isEmptyOrNull(this.fitnessFunction);
   }
 
+  /**
+   * calculate matches satisfaction.
+   *
+   * @return double[]
+   */
   public double[] getMatchesSatisfactions(Matches matches) {
     return this.preferenceLists.getMatchesSatisfactions(matches, matchingData);
   }
 
   /**
-   * stableMatching
+   * stableMatching.
    *
    * @return Matches
    */

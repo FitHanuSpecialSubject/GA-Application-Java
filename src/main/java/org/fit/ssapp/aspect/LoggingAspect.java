@@ -8,7 +8,7 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.stereotype.Component;
 
 /**
- * LoggingAspect
+ * LoggingAspect.
  */
 @Aspect
 @Component
@@ -16,10 +16,14 @@ import org.springframework.stereotype.Component;
 public class LoggingAspect {
 
   /**
-   * logAroundGameTheorySolver
-   * @param joinPoint ?
+   * logAroundGameTheorySolver.
+   *
+   * @param joinPoint is.
+   *
    * @return Object
+   *
    * @throws Throwable error
+   *
    */
   @Around("gameTheorySolver()")
   public Object logAroundGameTheorySolver(ProceedingJoinPoint joinPoint) throws Throwable {
@@ -38,11 +42,14 @@ public class LoggingAspect {
 
 
   /**
-   * logAroundStableMatchingSolver
+   * logAroundStableMatchingSolver.
    *
    * @param joinPoint ?
+   *
    * @return Object
+   *
    * @throws Throwable error
+   *
    */
   @Around("stableMatchingSolver()")
   public Object logAroundStableMatchingSolver(ProceedingJoinPoint joinPoint) throws Throwable {

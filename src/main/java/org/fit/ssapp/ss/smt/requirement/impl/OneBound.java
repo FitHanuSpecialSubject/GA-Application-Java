@@ -8,7 +8,7 @@ import org.fit.ssapp.constants.StableMatchingConst;
 import org.fit.ssapp.ss.smt.requirement.Requirement;
 
 /**
- * OneBound
+ * OneBound.
  */
 @Getter
 public class OneBound implements Requirement {
@@ -20,8 +20,12 @@ public class OneBound implements Requirement {
   private final boolean DECREASING = false;
 
   /**
+   * OneBound.
+   *
    * @param bound double
+   *
    * @param expression boolean
+   *
    */
   public OneBound(double bound, boolean expression) {
     this.bound = bound;
@@ -29,7 +33,7 @@ public class OneBound implements Requirement {
   }
 
   /**
-   * Expression (increasing/ decreasing) to String
+   * Expression (increasing/ decreasing) to String.
    *
    * @return String
    */
@@ -72,6 +76,11 @@ public class OneBound implements Requirement {
     }
   }
 
+  /**
+   * to String.
+   *
+   * @return String
+   */
   public String toString() {
     return "[" + formatDouble(bound) + ", " + expressionToString(expression) + "]";
   }
