@@ -41,24 +41,29 @@ public class StableMatchingService implements ProblemService {
   private static final int RUN_COUNT_PER_ALGORITHM = 10;
   private final SimpMessagingTemplate simpMessagingTemplate;
 
+  /**
+   * solve.
+   *
+   * @param request StableMatchingProblemDto
+   */
   public ResponseEntity<Response> solve(StableMatchingProblemDto request) {
 
     try {
       log.info("Validating StableMatchingProblemDto Request ...");
 
       MatchingProblem problem = StableMatchingProblemMapper.toMTM(request);
-//            Unsafe unsafe;
-//            try {
-//                Field field = Unsafe.class.getDeclaredField("theUnsafe");
-//                field.setAccessible(true);
-//                unsafe = (Unsafe) field.get(null);
-//            } catch (Exception e) {
-//                throw new AssertionError(e);
-//            }
-//            long requestAddress = getAddress(unsafe, request.getIndividualCapacities());
-//            long problemAddress = getAddress(unsafe, problem.getMatchingData().getCapacities());
-//            log.info("req cap {}, pro cap {}, equality {}", requestAddress, problemAddress,
-//                    Objects.equals(requestAddress, problemAddress));
+      //            Unsafe unsafe;
+      //            try {
+      //                Field field = Unsafe.class.getDeclaredField("theUnsafe");
+      //                field.setAccessible(true);
+      //                unsafe = (Unsafe) field.get(null);
+      //            } catch (Exception e) {
+      //                throw new AssertionError(e);
+      //            }
+      //            long requestAddress = getAddress(unsafe, request.getIndividualCapacities());
+      //            long problemAddress = getAddress(unsafe, problem.getMatchingData().getCapacities());
+      //            log.info("req cap {}, pro cap {}, equality {}", requestAddress, problemAddress,
+      //            Objects.equals(requestAddress, problemAddress));
       log.info("Start solving: {}, problem name: {}, problem size: {}",
               problem.getMatchingTypeName(),
               problem.getName(),
@@ -82,9 +87,9 @@ public class StableMatchingService implements ProblemService {
                         .data(null)
                         .build());
       }
-//            Testing tester = new Testing((Matches) results.get(0).getAttribute("matches"),
-//                    problem.getMatchingData().getSize(), problem.getMatchingData().getCapacities());
-//            System.out.println("[Testing] Solution has duplicate: " + tester.hasDuplicate());
+      //            Testing tester = new Testing((Matches) results.get(0).getAttribute("matches"),
+      //            problem.getMatchingData().getSize(), problem.getMatchingData().getCapacities());
+      //            System.out.println("[Testing] Solution has duplicate: " + tester.hasDuplicate())
       long endTime = System.currentTimeMillis();
 
       double runtime = ((double) (endTime - startTime) / 1000);
@@ -140,11 +145,11 @@ public class StableMatchingService implements ProblemService {
     return matchingSolution;
   }
 
-//    private static long getAddress(Unsafe unsafe, Object obj) {
-//        Object[] array = new Object[]{obj};
-//        long baseOffset = unsafe.arrayBaseOffset(Object[].class);
-//        return unsafe.getLong(array, baseOffset);
-//    }
+  //    private static long getAddress(Unsafe unsafe, Object obj) {
+  //        Object[] array = new Object[]{obj};
+  //        long baseOffset = unsafe.arrayBaseOffset(Object[].class);
+  //        return unsafe.getLong(array, baseOffset);
+  //    }
 
 
   private NondominatedPopulation solveProblem(Problem problem,
@@ -193,6 +198,12 @@ public class StableMatchingService implements ProblemService {
     }
   }
 
+  /**
+   * getInsights.
+   *
+   * @param request StableMatchingProblemDto
+   * @param sessionCode string
+   */
   public ResponseEntity<Response> getInsights(StableMatchingProblemDto request,
                                               String sessionCode) {
     String[] algorithms = StableMatchingConst.ALLOWED_INSIGHT_ALGORITHMS;
@@ -207,8 +218,9 @@ public class StableMatchingService implements ProblemService {
 
     int runCount = 1;
     int maxRunCount = algorithms.length * RUN_COUNT_PER_ALGORITHM;
-    // solve the problem with different algorithms and then evaluate the performance of the algorithms
-//        log.info("Start benchmarking the algorithms...");
+    // solve the problem with different algorithms and then evaluate the performance
+    // of the algorithms
+    //        log.info("Start benchmarking the algorithms...");
     simpMessagingTemplate.convertAndSendToUser(sessionCode,
             "/progress",
             createProgressMessage("Start benchmarking the algorithms..."));
@@ -232,8 +244,8 @@ public class StableMatchingService implements ProblemService {
 
         // send the progress to the client
         String message =
-                "Algorithm " + algorithm + " finished iteration: #" + (i + 1) + "/" +
-                        RUN_COUNT_PER_ALGORITHM;
+                "Algorithm " + algorithm + " finished iteration: #" + (i + 1) + "/"
+                        + RUN_COUNT_PER_ALGORITHM;
         Progress progress = createProgress(message, runtime, runCount, maxRunCount);
         System.out.println(progress);
         simpMessagingTemplate.convertAndSendToUser(sessionCode, "/progress", progress);
@@ -279,7 +291,8 @@ public class StableMatchingService implements ProblemService {
     return Progress
             .builder()
             .inProgress(
-                    false) // this object is just to send a message to the client, not to show the progress
+                    false)
+            // this object is just to send a message to the client, not to show the progress
             .message(message)
             .build();
   }

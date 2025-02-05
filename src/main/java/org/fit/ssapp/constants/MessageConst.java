@@ -17,7 +17,8 @@ public class MessageConst {
     /**
      * validate number of individualNumber.
      */
-    String MES_002 = "The number of individuals (or corresponding elements that related to the number of individuals) should be at least 3";
+    String MES_002 = "The number of individuals (or corresponding elements that related to the number of individuals) "
+            + "should be at least 3";
     /**
      * validate number of property.
      */

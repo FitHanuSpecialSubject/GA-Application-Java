@@ -14,7 +14,8 @@ import org.fit.ssapp.ss.smt.preference.PreferenceList;
 @FieldDefaults(level = AccessLevel.PROTECTED)
 public class TripletPreferenceList implements PreferenceList {
 
-  // Scores are the preferences or priorities for the matching (either from provider or consumer perspective).
+  // Scores are the preferences or priorities for the matching
+  // (either from provider or consumer perspective).
   final double[] scores;
   // The positions correspond to the IDs of the individuals (either providers or consumers).
   final int[] positions;

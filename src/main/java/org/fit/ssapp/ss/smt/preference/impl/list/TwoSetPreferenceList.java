@@ -51,8 +51,8 @@ public class TwoSetPreferenceList implements PreferenceList {
    *
    * @param score score of the respective competitor
    *
-   *              <p>
-   *              this method registers new competitor instance to the preference list
+   *<p>this method registers new competitor instance to the preference list
+   *
    */
   public void add(double score) {
     this.scores[current] = score;
