@@ -266,7 +266,7 @@ $$
 
 Substituting the values from the tables:
 
-$$= 12 - - (12) * 12 + 13(13) * 13 + 18 \cdot 100(18) * 23$$
+
 This simplifies to:
 
 $$
