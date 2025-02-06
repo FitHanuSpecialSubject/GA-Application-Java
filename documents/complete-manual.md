@@ -206,9 +206,9 @@ $$P_A(B) = \sum_{i=1}^{N} R_i(P_i) \times W_i$$
 Where:
 
 - $N$ is the number of properties of an individual
-- $R_i$ is the requirement function for property $ i $ of A
-- $W_i$ is the weight for property $ i $ of A
-- $P_i$ is the value for property $ i $ of B
+- $R_i$ is the requirement function for property $i$ of A
+- $W_i$ is the weight for property $i$ of A
+- $P_i$ is the value for property $i$ of B
 
 ---
 
