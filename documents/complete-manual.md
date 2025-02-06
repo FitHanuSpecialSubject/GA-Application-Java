@@ -184,16 +184,14 @@ The values of $R_2$ and $W_1$ are taken from Individual A, and $P_1$ is taken fr
 - The syntax rules give different results for Requirement calculations:
 
 1. $x--$ returns $x$
-2. $ x:y $ returns $\frac{x + y}{2}$
+2. $x:y$ returns $\frac{x + y}{2}$
 
-3. $x++$ returns $ x $
+3. $x++$ returns $x$
 4. $x$ returns $x$
 
 Using these rules, the preference of A to B is calculated as:
 
-$
-13 + 12 * 12 = 157
-$
+$13 + 12 * 12 = 157$
 
 ---
 
@@ -268,9 +266,7 @@ $$
 
 Substituting the values from the tables:
 
-$$
-= 12 - - (12) * 12 + 13(13) * 13 + 18 \cdot 100(18) * 23
-$$
+$$= 12 - - (12) * 12 + 13(13) * 13 + 18 \cdot 100(18) * 23$$
 This simplifies to:
 
 $$
