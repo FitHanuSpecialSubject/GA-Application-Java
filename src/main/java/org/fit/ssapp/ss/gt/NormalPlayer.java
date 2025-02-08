@@ -1,6 +1,5 @@
 package org.fit.ssapp.ss.gt;
 
-
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.List;
@@ -9,6 +8,7 @@ import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.fit.ssapp.util.StringExpressionEvaluator;
 
 @Data
 @NoArgsConstructor
@@ -59,14 +59,13 @@ public class NormalPlayer implements Serializable {
   }
 
   public int getDominantStrategyIndex() {
-
     List<Double> payoffs = strategies.stream()
-        .map(Strategy::getPayoff)
-        .collect(Collectors.toList());
+            .map(Strategy::getPayoff)
+            .collect(Collectors.toList());
 
     double maxPayoffValue = payoffs.stream()
-        .max(Double::compareTo)
-        .orElse(0D);
+            .max(Double::compareTo)
+            .orElse(0D);
 
     // return index of the strategy having the max payOffValue
     return payoffs.indexOf(maxPayoffValue);
@@ -88,7 +87,6 @@ public class NormalPlayer implements Serializable {
     return prevStrategyIndex;
   }
 
-
   public void setPayoffFunction(String payoffFunction) {
     this.payoffFunction = payoffFunction;
   }
@@ -100,17 +98,27 @@ public class NormalPlayer implements Serializable {
   public double getPurePayoff() {
     // return sum of all payoffs
     return strategies.stream()
-        .map(Strategy::getPayoff)
-        .reduce(Double::sum)
-        .orElse(0D);
+            .map(Strategy::getPayoff)
+            .reduce(Double::sum)
+            .orElse(0D);
   }
 
+  public void evaluatePayoff(List<NormalPlayer> normalPlayers, int[] chosenStrategyIndices) {
+    if (payoffFunction != null && !payoffFunction.isBlank()) {
+      this.payoff = StringExpressionEvaluator.evaluatePayoffFunctionWithRelativeToOtherPlayers(this.getStrategyAt(chosenStrategyIndices[this.strategies.indexOf(this)]), payoffFunction, normalPlayers, chosenStrategyIndices);
+    } else {
+      // Default behavior: sum all properties of the strategy
+      this.payoff = StringExpressionEvaluator.calculateDefault(this.getStrategyAt(chosenStrategyIndices[this.strategies.indexOf(this)]).getProperties(), null);
+    }
+  }
+
+  @Override
   public String toString() {
     StringBuilder NP = new StringBuilder();
     for (Strategy s : strategies) {
-        if (s == null) {
-            continue;
-        }
+      if (s == null) {
+        continue;
+      }
       NP.append("\nStrategy ").append(strategies.indexOf(s) + 1).append(":\t");
       NP.append(s).append("\nPayoff: ").append(s.getPayoff());
     }

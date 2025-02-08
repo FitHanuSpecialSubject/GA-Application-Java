@@ -203,6 +203,13 @@ public class StringExpressionEvaluator {
     return arr[arr.length - 1] - arr[0];
   }
 
+  /*
+  * Để sử dụng calculateByDefault() do Function calculateByDefault() được để private
+  * */
+  public static BigDecimal calculateDefault(List<Double> values, String defaultFunction) {
+    return calculateByDefault(values, defaultFunction);
+  }
+
   private static BigDecimal calculateByDefault(List<Double> values, String defaultFunction) {
     DefaultFunction function = (!StringUtils.isEmptyOrNull(defaultFunction))
             ? DefaultFunction.valueOf(defaultFunction.toUpperCase()) : DefaultFunction.SUM;
