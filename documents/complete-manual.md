@@ -15,7 +15,7 @@ The primary goal of this manual is to provide a detailed, easy-to-understand gui
    - [GT (Game Theory)](#32-gt-game-theory)  
 4. [Local Installation](#4-local-installation)  
    - [System Requirements](#41-system-requirements)  
-   - [Installation Steps](#42-installation-steps-) 
+   - [Installation Steps](#42-installation-steps) 
    - [Troubleshooting](#43-troubleshooting)  
 5. [Data Form Creation](#5-data-form-creation)  
 6. [Solve](#6-solve)  
@@ -158,13 +158,13 @@ These factors are presented in every property of an individual and are used by t
 - $W_i$ represents the Weight for Property $i$
 - $P_i$ represents the Value for Property $i$
 
-Example: Custom function in Individual A: ($P_1$ - $R_1$) ^ $W_1$
+Example: Custom function in Individual A: {(P_1 - R_1) ^ {W_1}$
 
 $P_1$ is the Value of Property 1: 11  
 $R_1$ is the Requirement of Property 1: 12  
 $W_1$ is the Weight of Property 1 :10
 
-Result is: ($P_1$ - $R_1$) ^ $W_1$ = ($11$-$10$) ^ $12$ = $1$
+Result is: $(P_1 - R_1) ^ {W_1}$ = $(11-10) ^{12}$ = $1$
 
 ---
 
@@ -206,41 +206,45 @@ Where:
 
 ### Requirement Functions
 
-1.  $$
-    R_i(P_i) = x - - (P_i) =
-    \begin{cases}
-    2 & \text{if } x = 0 \\
-    0 & \text{if } P_i > x \\
-    \frac{x + |P_i - x|}{x} & \text{else}
-    \end{cases}
-    $$
+1. 
+$$
+R_i(P_i) = x - - (P_i) =
+\begin{cases} 
+2 & \text{if } x = 0 \\
+0 & \text{if } P_i > x \\
+\frac{x + |P_i - x|}{x} & \text{else}
+\end{cases}
+$$
 
-2.  $$
-    R_i(P_i) = x + + (P_i) =
-    \begin{cases}
-    2 & \text{if } x = 0 \\
-    0 & \text{if } P_i < x \\
-    \frac{x + |P_i - x|}{x} & \text{else}
-    \end{cases}
-    $$
+2. 
+$$
+R_i(P_i) = x + + (P_i) =
+\begin{cases} 
+2 & \text{if } x = 0 \\
+0 & \text{if } P_i < x \\
+\frac{x + |P_i - x|}{x} & \text{else}
+\end{cases}
+$$
 
-3.  $$
-    R_i(P_i) = x : y (P_i) =
-    \begin{cases}
-    \frac{|y - x|}{2} - \frac{|x + y|}{2} + \frac{|P_i|}{|y - x|} + 1 & \text{if } P_i \in [x, y] \\
-    0 & \text{else}
-    \end{cases}
-    $$
+3. 
+$$
+R_i(P_i) = x : y (P_i) =
+\begin{cases} 
+\frac{|y - x|}{2} - \frac{|x + y|}{2} + \frac{|P_i|}{|y - x|} + 1 & \text{if } P_i \in [x, y] \\
+0 & \text{else}
+\end{cases}
+$$
 
-4.  $$
-    R_i(P_i) = x(P_i) =
-    \begin{cases}
-    0 & \text{if } P_i < 0 \text{ or } P_i > 10 \\
-    0 & \text{if } |P_i - x| > 7 \\
-    1 & \text{if } |P_i - x| > 5 \\
-    \frac{10 - |P_i - x|}{11} & \text{else}
-    \end{cases}
-    $$
+4. 
+$$
+R_i(P_i) = x(P_i) =
+\begin{cases} 
+0 & \text{if } P_i < 0 \text{ or } P_i > 10 \\
+0 & \text{if } |P_i - x| > 7 \\
+1 & \text{if } |P_i - x| > 5 \\
+\frac{10 - |P_i - x|}{11} & \text{else}
+\end{cases}
+$$
 
 ---
 
@@ -301,7 +305,7 @@ In this table, the values represent the payoffs for Player 1 and Player 2 for ea
 
 - Strategies:
 
-  - A strategy **$s_i$ ∈ $S_i$** for player **i**, then a function **$s_i$: H $\to$ $A_{i}$**, where the strategy space of **i** consists of **$K_{i}$** discrete strategies: that is, **$S_i$ = {$s_i^1$,$s_i^1$, ..., $s_i^{K_{i}}$ }**
+  - A strategy **$s_i$ ∈ $S_i$** for player **i**, then a function **$s_i$: H $\to$ $A_{i}$**, where the strategy space of **i** consists of **$K_{i}$** discrete strategies: that is, **$S_i = {s_i^1,s_i^1, ..., s_i^{K_{i}}}$**
   - Futhermore, denote a strategy combination of the **n** players except **$i$** by **$s_{-i}$ = ($s{1}$,..., $s{n}$)**
   - The set of joint-strategy profiles is denoted by **$S$ = $S_{1}$ x ... x $S_{n}$**
 
@@ -369,7 +373,7 @@ player1*fitness = 189.2 * 0.8 = 151.36
 player2*fitness = 148.7 * 0.8 = 119.0
 
 
-# **4\. Local Installation**
+# **4\. Local Installation [(README.md)](https://github.com/FitHanuSpecialSubject/GA-Application-Java/blob/master/README.md)**
 
 ### **4.1 System Requirements**
 
