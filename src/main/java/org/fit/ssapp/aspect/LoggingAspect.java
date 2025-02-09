@@ -16,6 +16,20 @@ import org.springframework.stereotype.Component;
 public class LoggingAspect {
 
   /**
+   * gameTheorySolver.
+   */
+  @Pointcut("execution(* org.fit.ssapp.service.*.*(..))")
+  public void gameTheorySolver() {
+  }
+
+  /**
+   * stableMatchingSolver.
+   */
+  @Pointcut("execution(* org.fit.ssapp.service.*.*(..))")
+  public void stableMatchingSolver() {
+  }
+
+  /**
    * logAroundGameTheorySolver.
    *
    * @param joinPoint is.
