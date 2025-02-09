@@ -158,7 +158,7 @@ These factors are presented in every property of an individual and are used by t
 - $W_i$ represents the Weight for Property $i$
 - $P_i$ represents the Value for Property $i$
 
-Example: Custom function in Individual A: {(P_1 - R_1) ^ {W_1}$
+Example: Custom function in Individual A: $(P_1 - R_1) ^ {W_1}$
 
 $P_1$ is the Value of Property 1: 11  
 $R_1$ is the Requirement of Property 1: 12  
