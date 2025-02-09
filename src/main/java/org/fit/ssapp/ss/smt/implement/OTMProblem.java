@@ -72,7 +72,7 @@ public class OTMProblem implements MatchingProblem {
 
   @Override
   public int getNumberOfVariables() {
-    return 1;
+    return problemSize;
   }
 
   @Override

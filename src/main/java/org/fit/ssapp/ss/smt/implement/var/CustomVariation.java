@@ -92,6 +92,9 @@ public class CustomVariation implements Variation {
       v2.setValue(temp);
     }
 
+    repair(p1);
+    repair(p2);
+
   }
 
   /**
@@ -118,6 +121,8 @@ public class CustomVariation implements Variation {
 
     log.info("AFter Swap: index1 = {}, value1 = {}, index2 = {}, value2 = {}",
             swapPoint1, v1.getValue(), swapPoint2, v2.getValue());
+
+    repair(offspring);
 
   }
 
