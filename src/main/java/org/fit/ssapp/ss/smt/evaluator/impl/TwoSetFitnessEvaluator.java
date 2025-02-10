@@ -106,6 +106,7 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
           default -> throw new IllegalArgumentException(
                   "Illegal value after S regex in sigma calculation: " + expression);
         };
+
       }
     }
     if (regex == null) {

@@ -214,7 +214,6 @@ public class TripletOTOProblem implements MatchingProblem {
   /**
    * find and match with a prefer node in the target set
    * return the prefer node of target set
-   *
    * @param nodePreferences is the preferList of current node
    */
   private int matchWithTargetSet(int newNode, int targetSet,
@@ -265,6 +264,7 @@ public class TripletOTOProblem implements MatchingProblem {
     for (int currentNode : individualMatches) {
       if (matchingData.getSetNoOf(currentNode) == matchingData.getSetNoOf(
               newNode)) {
+
         // Check if newNode is more preferred than currentNode
         if (preferenceLists.isPreferredOver(newNode, currentNode, preferNode)) {
           Collection<Integer> allMatched = matches.getMatchesAndTarget(preferNode);

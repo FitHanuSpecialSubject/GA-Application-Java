@@ -57,7 +57,7 @@ public class TwoSetPreferenceProvider implements PreferenceBuilder {
     }
     this.expressionOfSet1 = null;
 
-    if (StringUtils.isEmptyOrNull(evalFunctionForSet2)) {
+      if (StringUtils.isEmptyOrNull(evalFunctionForSet2)) {
       this.expressionOfSet2 = null;
     } else {
       if (expressionOfSet2 != null) {
