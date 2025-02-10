@@ -114,17 +114,30 @@ public class StringExpressionEvaluator {
       if (checkIfIsDefaultFunction(fitnessFunction)) {
         return calculateByDefault(payoffList, fitnessFunction);
       }
-      Matcher fitnessMatcher = fitnessPattern.matcher(expression);
-      while (fitnessMatcher.find()) {
-        String placeholder = fitnessMatcher.group();
-        // indices should account for offset from base 1 index of variables
-        int index = Integer.parseInt(placeholder.substring(1)) - 1;
-        double propertyValue = payoffs[index];
-        expression = expression.replaceAll(placeholder, formatDouble(propertyValue));
+
+      // Create an expression builder with the fitness function
+      ExpressionBuilder builder = new ExpressionBuilder(expression);
+
+      // Add variables to the expression builder
+      for (int i = 0; i < payoffs.length; i++) {
+        builder.variable("p" + (i + 1));
       }
 
-      // evaluate this string expression to get the result using exp4j
-      double val = evaluateExpression(expression);
+      // Build the expression
+      Expression expr = builder.build();
+
+      for (int i = 0; i < payoffs.length; i++) {
+        expr.setVariable("p" + (i + 1), payoffs[i]);
+      }
+
+      // Validate the expression
+      ValidationResult validationResult = expr.validate();
+      if (!validationResult.isValid()) {
+        throw new RuntimeException("Invalid expression: " + validationResult.getErrors().toString());
+      }
+
+      // Evaluate the expression
+      double val = expr.evaluate();
       return new BigDecimal(val).setScale(10, RoundingMode.HALF_UP);
     }
   }
