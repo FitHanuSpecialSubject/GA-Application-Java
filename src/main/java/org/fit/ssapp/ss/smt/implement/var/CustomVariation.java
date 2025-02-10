@@ -3,7 +3,6 @@ package org.fit.ssapp.ss.smt.implement.var;
 import org.moeaframework.core.PRNG;
 import org.moeaframework.core.Solution;
 import org.moeaframework.core.Variation;
-import org.moeaframework.core.variable.BinaryIntegerVariable;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -48,6 +47,9 @@ public class CustomVariation implements Variation {
 
   @Override
   public Solution[] evolve(Solution[] parents) {
+    if (parents.length != getArity()) {
+      throw new IllegalArgumentException("CustomVariation requires exactly 2 parents!");
+    }
 
     Solution[] offsprings = {parents[0].copy(), parents[1].copy()};
 
@@ -70,11 +72,18 @@ public class CustomVariation implements Variation {
    * @param p2 second parents
    */
   public void crossover(Solution p1, Solution p2) {
-    int crossoverPoint = PRNG.nextInt(problemSize);
+    int crossoverPoint1 = PRNG.nextInt(problemSize - 1);
+    int crossoverPoint2 = PRNG.nextInt(problemSize - 1);
 
-    for (int i = 0; i <= crossoverPoint; i++) {
-      BinaryIntegerVariable v1 = (BinaryIntegerVariable) p1.getVariable(i);
-      BinaryIntegerVariable v2 = (BinaryIntegerVariable) p2.getVariable(i);
+    if (crossoverPoint1 > crossoverPoint2) {
+      int temp = crossoverPoint1;
+      crossoverPoint1 = crossoverPoint2;
+      crossoverPoint2 = temp;
+    }
+
+    for (int i = crossoverPoint1; i <= crossoverPoint2; i++) {
+      CustomIntegerVariable v1 = (CustomIntegerVariable) p1.getVariable(i);
+      CustomIntegerVariable v2 = (CustomIntegerVariable) p2.getVariable(i);
 
       int temp = v1.getValue();
       v1.setValue(v2.getValue());
@@ -99,8 +108,8 @@ public class CustomVariation implements Variation {
       swapPoint2 = PRNG.nextInt(problemSize);
     }
 
-    BinaryIntegerVariable v1 = (BinaryIntegerVariable) offspring.getVariable(swapPoint1);
-    BinaryIntegerVariable v2 = (BinaryIntegerVariable) offspring.getVariable(swapPoint2);
+    CustomIntegerVariable v1 = (CustomIntegerVariable) offspring.getVariable(swapPoint1);
+    CustomIntegerVariable v2 = (CustomIntegerVariable) offspring.getVariable(swapPoint2);
     System.out.printf("Before Swap: index1 = {}, value1 = {}, index2 = {}, value2 = {}",
             swapPoint1, v1.getValue(), swapPoint2, v2.getValue());
 
@@ -124,7 +133,7 @@ public class CustomVariation implements Variation {
     Set<Integer> fixRepeat = new HashSet<>();
 
     for (int i = 0; i < problemSize; i++) {
-      BinaryIntegerVariable v = (BinaryIntegerVariable) offspring.getVariable(i);
+      CustomIntegerVariable v = (CustomIntegerVariable) offspring.getVariable(i);
       int value = v.getValue();
 
       while (fixRepeat.contains(value)) {

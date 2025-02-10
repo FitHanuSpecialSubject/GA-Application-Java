@@ -12,14 +12,12 @@ import org.fit.ssapp.ss.smt.Matches;
 import org.fit.ssapp.ss.smt.MatchingData;
 import org.fit.ssapp.ss.smt.MatchingProblem;
 import org.fit.ssapp.ss.smt.evaluator.FitnessEvaluator;
+import org.fit.ssapp.ss.smt.implement.var.CustomIntegerVariable;
 import org.fit.ssapp.ss.smt.preference.PreferenceList;
 import org.fit.ssapp.ss.smt.preference.PreferenceListWrapper;
 import org.fit.ssapp.util.StringUtils;
 import org.moeaframework.core.Solution;
 import org.moeaframework.core.Variable;
-import org.moeaframework.core.variable.BinaryIntegerVariable;
-import org.moeaframework.core.variable.EncodingUtils;
-import org.moeaframework.core.variable.Permutation;
 
 /**
  * OTMProblem
@@ -94,7 +92,7 @@ public class OTMProblem implements MatchingProblem {
   public void evaluate(Solution solution) {
     int[] decodeVar = new int[problemSize];
     for (int i = 0; i < problemSize; i++) {
-      BinaryIntegerVariable var = (BinaryIntegerVariable) solution.getVariable(i);
+      CustomIntegerVariable var = (CustomIntegerVariable) solution.getVariable(i);
       decodeVar[i] = var.getValue();
     }
     Matches result = this.stableMatching(decodeVar);
@@ -138,7 +136,7 @@ public class OTMProblem implements MatchingProblem {
     Collections.shuffle(numbers);
 
     for (int i = 0; i < problemSize; i++) {
-      BinaryIntegerVariable var = new BinaryIntegerVariable(0, problemSize);
+      CustomIntegerVariable var = new CustomIntegerVariable(0, problemSize);
       var.setValue(numbers.get(i));
       solution.setVariable(i, var);
     }
