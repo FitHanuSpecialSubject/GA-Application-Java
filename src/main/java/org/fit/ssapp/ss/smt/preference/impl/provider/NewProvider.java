@@ -122,10 +122,12 @@
 //                for (int j = 0; j < numberOfProperties; j++) {
 //                    double PropertyValue = individualProperties[i][j];
 //                    Requirement requirement = PropertyRequirement.setRequirement(
-//                            MatchingHelperFunctions.decodeInputRequirement(individualRequirements[index][j]));
+//                            MatchingHelperFunctions
+//                            .decodeInputRequirement(individualRequirements[index][j]));
 //                    double PropertyWeight = individualWeights[i][j];
 //                    totalScore +=
-//                            preferenceProviderUtils.getDefaultScaling(requirement, PropertyValue) *
+//                            preferenceProviderUtils
+//                            .getDefaultScaling(requirement, PropertyValue) *
 //                                    PropertyWeight;
 //                }
 //                a.add(totalScore);
@@ -137,10 +139,12 @@
 //                for (int j = 0; j < numberOfProperties; j++) {
 //                    double PropertyValue = individualProperties[i][j];
 //                    Requirement requirement = PropertyRequirement.setRequirement(
-//                            MatchingHelperFunctions.decodeInputRequirement(individualRequirements[index][j]));
+//                            MatchingHelperFunctions
+//                            .decodeInputRequirement(individualRequirements[index][j]));
 //                    double PropertyWeight = individualWeights[i][j];
 //                    totalScore +=
-//                            preferenceProviderUtils.getDefaultScaling(requirement, PropertyValue) *
+//                            preferenceProviderUtils
+//                            .getDefaultScaling(requirement, PropertyValue) *
 //                                    PropertyWeight;
 //                }
 //                // Add

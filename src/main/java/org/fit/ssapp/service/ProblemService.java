@@ -10,19 +10,19 @@ import org.springframework.http.ResponseEntity;
 public interface ProblemService {
 
   /**
-   * solve
+   * solve.
    *
    * @param problem StableMatchingProblemDto
-   * @return ResponseEntity<Response>
+   * @return ResponseEntity
    */
   ResponseEntity<Response> solve(StableMatchingProblemDto problem);
 
   /**
-   * getInsights
+   * getInsights.
    *
    * @param problem     StableMatchingProblemDto
    * @param sessionCode String
-   * @return ResponseEntity<Response>
+   * @return ResponseEntity
    */
   ResponseEntity<Response> getInsights(StableMatchingProblemDto problem, String sessionCode);
 }

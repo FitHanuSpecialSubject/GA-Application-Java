@@ -1,5 +1,8 @@
 package org.fit.ssapp.util;
 
+/**
+ *
+ */
 public class SampleDataGeneratorTest {
 
 //    @Test

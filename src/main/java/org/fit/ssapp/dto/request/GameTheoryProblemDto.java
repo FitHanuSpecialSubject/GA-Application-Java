@@ -32,10 +32,10 @@ public class GameTheoryProblemDto implements ProblemRequestDto {
   @Override
   public String toString() {
     return "GameTheoryProblemDto{" + "specialPlayer=" + specialPlayer + ", normalPlayers="
-        + normalPlayers + ", conflictSet=" + ", fitnessFunction='" + conflictSet + fitnessFunction
-        + '\'' + ", defaultPayoffFunction='" + defaultPayoffFunction + '\'' + ", algorithm='"
-        + algorithm + '\'' + ", isMaximizing=" + isMaximizing + ", distributedCores='"
-        + distributedCores + '\'' + ", maxTime=" + maxTime + ", generation=" + generation
-        + ", populationSize=" + populationSize + '}';
+            + normalPlayers + ", conflictSet=" + ", fitnessFunction='" + conflictSet + fitnessFunction
+            + '\'' + ", defaultPayoffFunction='" + defaultPayoffFunction + '\'' + ", algorithm='"
+            + algorithm + '\'' + ", isMaximizing=" + isMaximizing + ", distributedCores='"
+            + distributedCores + '\'' + ", maxTime=" + maxTime + ", generation=" + generation
+            + ", populationSize=" + populationSize + '}';
   }
 }

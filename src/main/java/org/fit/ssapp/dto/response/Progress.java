@@ -4,7 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
+/**
+ * Progress.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -17,6 +19,11 @@ public class Progress {
   private Double runtime;
   private Integer percentage;
 
+  /**
+   * getMinuteLeft.
+   *
+   * @return int
+   */
   public int getMinuteLeft() {
 
     if (minuteLeft == 0) {

@@ -4,11 +4,14 @@ import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import java.util.regex.Pattern;
 
+/**
+ * RequirementSyntaxValidator.
+ */
 public class RequirementSyntaxValidator implements
-    ConstraintValidator<ValidRequirementSyntax, String[][]> {
+        ConstraintValidator<ValidRequirementSyntax, String[][]> {
 
   private static final Pattern VALID_PATTERN = Pattern.compile(
-      "^(\\d+(?:\\.\\d+)?)(?::(\\d+(?:\\.\\d+)?))?(?:\\+\\+|--)?$");
+          "^(\\d+(?:\\.\\d+)?)(?::(\\d+(?:\\.\\d+)?))?(?:\\+\\+|--)?$");
   private String message;
 
   @Override
@@ -23,7 +26,7 @@ public class RequirementSyntaxValidator implements
         if (!VALID_PATTERN.matcher(requirement).matches()) {
           context.disableDefaultConstraintViolation();
           context.buildConstraintViolationWithTemplate(message + ": '" + requirement + "'")
-              .addConstraintViolation();
+                  .addConstraintViolation();
           return false;
         }
       }

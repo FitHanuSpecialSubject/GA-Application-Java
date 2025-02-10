@@ -30,6 +30,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+/**
+ * GameTheoryService.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -39,36 +42,32 @@ public class GameTheoryService {
 
   private static final int RUN_COUNT_PER_ALGORITHM = 10; // for insight running, each algorithm will be run for 10 times
 
+  /**
+   * @param request GameTheoryProblemDto
+   * @return ResponseEntity
+   */
   public ResponseEntity<Response> solveGameTheory(GameTheoryProblemDto request) {
 
     try {
       log.info("Received request: " + request);
       GameTheoryProblem problem = GameTheoryProblemMapper.toProblem(request);
 
-//            log.info("start writing {} problem to file", problem.getName());
-//            boolean result = ProblemUtils.writeProblemToFile(problem, "gt_data_1");
-//            if (result) {
-//                log.info("finished writing {} problem to file", problem.getName());
-//            } else {
-//                log.info("failed writing {} problem to file", problem.getName());
-//            }
-
       long startTime = System.currentTimeMillis();
       log.info("Running algorithm: " + request.getAlgorithm() + "...");
 
       // solve the problem
       NondominatedPopulation results = solveProblem(problem,
-          request.getAlgorithm(),
-          request.getGeneration(),
-          request.getPopulationSize(),
-          request.getDistributedCores(),
-          request.getMaxTime());
+              request.getAlgorithm(),
+              request.getGeneration(),
+              request.getPopulationSize(),
+              request.getDistributedCores(),
+              request.getMaxTime());
       long endTime = System.currentTimeMillis();
       double runtime = ((double) (endTime - startTime) / 1000 / 60);
       runtime = Math.round(runtime * 100.0) / 100.0;
 
       log.info("Algorithm: " + request.getAlgorithm() + " finished in " + runtime +
-          " minutes");
+              " minutes");
 
       // format the output
       log.info("Preparing the solution ...");
@@ -76,51 +75,51 @@ public class GameTheoryService {
       gameSolution.setAlgorithm(request.getAlgorithm());
       gameSolution.setRuntime(runtime);
       return ResponseEntity.ok(Response
-          .builder()
-          .status(200)
-          .message("Solve game theory problem successfully!")
-          .data(gameSolution)
-          .build());
+              .builder()
+              .status(200)
+              .message("Solve game theory problem successfully!")
+              .data(gameSolution)
+              .build());
     } catch (Exception e) {
       log.error("Error ", e);
       return ResponseEntity
-          .ok()
-          .body(Response.builder().status(500).message(e.getMessage()).build());
+              .ok()
+              .body(Response.builder().status(500).message(e.getMessage()).build());
     }
   }
 
   private NondominatedPopulation solveProblem(GameTheoryProblem problem,
-      String algorithm,
-      Integer generation,
-      Integer populationSize,
-      String distributedCores,
-      Integer maxTime) {
+                                              String algorithm,
+                                              Integer generation,
+                                              Integer populationSize,
+                                              String distributedCores,
+                                              Integer maxTime) {
 
     NondominatedPopulation results;
     try {
       if (distributedCores.equals("all")) {
         results = new Executor()
-            .withProblem(problem)
-            .withAlgorithm(algorithm)
-            .withMaxEvaluations(generation *
-                populationSize) // we are using the number of generations and population size to calculate the number of evaluations
-            .withProperty("populationSize", populationSize)
-            .withProperty("maxTime", maxTime)
-            .distributeOnAllCores()
-            .run();
+                .withProblem(problem)
+                .withAlgorithm(algorithm)
+                .withMaxEvaluations(generation *
+                        populationSize) // we are using the number of generations and population size to calculate the number of evaluations
+                .withProperty("populationSize", populationSize)
+                .withProperty("maxTime", maxTime)
+                .distributeOnAllCores()
+                .run();
 
 
       } else {
         int numberOfCores = Integer.parseInt(distributedCores);
         results = new Executor()
-            .withProblem(problem)
-            .withAlgorithm(algorithm)
-            .withMaxEvaluations(generation *
-                populationSize) // we are using the number of generations and population size to calculate the number of evaluations
-            .withProperty("populationSize", populationSize)
-            .withProperty("maxTime", maxTime)
-            .distributeOn(numberOfCores)
-            .run();
+                .withProblem(problem)
+                .withAlgorithm(algorithm)
+                .withMaxEvaluations(generation *
+                        populationSize) // we are using the number of generations and population size to calculate the number of evaluations
+                .withProperty("populationSize", populationSize)
+                .withProperty("maxTime", maxTime)
+                .distributeOn(numberOfCores)
+                .run();
       }
       return results;
     } catch (Exception e) {
@@ -128,27 +127,27 @@ public class GameTheoryService {
       // second attempt to solve the problem if the first run got some error
       if (distributedCores.equals("all")) {
         results = new Executor()
-            .withProblem(problem)
-            .withAlgorithm(algorithm)
-            .withMaxEvaluations(generation *
-                populationSize) // we are using the number of generations and population size to calculate the number of evaluations
-            .withProperty("populationSize", populationSize)
-            .withProperty("maxTime", maxTime)
-            .distributeOnAllCores()
-            .run();
+                .withProblem(problem)
+                .withAlgorithm(algorithm)
+                .withMaxEvaluations(generation *
+                        populationSize) // we are using the number of generations and population size to calculate the number of evaluations
+                .withProperty("populationSize", populationSize)
+                .withProperty("maxTime", maxTime)
+                .distributeOnAllCores()
+                .run();
 
 
       } else {
         int numberOfCores = Integer.parseInt(distributedCores);
         results = new Executor()
-            .withProblem(problem)
-            .withAlgorithm(algorithm)
-            .withMaxEvaluations(generation *
-                populationSize) // we are using the number of generations and population size to calculate the number of evaluations
-            .withProperty("populationSize", populationSize)
-            .withProperty("maxTime", maxTime)
-            .distributeOn(numberOfCores)
-            .run();
+                .withProblem(problem)
+                .withAlgorithm(algorithm)
+                .withMaxEvaluations(generation *
+                        populationSize) // we are using the number of generations and population size to calculate the number of evaluations
+                .withProperty("populationSize", populationSize)
+                .withProperty("maxTime", maxTime)
+                .distributeOn(numberOfCores)
+                .run();
       }
       return results;
 
@@ -156,8 +155,13 @@ public class GameTheoryService {
     }
   }
 
+  /**
+   * @param problem GameTheoryProblem
+   * @param result NondominatedPopulation
+   * @return GameSolution
+   */
   public static GameSolution formatSolution(GameTheoryProblem problem,
-      NondominatedPopulation result) {
+                                            NondominatedPopulation result) {
     Solution solution = result.get(0);
     GameSolution gameSolution = new GameSolution();
 
@@ -188,11 +192,11 @@ public class GameTheoryService {
       String strategyName = getStrategyName(chosenStratIdx, normalPlayer, i);
 
       GameSolution.Player gameSolutionPlayer = GameSolution.Player
-          .builder()
-          .playerName(playerName)
-          .strategyName(strategyName)
-          .payoff(strategyPayoff)
-          .build();
+              .builder()
+              .playerName(playerName)
+              .strategyName(strategyName)
+              .payoff(strategyPayoff)
+              .build();
 
       gameSolutionPlayers.add(gameSolutionPlayer);
 
@@ -203,14 +207,19 @@ public class GameTheoryService {
     return gameSolution;
   }
 
+  /**
+   * @param request GameTheoryProblemDto
+   * @param sessionCode String
+   * @return ResponseEntity
+   */
   public ResponseEntity<Response> getProblemResultInsights(GameTheoryProblemDto request,
-      String sessionCode) {
+                                                           String sessionCode) {
     log.info("Received request: " + request);
     String[] algorithms = GameTheoryConst.ALLOWED_INSIGHT_ALGORITHMS;
 
     simpMessagingTemplate.convertAndSendToUser(sessionCode,
-        "/progress",
-        createProgressMessage("Initializing the problem..."));
+            "/progress",
+            createProgressMessage("Initializing the problem..."));
 
     log.info("Mapping request to problem ...");
     GameTheoryProblem problem = GameTheoryProblemMapper.toProblem(request);
@@ -220,8 +229,8 @@ public class GameTheoryService {
     // solve the problem with different algorithms and then evaluate the performance of the algorithms
     log.info("Start benchmarking the algorithms...");
     simpMessagingTemplate.convertAndSendToUser(sessionCode,
-        "/progress",
-        createProgressMessage("Start benchmarking the algorithms..."));
+            "/progress",
+            createProgressMessage("Start benchmarking the algorithms..."));
 
     for (String algorithm : algorithms) {
       log.info("Running algorithm: " + algorithm + "...");
@@ -230,23 +239,23 @@ public class GameTheoryService {
         long start = System.currentTimeMillis();
 
         if (problem instanceof StandardGameTheoryProblem
-            && AppConst.PSO_BASED_ALGOS.contains(algorithm)) {
+                && AppConst.PSO_BASED_ALGOS.contains(algorithm)) {
           problem = GameTheoryProblemMapper
-              .toPSOProblem((StandardGameTheoryProblem) problem);
+                  .toPSOProblem((StandardGameTheoryProblem) problem);
         }
 
         if (problem instanceof PSOCompatibleGameTheoryProblem
-            && !AppConst.PSO_BASED_ALGOS.contains(algorithm)) {
+                && !AppConst.PSO_BASED_ALGOS.contains(algorithm)) {
           problem = GameTheoryProblemMapper
-              .toStandardProblem((PSOCompatibleGameTheoryProblem) problem);
+                  .toStandardProblem((PSOCompatibleGameTheoryProblem) problem);
         }
 
         NondominatedPopulation results = solveProblem(problem,
-            algorithm,
-            request.getGeneration(),
-            request.getPopulationSize(),
-            request.getDistributedCores(),
-            request.getMaxTime());
+                algorithm,
+                request.getGeneration(),
+                request.getPopulationSize(),
+                request.getDistributedCores(),
+                request.getMaxTime());
 
         long end = System.currentTimeMillis();
 
@@ -255,8 +264,8 @@ public class GameTheoryService {
 
         // send the progress to the client
         String message =
-            "Algorithm " + algorithm + " finished iteration: #" + (i + 1) + "/" +
-                RUN_COUNT_PER_ALGORITHM;
+                "Algorithm " + algorithm + " finished iteration: #" + (i + 1) + "/" +
+                        RUN_COUNT_PER_ALGORITHM;
         Progress progress = createProgress(message, runtime, runCount, maxRunCount);
         System.out.println(progress);
         simpMessagingTemplate.convertAndSendToUser(sessionCode, "/progress", progress);
@@ -272,15 +281,15 @@ public class GameTheoryService {
     }
     log.info("Benchmarking finished!");
     simpMessagingTemplate.convertAndSendToUser(sessionCode,
-        "/progress",
-        createProgressMessage("Benchmarking finished!"));
+            "/progress",
+            createProgressMessage("Benchmarking finished!"));
 
     return ResponseEntity.ok(Response
-        .builder()
-        .status(200)
-        .message("Get problem result insights successfully!")
-        .data(gameSolutionInsights)
-        .build());
+            .builder()
+            .status(200)
+            .message("Get problem result insights successfully!")
+            .data(gameSolutionInsights)
+            .build());
   }
 
   private GameSolutionInsights initGameSolutionInsights(String[] algorithms) {
@@ -300,32 +309,36 @@ public class GameTheoryService {
   }
 
   private Progress createProgress(String message,
-      Double runtime,
-      Integer runCount,
-      int maxRunCount) {
+                                  Double runtime,
+                                  Integer runCount,
+                                  int maxRunCount) {
     int percent = runCount * 100 / maxRunCount;
     int minuteLeff = (int) Math.ceil(
-        ((maxRunCount - runCount) * runtime) / 60); // runtime is in seconds
+            ((maxRunCount - runCount) * runtime) / 60); // runtime is in seconds
     return Progress
-        .builder()
-        .inProgress(true) // this object is just to send to the client to show the progress
-        .message(message)
-        .runtime(runtime)
-        .minuteLeft(minuteLeff)
-        .percentage(percent)
-        .build();
+            .builder()
+            .inProgress(true) // this object is just to send to the client to show the progress
+            .message(message)
+            .runtime(runtime)
+            .minuteLeft(minuteLeff)
+            .percentage(percent)
+            .build();
   }
 
   private Progress createProgressMessage(String message) {
     return Progress
-        .builder()
-        .inProgress(
-            false) // this object is just to send a message to the client, not to show the progress
-        .message(message)
-        .build();
+            .builder()
+            .inProgress(
+                    false) // this object is just to send a message to the client, not to show the progress
+            .message(message)
+            .build();
   }
 
-
+  /**
+   * @param normalPlayer NormalPlayer
+   * @param index int
+   * @return String
+   */
   public static String getPlayerName(NormalPlayer normalPlayer, int index) {
     String playerName = normalPlayer.getName();
     if (playerName == null) {
@@ -335,9 +348,15 @@ public class GameTheoryService {
     return playerName;
   }
 
+  /**
+   * @param normalPlayer NormalPlayer
+   * @param chosenStrategyIndex int
+   * @param index int
+   * @return String
+   */
   public static String getStrategyName(int chosenStrategyIndex,
-      NormalPlayer normalPlayer,
-      int index) {
+                                       NormalPlayer normalPlayer,
+                                       int index) {
     String strategyName = normalPlayer.getStrategies().get(chosenStrategyIndex).getName();
     if (strategyName == null) {
       strategyName = String.format("Strategy %d", index);

@@ -8,6 +8,9 @@ import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+/**
+ *
+ */
 public class StableMatchingProblemDtoTest {
 
   private StableMatchingProblemDto dto;
@@ -17,8 +20,6 @@ public class StableMatchingProblemDtoTest {
   void setUp() {
     ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
     validator = factory.getValidator();
-
-
   }
 
   @Test

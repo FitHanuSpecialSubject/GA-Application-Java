@@ -15,16 +15,16 @@ import org.fit.ssapp.ss.gt.Strategy;
 
 public class StringExpressionEvaluator {
 
-  public static Pattern nonRelativePattern = Pattern.compile("p[0-9]+");
+  public static final Pattern nonRelativePattern = Pattern.compile("p[0-9]+");
   public static Pattern relativePattern = Pattern.compile("P[0-9]+p[0-9]+");
-  public static Pattern fitnessPattern = Pattern.compile("u[0-9]+");
+  public static final Pattern fitnessPattern = Pattern.compile("u[0-9]+");
 
 
   public enum DefaultFunction {
     SUM, AVERAGE, MIN, MAX, PRODUCT, MEDIAN, RANGE
   }
 
-  static DecimalFormat decimalFormat = new DecimalFormat("#.##############");
+  static final DecimalFormat decimalFormat = new DecimalFormat("#.##############");
 
   public static BigDecimal evaluatePayoffFunctionWithRelativeToOtherPlayers(Strategy strategy,
       String payoffFunction,
@@ -279,7 +279,7 @@ public class StringExpressionEvaluator {
 
       // Grammar:
       // expression = term | expression `+` term | expression `-` term
-      // term = factor | term `*` factor | term `/` factor
+      //  = factor | term `*` factor | term `/` factor
       // factor = `+` factor | `-` factor | `(` expression `)` | number
       //        | functionName `(` expression `)` | functionName factor
       //        | factor `^` factor
