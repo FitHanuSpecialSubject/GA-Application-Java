@@ -7,30 +7,31 @@ This application is developed to assist in calculating and finding optimal solut
 The primary goal of this manual is to provide a detailed, easy-to-understand guide for users to effectively utilize the application and make the most of its features. This guide will walk users through the process of installing the application on various operating systems, the system requirements necessary for the application to function, how to create and validate the data forms required for the problems, detailed installation steps, running the application via command-line tools or IDEs, and analyzing the output results. Additionally, the manual offers optimization tips, ways to customize output results to meet user requirements, and troubleshooting common issues during the usage of the application. This ensures that users can maximize the application's performance and achieve highly accurate output results.
 
 # **2\. Table of Contents**
+
 1. [Introduction](#1-introduction)
-   - [Introduction](#introduction)   
-2. [Table of Contents](#2-table-of-contents)  
-3. [Module Specifications](#3-module-specifications)  
-   - [SMT (Stable Matching Theory)](#31-smt-stable-matching-theory)  
-   - [GT (Game Theory)](#32-gt-game-theory)  
-4. [Local Installation](#4-local-installation)  
-   - [System Requirements](#41-system-requirements)  
-   - [Installation Steps](#42-installation-steps) 
-   - [Troubleshooting](#43-troubleshooting)  
-5. [Data Form Creation](#5-data-form-creation)  
-6. [Solve](#6-solve)  
-   - [Overview](#61-overview)  
-   - [ Step-by-step Execution](#62-step-by-step-excution) 
-   - [Optimization Tips](#63-optimization-tips)  
+   - [Introduction](#introduction)
+2. [Table of Contents](#2-table-of-contents)
+3. [Module Specifications](#3-module-specifications)
+   - [SMT (Stable Matching Theory)](#31-smt-stable-matching-theory)
+   - [GT (Game Theory)](#32-gt-game-theory)
+4. [Local Installation](#4-local-installation)
+   - [System Requirements](#41-system-requirements)
+   - [Installation Steps](#42-installation-steps-)
+   - [Troubleshooting](#43-troubleshooting)
+5. [Data Form Creation](#5-data-form-creation)
+6. [Solve](#6-solve)
+   - [Overview](#61-overview)
+   - [ Step-by-step Execution](#62-step-by-step-excution)
+   - [Optimization Tips](#63-optimization-tips)
 7. [Get Result Insight](#7-get-result-insight)
-   - [Analyzing Results](#71-analyzing-results)  
-   - [Customization](#72-customization) 
-   - [Common Issues](#73-common-issues)    
+   - [Analyzing Results](#71-analyzing-results)
+   - [Customization](#72-customization)
+   - [Common Issues](#73-common-issues)
 8. [Deployment](#8-deployment)
-   - [Supported Environments](#81-supported-environments)  
-   - [Deployment Steps](#82-deployment-steps) 
-   - [Best Practices](#83-best-practices)      
-9. [Contributors](#9-contributors)  
+   - [Supported Environments](#81-supported-environments)
+   - [Deployment Steps](#82-deployment-steps)
+   - [Best Practices](#83-best-pratices)
+9. [Contributors](#9-contributors)
 10. [End](#10-end)
 
 # **3\. Module Specifications**
@@ -90,6 +91,7 @@ flowchart TD
 ### **Core Stable Matching**
 
 As mentioned, the system expands on the original problem by introducing many-to-many matching. This requires some modification to the Gale-Shapley Algorithm.
+
 ```mermaid
 flowchart TD
     A[Start] --> B[Queue]
@@ -158,13 +160,13 @@ These factors are presented in every property of an individual and are used by t
 - $W_i$ represents the Weight for Property $i$
 - $P_i$ represents the Value for Property $i$
 
-Example: Custom function in Individual A: $(P_1 - R_1) ^ {W_1}$
+Example: Custom function in Individual A: ($P_1$ - $R_1$) ^ $W_1$
 
 $P_1$ is the Value of Property 1: 11  
 $R_1$ is the Requirement of Property 1: 12  
 $W_1$ is the Weight of Property 1 :10
 
-Result is: $(P_1 - R_1) ^ {W_1}$ = $(11-10) ^{12}$ = $1$
+Result is: ($P_1$ - $R_1$) ^ $W_1$ = ($11$-$10$) ^ $12$ = $1$
 
 ---
 
@@ -206,45 +208,40 @@ Where:
 
 ### Requirement Functions
 
-1. 
-$$
-R_i(P_i) = x - - (P_i) =
-\begin{cases} 
-2 & \text{if } x = 0 \\
-0 & \text{if } P_i > x \\
-\frac{x + |P_i - x|}{x} & \text{else}
-\end{cases}
-$$
+1.  $$
+    R_i(P_i) = x - - (P_i) =
+    \begin{cases}
+    0 & \text{if } P_i > x \\
+    \frac{x + |P_i - x|}{x} & \text{else}
+    \end{cases}
+    $$
 
-2. 
-$$
-R_i(P_i) = x + + (P_i) =
-\begin{cases} 
-2 & \text{if } x = 0 \\
-0 & \text{if } P_i < x \\
-\frac{x + |P_i - x|}{x} & \text{else}
-\end{cases}
-$$
+2.  $$
+    R_i(P_i) = x + + (P_i) =
+    \begin{cases}
+    2 & \text{if } x = 0 \\
+    0 & \text{if } P_i < x \\
+    \frac{x + |P_i - x|}{x} & \text{else}
+    \end{cases}
+    $$
 
-3. 
-$$
-R_i(P_i) = x : y (P_i) =
-\begin{cases} 
-\frac{|y - x|}{2} - \frac{|x + y|}{2} + \frac{|P_i|}{|y - x|} + 1 & \text{if } P_i \in [x, y] \\
-0 & \text{else}
-\end{cases}
-$$
+3.  $$
+    R_i(P_i) = x : y (P_i) =
+    \begin{cases}
+    \frac{|y - x|}{2} - \frac{|x + y|}{2} + \frac{|P_i|}{|y - x|} + 1 & \text{if } P_i \in [x, y] \\
+    0 & \text{else}
+    \end{cases}
+    $$
 
-4. 
-$$
-R_i(P_i) = x(P_i) =
-\begin{cases} 
-0 & \text{if } P_i < 0 \text{ or } P_i > 10 \\
-0 & \text{if } |P_i - x| > 7 \\
-1 & \text{if } |P_i - x| > 5 \\
-\frac{10 - |P_i - x|}{11} & \text{else}
-\end{cases}
-$$
+4.  $$
+    R_i(P_i) = x(P_i) =
+    \begin{cases}
+    0 & \text{if } P_i < 0 \text{ or } P_i > 10 \\
+    0 & \text{if } |P_i - x| > 7 \\
+    1 & \text{if } |P_i - x| > 5 \\
+    \frac{10 - |P_i - x|}{11} & \text{else}
+    \end{cases}
+    $$
 
 ---
 
@@ -305,7 +302,7 @@ In this table, the values represent the payoffs for Player 1 and Player 2 for ea
 
 - Strategies:
 
-  - A strategy **$s_i$ ∈ $S_i$** for player **i**, then a function **$s_i$: H $\to$ $A_{i}$**, where the strategy space of **i** consists of **$K_{i}$** discrete strategies: that is, **$S_i = {s_i^1,s_i^1, ..., s_i^{K_{i}}}$**
+  - A strategy **$s_i$ ∈ $S_i$** for player **i**, then a function **$s_i$: H $\to$ $A_{i}$**, where the strategy space of **i** consists of **$K_{i}$** discrete strategies: that is, **$S_i$ = {$s_i^1$,$s_i^1$, ..., $s_i^{K_{i}}$ }**
   - Futhermore, denote a strategy combination of the **n** players except **$i$** by **$s_{-i}$ = ($s{1}$,..., $s{n}$)**
   - The set of joint-strategy profiles is denoted by **$S$ = $S_{1}$ x ... x $S_{n}$**
 
@@ -372,8 +369,7 @@ Conflict Rule: If both players select Strategy A, reduce fitness by 20%. So, res
 player1*fitness = 189.2 * 0.8 = 151.36  
 player2*fitness = 148.7 * 0.8 = 119.0
 
-
-# **4\. Local Installation [(README.md)](https://github.com/FitHanuSpecialSubject/GA-Application-Java/blob/master/README.md)**
+# **4\. Local Installation**
 
 ### **4.1 System Requirements**
 
@@ -414,57 +410,47 @@ b,Using System Maven: mvn clean install
 
 ### **Purpose of Data Forms**
 
-Data forms allow users to define and structure the input data required for problem-solving.
+The Data Form allows users to define and structure input data for solving various problems effectively. There are two types of data forms: SMT data form and GT data form. Each type has its own specific requirements for input formatting and structure to ensure accurate and efficient problem-solving.
 
-### **Instructions for Creating and Validating Forms**
+1. **For Stable Matching Theory**
 
-1. Navigate to the data form creation interface.
-2. Add fields based on the problem type (e.g., participants, preferences).
-3. Validate the form for completeness and consistency.
+- The data form requires users to input a list of participants along with their ranked preferences. Each participant must have a complete and correctly ordered preference list to maintain consistency and fairness in the matching process.
+- For specific requirements, examples, and usage details, please refer to the Preference section of the [3.1 Stable Matching Theory](#31-smt-stable-matching-theory)
 
-### **Examples and Best Practices**
+1. **For Game Theory**
 
-- **Stable Matching Example**: Create a form with columns for participants and their ranked preferences.
-- Use consistent naming conventions for clarity.
+- The data form consists of defining the number of players, their available strategies, and a corresponding payoff matrix. This ensures that the system can accurately compute optimal strategies and outcomes based on the input data.
+- For specific requirements, examples, and usage details, please refer to the section [3.2 Game Theory](#32-gt-game-theory)
 
 # **6\. Solve**
 
-### **6.1 Overview**
+Ensure that the input data form provided by the user is validated and free of errors, fully meeting all the requirements of both types of data forms.
 
-#### **How the Solving Process Works**
+### **6.1 Step-by-Step Execution**
 
-- The solver processes the input data and applies algorithms to compute results.
-- Supports multiple methodologies such as Genetic Algorithms and Brute Force.
+1. Prepare input data form, then upload this file.
+2. Configure the solver
+   - Select a algorithm, problem type.
+   - Configure algorithm parameters, likes: Number of distributed cores, Population size, Number of crossover generation, Optimizatiob execution max time.
+3. Click the "Solve" button to start the process and wait for the results.
 
-### **6.2 Step-by-Step Execution**
-
-1. Prepare input data using the data form creation tool.
-2. Configure the solver with desired parameters (e.g., algorithm type).
-3. Execute the solving process via the application or command line.
-
-### **6.3 Optimization Tips**
+### **6.2 Optimization Tips**
 
 - Use smaller datasets for initial testing.
 - Ensure input data is complete and correctly formatted.
 
 # **7\. Get Result Insight**
 
-### **7.1 Analyzing Results**
+### **7.1 Output Format**
 
-- View results in dashboards with charts, tables, and other visual aids.
-- Filter data to focus on specific insights.
+- **SMT**: A table containing matched pairs and unmatched pairs (if any).
+- **GT**: A table containing the strategies used and the corresponding scores of the players.
 
-### **7.2 Customization**
+### **7.2 Common Issues**
 
-- Adjust result views by applying filters or customizing visual elements.
-- Export results in formats like CSV or PDF for further analysis.
-
-### **7.3 Common Issues**
-
-- **Issue**: Missing results.
-  - **Solution**: Verify that the solving process completed successfully.
-- **Issue**: Misinterpreted data.
-  - **Solution**: Refer to the documentation for guidance on result formats.
+- **Missing results**: Check if the solving process was completed successfully.
+- **Incorrect data**: Verify the input data and cross-check with the documentation.
+- **Unexpected results**: Try a different algorithm configuration or adjust input parameters..
 
 # **8\. Deployment**
 
