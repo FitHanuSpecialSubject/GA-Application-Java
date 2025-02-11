@@ -1,15 +1,12 @@
 package org.fit.ssapp.ss.gt;
 
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.fit.ssapp.util.StringExpressionEvaluator;
 
 @Data
 @NoArgsConstructor
@@ -21,7 +18,6 @@ public class Strategy implements Serializable {
   private double payoff;
 
   public List<Double> getProperties() {
-
     return properties;
   }
 
@@ -33,16 +29,8 @@ public class Strategy implements Serializable {
     this.payoff = payoff;
   }
 
-
-  private double evaluateStringExpression(String expression) {
-    ScriptEngineManager mgr = new ScriptEngineManager();
-    ScriptEngine engine = mgr.getEngineByName("JavaScript");
-    try {
-      Object result = engine.eval(expression);
-      return Double.parseDouble(result.toString());
-    } catch (ScriptException e) {
-      throw new RuntimeException(e);
-    }
+  public double evaluateStringExpression(String expression, List<NormalPlayer> normalPlayers, int[] chosenStrategyIndices) {
+    return StringExpressionEvaluator.evaluatePayoffFunctionWithRelativeToOtherPlayers(this, expression, normalPlayers, chosenStrategyIndices).doubleValue();
   }
 
   public void addProperty(double property) {

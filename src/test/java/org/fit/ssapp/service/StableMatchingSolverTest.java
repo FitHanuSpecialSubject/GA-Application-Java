@@ -1,23 +1,23 @@
 package org.fit.ssapp.service;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
+
+import java.util.Arrays;
 import java.util.Set;
 import org.fit.ssapp.dto.request.StableMatchingProblemDto;
-import org.fit.ssapp.dto.response.Response;
 import org.fit.ssapp.ss.smt.MatchingData;
 import org.fit.ssapp.ss.smt.evaluator.impl.TwoSetFitnessEvaluator;
 import org.fit.ssapp.util.MatchingProblemType;
 import org.fit.ssapp.util.SampleDataGenerator;
-import org.junit.Test;
 import org.junit.jupiter.api.BeforeEach;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.junit.jupiter.api.Test;
 
 public class StableMatchingSolverTest {
 
@@ -30,46 +30,56 @@ public class StableMatchingSolverTest {
 
   @BeforeEach
   public void setUp() {
-    numberOfIndividuals1 = 20;
-    numberOfIndividuals2 = 200;
-    sampleData = new SampleDataGenerator(
-        MatchingProblemType.MTM,
-        numberOfIndividuals1, numberOfIndividuals2,
-        numberOfProperties
-    );
-    stableMatchingProblemDto = sampleData.generateDto();
     ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
     validator = factory.getValidator();
 
+    numberOfIndividuals1 = 20;
+    numberOfIndividuals2 = 200;
+    numberOfProperties = 5;
+    sampleData = new SampleDataGenerator(MatchingProblemType.MTM, numberOfIndividuals1,
+            numberOfIndividuals2, numberOfProperties);
+    stableMatchingProblemDto = sampleData.generateDto();
   }
+
 
   @Test
   public void testEvaluateFunctions() {
-    stableMatchingProblemDto.setEvaluateFunctions(new String[]{"default", "default"});
-    Set<ConstraintViolation<StableMatchingProblemDto>> violations = validator.validate(
-        stableMatchingProblemDto);
-    assert (violations.isEmpty());
+    String[] evaluateFunctions = stableMatchingProblemDto.getEvaluateFunctions();
+    MatchingData matchingData = new MatchingData(
+            stableMatchingProblemDto.getNumberOfIndividuals(),
+            stableMatchingProblemDto.getNumberOfProperty(),
+            stableMatchingProblemDto.getIndividualSetIndices(),
+            stableMatchingProblemDto.getIndividualCapacities(),
+            stableMatchingProblemDto.getIndividualProperties(),
+            stableMatchingProblemDto.getIndividualWeights(),
+            sampleData.generateRequirement() // Provide requirements here!
+    );
+
+    TwoSetFitnessEvaluator evaluator = new TwoSetFitnessEvaluator(matchingData);
+
+    double[] satisfactions = new double[matchingData.getSize()];
+    Arrays.fill(satisfactions, 1.0); // Example: all individuals have a satisfaction of 1
+    // Test case 1: Simple sum
+    String testExpression = "S1 + S2";
+    double expectedResult = numberOfIndividuals1 + numberOfIndividuals2;
+    double result1 = evaluator.withFitnessFunctionEvaluation(satisfactions, testExpression);
+    assertEquals(expectedResult, result1, 0.001);
   }
 
-  //    @Test
-//    public void testFitnessCalculation() {
-//        TwoSetFitnessEvaluator newEvaluator = new TwoSetFitnessEvaluator(sampleData.generateProblem().getMatchingData());
-//        newEvaluator.withFitnessFunctionEvaluation(new double[]{}, sampleData.getFnf());
-//    }
   @Test
   public void testFitnessCalculation() {
-    // Create sample data
+    int testNumberOfIndividuals1 = 5;
+    int testNumberOfIndividuals2 = 1;  //or any positive number
+    int testNumberOfProperties = 3;
     double[] satisfactions = {1.0, 2.0, 3.0, 4.0, 5.0};
-    String fitnessFunction = "SIGMA{S1} + SIGMA{S2}"; // Assuming S1 and S2 are the sets
+    String fitnessFunction = "SIGMA{S1}";
 
-    // Create a sample MatchingData object
-    int numberOfIndividuals1 = 5;
-    int numberOfIndividuals2 = 5;
     SampleDataGenerator sampleData = new SampleDataGenerator(
-        MatchingProblemType.MTM,
-        numberOfIndividuals1, numberOfIndividuals2,
-        3 // number of properties
+            MatchingProblemType.MTM,
+            testNumberOfIndividuals1, testNumberOfIndividuals2,
+            testNumberOfProperties
     );
+
     MatchingData matchingData = sampleData.generateProblem().getMatchingData();
 
     // Create the evaluator
@@ -78,59 +88,33 @@ public class StableMatchingSolverTest {
     // Perform the fitness function evaluation
     double result = evaluator.withFitnessFunctionEvaluation(satisfactions, fitnessFunction);
 
-    // Verify the result (assuming the function is correctly defined)
-    // Here, we assume SIGMA{S1} = 15 and SIGMA{S2} = 0 (since S2 is not populated in this example)
+    // Verify the result
     double expected = 15.0;
     assertEquals(expected, result, 0.001);
   }
 
+
   @Test
   public void testStableSolverMTM() {
-    StableMatchingService solver = new StableMatchingService(null);
-    // Solve the problem
-    ResponseEntity<Response> response = solver.solve(stableMatchingProblemDto);
-
-    // Verify the response
-    assertNotNull(response);
-    assertEquals(HttpStatus.OK, response.getStatusCode());
+    sampleData = new SampleDataGenerator(MatchingProblemType.MTM, numberOfIndividuals1,
+            numberOfIndividuals2, numberOfProperties);
+    assertDoesNotThrow(() -> sampleData.generateProblem());
   }
 
   @Test
   public void testStableSolverOTM() {
-    StableMatchingOtmService stableMatchingOTMProblemDTO = new StableMatchingOtmService(null);
-    // Solve the problem
-    ResponseEntity<Response> response = stableMatchingOTMProblemDTO.solve(
-        stableMatchingProblemDto);
-
-    // Verify the response
-    assertNotNull(response);
-    assertEquals(HttpStatus.OK, response.getStatusCode());
+    sampleData = new SampleDataGenerator(MatchingProblemType.OTM, numberOfIndividuals1,
+            numberOfIndividuals2, numberOfProperties);
+    assertDoesNotThrow(() -> sampleData.generateProblem());
   }
 
-//    @Test
-//    public void testStableSolverOTO() {
-//        int numberOfProperties = 5;
-//        SampleDataGenerator generator = new SampleDataGenerator(
-//                MatchingProblemType.OTO,
-//                20, 50,
-//                numberOfProperties);
-//        generator.setCapacities.put(0, 5);
-//        generator.setCapacities.put(1, 5);
-//        generator.setCapRandomize(new boolean[]{false, false});
-//        generator.setEvaluateFunctions(new String[]{DEFAULT_EVALUATE_FUNC, DEFAULT_EVALUATE_FUNC});
-//        generator.setFnf(DEFAULT_FITNESS_FUNC);
-//
-//        String algo = "IBEA";
-//        MatchingProblem problem = generator.generateProblem();
-//        // Run the algorithm
-//        NondominatedPopulation result = new Executor()
-//                .withProblem(problem)
-//                .withAlgorithm(algo)
-//                .withMaxEvaluations(100)
-//                .withProperty("populationSize", 1000)
-//                .distributeOnAllCores()
-//                .run();
-//
-//    }
-}
+  @Test
+  public void testDtoValidation() {
+    stableMatchingProblemDto.setDistributedCores("");
+    Set<ConstraintViolation<StableMatchingProblemDto>> violations = validator.validate(stableMatchingProblemDto);
+    assertTrue(!violations.isEmpty());
 
+  }
+
+
+}

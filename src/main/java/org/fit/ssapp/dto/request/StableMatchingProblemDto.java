@@ -96,4 +96,9 @@ public class StableMatchingProblemDto implements ProblemRequestDto {
         + ", maxTime=" + maxTime + ", algorithm='" + algorithm + '\'' + ", distributedCores='"
         + distributedCores + '\'' + '}';
   }
+
+  @Override
+  public String getAlgorithm() {
+    return algorithm;
+  }
 }

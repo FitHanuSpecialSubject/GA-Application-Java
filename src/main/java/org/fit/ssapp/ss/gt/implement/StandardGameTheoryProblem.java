@@ -3,7 +3,6 @@ package org.fit.ssapp.ss.gt.implement;
 import static org.fit.ssapp.util.StringExpressionEvaluator.evaluateFitnessValue;
 import static org.fit.ssapp.util.StringExpressionEvaluator.evaluatePayoffFunctionNoRelative;
 import static org.fit.ssapp.util.StringExpressionEvaluator.evaluatePayoffFunctionWithRelativeToOtherPlayers;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -334,7 +333,6 @@ public class StandardGameTheoryProblem implements GameTheoryProblem, Serializabl
 
   @Override
   public void evaluate(Solution solution) {
-//        System.out.println("Evaluating " + count++);
     double[] payoffs = new double[solution.getNumberOfVariables()];
 
     int[] chosenStrategyIndices = new int[solution.getNumberOfVariables()];
@@ -342,7 +340,7 @@ public class StandardGameTheoryProblem implements GameTheoryProblem, Serializabl
 
     for (int i = 0; i < normalPlayers.size(); i++) {
       BinaryIntegerVariable chosenStrategyIndex = (BinaryIntegerVariable) solution.getVariable(i);
-      chosenStrategyIndices[i] = (chosenStrategyIndex.getValue());
+      chosenStrategyIndices[i] = chosenStrategyIndex.getValue();
     }
 
     // check if the solution violates any constraint
@@ -360,24 +358,22 @@ public class StandardGameTheoryProblem implements GameTheoryProblem, Serializabl
 
         // if the prevStrategyIndex is one of 2 conflict strategies, and the currentStrategyIndex is the other one
         boolean violated =
-            (prevStrategyIndex == leftPlayerStrategy && currentStrategyIndex == rightPlayerStrategy)
-                ||
-                (prevStrategyIndex == rightPlayerStrategy
-                    && currentStrategyIndex == leftPlayerStrategy);
+                (prevStrategyIndex == leftPlayerStrategy && currentStrategyIndex == rightPlayerStrategy)
+                        ||
+                        (prevStrategyIndex == rightPlayerStrategy
+                                && currentStrategyIndex == leftPlayerStrategy);
 
         if (violated) {
-          //the player current strategy is conflict with his prev strategy in the previous iteration
+          // the player current strategy is conflict with his prev strategy in the previous iteration
           solution.setConstraint(i, -1); // this solution violates the constraints[i]
         }
       } else {
         // this conflict is between 2 strategies of the 2 players at the a iteration
         if (chosenStrategyIndices[leftPlayerIndex - 1] == leftPlayerStrategy &&
-            chosenStrategyIndices[rightPlayerIndex - 1] == rightPlayerStrategy) {
+                chosenStrategyIndices[rightPlayerIndex - 1] == rightPlayerStrategy) {
           solution.setConstraint(i, -1); // this solution violates the constraints[i]
         }
       }
-
-
     }
 
     // calculate the payoff of the strategy each player has chosen
@@ -396,10 +392,10 @@ public class StandardGameTheoryProblem implements GameTheoryProblem, Serializabl
         // if the payoff function is relative to other players, then it must be calculated in the evaluation
 
         chosenStrategyPayoff
-            = evaluatePayoffFunctionWithRelativeToOtherPlayers(chosenStrategy,
-            payoffFunction,
-            normalPlayers,
-            chosenStrategyIndices);
+                = evaluatePayoffFunctionWithRelativeToOtherPlayers(chosenStrategy,
+                payoffFunction,
+                normalPlayers,
+                chosenStrategyIndices);
       } else {
         // if the payoff function is relative to the player itself, then it can be calculated in the initialization
         chosenStrategyPayoff = normalPlayer.getPayoffValues().get(chosenStrategyIndices[i]);
@@ -409,18 +405,13 @@ public class StandardGameTheoryProblem implements GameTheoryProblem, Serializabl
       payoffs[i] = chosenStrategyPayoff.doubleValue();
     }
 
-    BigDecimal fitnessValue
-        = evaluateFitnessValue(
-        payoffs,
-        fitnessFunction
-    );
+    BigDecimal fitnessValue = evaluateFitnessValue(payoffs, fitnessFunction);
 
     if (isMaximizing) {
       fitnessValue = fitnessValue.negate(); // because the MOEA Framework only support minimization, for maximization problem, we need to negate the fitness value
     }
 
     solution.setObjective(0, fitnessValue.doubleValue());
-
   }
 
   // SOLUTION = VARIABLE -> OBJECTIVE || CONSTRAINT
