@@ -211,6 +211,7 @@ Where:
 1.  $$
     R_i(P_i) = x - - (P_i) =
     \begin{cases}
+    2 & \text{if } x = 0 \\
     0 & \text{if } P_i > x \\
     \frac{x + |P_i - x|}{x} & \text{else}
     \end{cases}
