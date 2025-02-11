@@ -16,17 +16,15 @@ The primary goal of this manual is to provide a detailed, easy-to-understand gui
    - [GT (Game Theory)](#32-gt-game-theory)
 4. [Local Installation](#4-local-installation)
    - [System Requirements](#41-system-requirements)
-   - [Installation Steps](#42-installation-steps-)
+   - [Installation Steps](#42-installation-steps)
    - [Troubleshooting](#43-troubleshooting)
 5. [Data Form Creation](#5-data-form-creation)
 6. [Solve](#6-solve)
-   - [Overview](#61-overview)
-   - [ Step-by-step Execution](#62-step-by-step-excution)
-   - [Optimization Tips](#63-optimization-tips)
+   - [ Step-by-step Execution](#61-step-by-step-excution)
+   - [Optimization Tips](#62-optimization-tips)
 7. [Get Result Insight](#7-get-result-insight)
-   - [Analyzing Results](#71-analyzing-results)
-   - [Customization](#72-customization)
-   - [Common Issues](#73-common-issues)
+   - [Output Format](#71-output-format)
+   - [Common Issues](#72-common-issues)
 8. [Deployment](#8-deployment)
    - [Supported Environments](#81-supported-environments)
    - [Deployment Steps](#82-deployment-steps)
@@ -208,33 +206,37 @@ Where:
 
 ### Requirement Functions
 
-1.  $$
+1.  
+$$
     R_i(P_i) = x - - (P_i) =
     \begin{cases}
     2 & \text{if } x = 0 \\
     0 & \text{if } P_i > x \\
     \frac{x + |P_i - x|}{x} & \text{else}
     \end{cases}
-    $$
+$$
 
-2.  $$
+2.  
+$$
     R_i(P_i) = x + + (P_i) =
     \begin{cases}
     2 & \text{if } x = 0 \\
     0 & \text{if } P_i < x \\
     \frac{x + |P_i - x|}{x} & \text{else}
     \end{cases}
-    $$
+$$
 
-3.  $$
+3.  
+$$
     R_i(P_i) = x : y (P_i) =
     \begin{cases}
     \frac{|y - x|}{2} - \frac{|x + y|}{2} + \frac{|P_i|}{|y - x|} + 1 & \text{if } P_i \in [x, y] \\
     0 & \text{else}
     \end{cases}
-    $$
+$$
 
-4.  $$
+4.  
+$$
     R_i(P_i) = x(P_i) =
     \begin{cases}
     0 & \text{if } P_i < 0 \text{ or } P_i > 10 \\
@@ -242,7 +244,7 @@ Where:
     1 & \text{if } |P_i - x| > 5 \\
     \frac{10 - |P_i - x|}{11} & \text{else}
     \end{cases}
-    $$
+$$
 
 ---
 
