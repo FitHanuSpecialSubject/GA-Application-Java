@@ -208,33 +208,37 @@ Where:
 
 ### Requirement Functions
 
-1.  $$
+1.  
+$$
     R_i(P_i) = x - - (P_i) =
     \begin{cases}
     2 & \text{if } x = 0 \\
     0 & \text{if } P_i > x \\
     \frac{x + |P_i - x|}{x} & \text{else}
     \end{cases}
-    $$
+$$
 
-2.  $$
+2.  
+$$
     R_i(P_i) = x + + (P_i) =
     \begin{cases}
     2 & \text{if } x = 0 \\
     0 & \text{if } P_i < x \\
     \frac{x + |P_i - x|}{x} & \text{else}
     \end{cases}
-    $$
+$$
 
-3.  $$
+3.  
+$$
     R_i(P_i) = x : y (P_i) =
     \begin{cases}
     \frac{|y - x|}{2} - \frac{|x + y|}{2} + \frac{|P_i|}{|y - x|} + 1 & \text{if } P_i \in [x, y] \\
     0 & \text{else}
     \end{cases}
-    $$
+$$
 
-4.  $$
+4.  
+$$
     R_i(P_i) = x(P_i) =
     \begin{cases}
     0 & \text{if } P_i < 0 \text{ or } P_i > 10 \\
@@ -242,7 +246,7 @@ Where:
     1 & \text{if } |P_i - x| > 5 \\
     \frac{10 - |P_i - x|}{11} & \text{else}
     \end{cases}
-    $$
+$$
 
 ---
 
