@@ -15,14 +15,14 @@ import org.fit.ssapp.dto.response.Response;
 import org.fit.ssapp.ss.smt.Matches;
 import org.fit.ssapp.ss.smt.MatchingProblem;
 import org.fit.ssapp.ss.smt.implement.MTMProblem;
+import org.fit.ssapp.ss.smt.implement.var.CustomVariation;
 import org.fit.ssapp.ss.smt.result.MatchingSolution;
 import org.fit.ssapp.ss.smt.result.MatchingSolutionInsights;
 import org.fit.ssapp.util.ComputerSpecsUtil;
 import org.moeaframework.Executor;
-import org.moeaframework.core.NondominatedPopulation;
-import org.moeaframework.core.Problem;
-import org.moeaframework.core.Solution;
-import org.moeaframework.core.TerminationCondition;
+import org.moeaframework.core.*;
+import org.moeaframework.core.spi.OperatorFactory;
+import org.moeaframework.core.spi.OperatorProvider;
 import org.moeaframework.core.termination.MaxFunctionEvaluations;
 import org.moeaframework.util.TypedProperties;
 import org.springframework.http.HttpStatus;
@@ -171,6 +171,30 @@ public class StableMatchingService implements ProblemService {
     properties.setInt("populationSize", populationSize);
     properties.setInt("maxTime", maxTime);
     TerminationCondition maxEval = new MaxFunctionEvaluations(generation * populationSize);
+
+    OperatorFactory.getInstance().addProvider(new OperatorProvider() {
+      @Override
+      public String getMutationHint(Problem problem) {
+        return null;
+      }
+
+      @Override
+      public String getVariationHint(Problem problem) {
+        return null;
+      }
+
+      @Override
+      public Variation getVariation(String name, TypedProperties typedProperties, Problem problem) {
+        if (name.equalsIgnoreCase("CV")) {
+          double crossoverRate = typedProperties.getDouble("cr.rate", 0.9);
+          double mutationRate = typedProperties.getDouble("mut.rate", 0.1);
+
+          return new CustomVariation(crossoverRate, mutationRate, problem.getNumberOfVariables());
+        }
+        return null;
+      }
+    });
+
     try {
       if (distributedCores.equals("all")) {
         result = new Executor()
@@ -179,6 +203,9 @@ public class StableMatchingService implements ProblemService {
             .withMaxEvaluations(generation * populationSize)
             .withTerminationCondition(maxEval)
             .withProperties(properties)
+            .withProperty("operator", "CV")
+            .withProperty("cr.rate", 0.9)
+            .withProperty("mut.rate", 0.1)
             .distributeOnAllCores()
             .run();
       } else {
@@ -189,6 +216,9 @@ public class StableMatchingService implements ProblemService {
             .withMaxEvaluations(generation * populationSize)
             .withTerminationCondition(maxEval)
             .withProperties(properties)
+            .withProperty("operator", "CV")
+            .withProperty("cr.rate", 0.9)
+            .withProperty("mut.rate", 0.1)
             .distributeOn(numberOfCores)
             .run();
       }
