@@ -264,7 +264,7 @@ public class SampleDataGenerator {
   }
 
 
-  private Requirement[][] generateRequirement() {
+  public Requirement[][] generateRequirement() {
     String[][] requirementString = generateRequirementString();
     Requirement[][] individualRequirements = new Requirement[this.individualNum][this.numberOfProperties];
     individualRequirements = RequirementDecoder.decode(requirementString);
