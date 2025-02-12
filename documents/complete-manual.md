@@ -23,14 +23,15 @@ The primary goal of this manual is to provide a detailed, easy-to-understand gui
    - [ Step-by-step Execution](#61-step-by-step-excution)
    - [Optimization Tips](#62-optimization-tips)
 7. [Get Result Insight](#7-get-result-insight)
-   - [Output Format](#71-output-format)
-   - [Common Issues](#72-common-issues)
-8. [Deployment](#8-deployment)
+   - [Analyzing Results](#71-analyzing-results)
+   - [Output Format](#72-output-format)
+   - [Common Issues](#73-common-issues)
+9. [Deployment](#8-deployment)
    - [Supported Environments](#81-supported-environments)
    - [Deployment Steps](#82-deployment-steps)
    - [Best Practices](#83-best-pratices)
-9. [Contributors](#9-contributors)
-10. [End](#10-end)
+10. [Contributors](#9-contributors)
+11. [End](#10-end)
 
 # **3\. Module Specifications**
 
@@ -335,11 +336,7 @@ Where:
 ### Requirement Functions
 
 1.  
-<<<<<<< HEAD
-   $$
-=======
 $$
->>>>>>> 16b71344013ec70a1267bcf157449d5910e7d1f3
     R_i(P_i) = x - - (P_i) =
     \begin{cases}
     2 & \text{if } x = 0 \\
@@ -347,14 +344,8 @@ $$
     \frac{x + |P_i - x|}{x} & \text{else}
     \end{cases}
 $$
-
-<<<<<<< HEAD
-2.
-    $$
-=======
 2.  
 $$
->>>>>>> 16b71344013ec70a1267bcf157449d5910e7d1f3
     R_i(P_i) = x + + (P_i) =
     \begin{cases}
     2 & \text{if } x = 0 \\
@@ -363,13 +354,8 @@ $$
     \end{cases}
 $$
 
-<<<<<<< HEAD
-3. 
-    $$
-=======
 3.  
 $$
->>>>>>> 16b71344013ec70a1267bcf157449d5910e7d1f3
     R_i(P_i) = x : y (P_i) =
     \begin{cases}
     \frac{|y - x|}{2} - \frac{|x + y|}{2} + \frac{|P_i|}{|y - x|} + 1 & \text{if } P_i \in [x, y] \\
@@ -377,13 +363,8 @@ $$
     \end{cases}
 $$
 
-<<<<<<< HEAD
-4. 
-    $$
-=======
 4.  
 $$
->>>>>>> 16b71344013ec70a1267bcf157449d5910e7d1f3
     R_i(P_i) = x(P_i) =
     \begin{cases}
     0 & \text{if } P_i < 0 \text{ or } P_i > 10 \\
@@ -588,7 +569,7 @@ _The "Get Result Insight" feature will be available after a successful solve._
 - **SMT**: A table containing matched pairs and unmatched pairs (if any).
 - **GT**: A table containing the strategies used and the corresponding scores of the players.
 
-### **7.2 Common Issues**
+### **7.3 Common Issues**
 
 - **Missing results**: Check if the solving process was completed successfully.
 - **Incorrect data**: Verify the input data and cross-check with the documentation.
