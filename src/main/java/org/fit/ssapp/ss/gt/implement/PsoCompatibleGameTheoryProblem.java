@@ -33,13 +33,16 @@ import org.moeaframework.core.variable.RealVariable;
 @NoArgsConstructor
 public class PsoCompatibleGameTheoryProblem implements GameTheoryProblem, Serializable {
 
-  int[] bestResponses = new int[4];
+  /** Array to store best response strategies for each player */
+  private int[] bestResponses = new int[4];
   private SpecialPlayer specialPlayer;
   private List<NormalPlayer> normalPlayers;
   private List<NormalPlayer> oldNormalPlayers = new ArrayList<>();
   private List<Conflict> conflictSet = new ArrayList<>();
-  //Store average pure payoff differences
+  
+  /** Stores average pure payoff differences between strategies */
   private List<Double> playerAvgDiffs;
+  
   private String fitnessFunction;
   private String defaultPayoffFunction;
   private boolean isMaximizing;
@@ -104,7 +107,13 @@ public class PsoCompatibleGameTheoryProblem implements GameTheoryProblem, Serial
   }
 
 
-  @SuppressWarnings("checkstyle:MissingJavadocMethod")
+  /**
+   * Returns a string representation of this game theory problem.
+   * Includes details of each normal player and their strategies.
+   *
+   * @return A string containing formatted details of all normal players
+   */
+  @Override
   public String toString() {
     StringBuilder gameString = new StringBuilder();
     for (NormalPlayer normalPlayer : normalPlayers) {

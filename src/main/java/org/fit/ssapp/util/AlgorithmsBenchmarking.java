@@ -28,13 +28,22 @@ import org.moeaframework.Executor;
 import org.moeaframework.core.NondominatedPopulation;
 import org.moeaframework.core.Problem;
 
-
-@SuppressWarnings("checkstyle:MissingJavadocType")
+/**
+ * This class benchmarks various algorithms for solving game theory problems, logs their execution
+ * time, and outputs the results in CSV format. It also handles the configuration and management of
+ * multiple algorithms and their execution in parallel.
+ */
 @Slf4j
 public class AlgorithmsBenchmarking {
 
-  @SuppressWarnings({"checkstyle:CommentsIndentation", "checkstyle:LineLength",
-      "checkstyle:MissingJavadocMethod"})
+  /**
+   * Runs the specified algorithm on a given problem and returns the execution time.
+   *
+   * @param problem the problem to solve
+   * @param algo    the algorithm to use
+   * @return the runtime of the algorithm in seconds
+   * @throws IllegalArgumentException if the algorithm is not supported
+   */
   public static double run(Problem problem, String algo) {
     List<String> algorithms = Arrays.asList(AppConst.SUPPORTED_ALGOS);
     if (!algorithms.contains(algo)) {
@@ -58,18 +67,31 @@ public class AlgorithmsBenchmarking {
     return runtime;
   }
 
-  @SuppressWarnings({"checkstyle:LineLength", "checkstyle:MissingJavadocMethod"})
+  /**
+   * The main method to initialize and run the benchmarking process for the algorithms. It reads a
+   * serialized game theory problem, runs the specified algorithm, and logs the runtime.
+   *
+   * @param args the command-line arguments
+   */
   public static void main(String[] args) {
     String problemSerializedFilePath = ".data/gt_data.ser";
-    StandardGameTheoryProblem problem = (StandardGameTheoryProblem) ProblemUtils.readProblemFromFile(
-        problemSerializedFilePath);
+    StandardGameTheoryProblem problem = (StandardGameTheoryProblem) ProblemUtils
+        .readProblemFromFile(
+            problemSerializedFilePath);
 
     double runtime = run(problem, "OMOPSO");
 
     log.info("{}", runtime);
   }
 
-  @SuppressWarnings("checkstyle:MissingJavadocMethod")
+  /**
+   * Logs the given data to a file in CSV format.
+   *
+   * @param path   the file path where the data should be saved
+   * @param data   the data to be written to the file
+   * @param format the CSV format to use
+   * @return true if the data was written successfully, false otherwise
+   */
   public static boolean logData(String path, String[][] data, CSVFormat format) {
 
     if (!SimpleFileUtils.isFileExist(path)) {
@@ -98,11 +120,21 @@ public class AlgorithmsBenchmarking {
     }
   }
 
+  /**
+   * Checks whether the given CSV format is supported.
+   *
+   * @param format the CSV format to check
+   * @return true if the format is supported, false otherwise
+   */
   private static boolean isValidDelimiterType(CSVFormat format) {
     return List.of(CSVFormat.DEFAULT, CSVFormat.TDF).contains(format);
   }
 
-  @SuppressWarnings("checkstyle:MissingJavadocMethod")
+  /**
+   * Starts the benchmarking process with a default log file name.
+   *
+   * @param problem the problem to solve
+   */
   public void start(Problem problem) {
     String logFileName = "log";
     FastDateFormat dateFormat = FastDateFormat.getInstance("MMddHHss");
@@ -111,7 +143,12 @@ public class AlgorithmsBenchmarking {
     start(problem, logFileName);
   }
 
-  @SuppressWarnings("checkstyle:MissingJavadocMethod")
+  /**
+   * Starts the benchmarking process and logs the results to a specified log file.
+   *
+   * @param problem     the problem to solve
+   * @param logFileName the name of the log file
+   */
   public void start(Problem problem, String logFileName) {
     String[] algorithms = AppConst.SUPPORTED_ALGOS;
     List<AlgorithmRunResult> runResults = new ArrayList<>();
@@ -160,26 +197,32 @@ public class AlgorithmsBenchmarking {
     System.exit(0);
   }
 
-  @SuppressWarnings({"checkstyle:SummaryJavadoc", "checkstyle:MissingJavadocType"})
+  /**
+   * Class representing the results of an algorithm run.
+   */
   @AllArgsConstructor
   @NoArgsConstructor
   @Data
   public static class AlgorithmRunResult {
 
     /**
-     * name
+     * The name of the algorithm.
      */
     String algorithmName;
     /**
-     * run ability
+     * Indicates whether the algorithm was successfully executed.
      */
     boolean runnable;
     /**
-     * runtime in seconds
+     * The runtime of the algorithm in seconds.
      */
     double runtime;
 
-    @SuppressWarnings("checkstyle:MissingJavadocMethod")
+    /**
+     * Converts the algorithm run result to a data point for logging.
+     *
+     * @return an array of strings representing the algorithm's result
+     */
     public String[] toDataPoint() {
 
       String algorithmNameStr = Objects.nonNull(this.algorithmName) ? this.algorithmName : "null";

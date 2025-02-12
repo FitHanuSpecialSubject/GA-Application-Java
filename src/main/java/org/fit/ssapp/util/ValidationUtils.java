@@ -17,7 +17,10 @@ import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.validation.beanvalidation.SpringValidatorAdapter;
 
-@SuppressWarnings("checkstyle:MissingJavadocType")
+/**
+ * Utility class for validation operations, including validating DTO objects, extracting error
+ * details from binding results, and retrieving messages by key.
+ */
 public class ValidationUtils {
 
   static MessageSource messageSource;
@@ -44,11 +47,12 @@ public class ValidationUtils {
 
 
   /**
-   * Get all errors out of bindingResult as Map.
+   * Extracts all errors from the given BindingResult and returns them as a Map. The map's keys are
+   * the field names and the values are lists of error messages.
    *
-   * @param bindingResult Validate result.
+   * @param bindingResult the BindingResult containing validation errors
+   * @return a Map with field names as keys and lists of error messages as values
    */
-
   public static Map<String, List<String>> getAllErrorDetails(BindingResult bindingResult) {
     List<ObjectError> listObjectError = bindingResult.getAllErrors();
     if (CollectionUtils.isEmpty(listObjectError)) {
@@ -65,13 +69,14 @@ public class ValidationUtils {
 
 
   /**
-   * Get message by key and params, currently not using, update later.
+   * Retrieves a message by its key and optional parameters. Currently, this method uses a
+   * MessageSource to fetch the message but may be updated later for additional functionality.
    *
-   * @param defaultMessage String
-   * @param params         Object...
-   * @return String
+   * @param defaultMessage the key of the message to retrieve
+   * @param params         the parameters to be included in the message (optional)
+   * @return the message corresponding to the key, or the default message if no such message is
+   *     found
    */
-  @SuppressWarnings("unused")
   public static String getMessage(String defaultMessage, String... params) {
     try {
       return messageSource.getMessage(defaultMessage, params, Locale.ENGLISH);

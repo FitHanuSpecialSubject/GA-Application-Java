@@ -9,15 +9,20 @@ import net.objecthunter.exp4j.ValidationResult;
 import org.fit.ssapp.constants.AppConst;
 import org.fit.ssapp.constants.StableMatchingConst;
 
-@SuppressWarnings({"checkstyle:MissingJavadocType", "checkstyle:SummaryJavadoc"})
+/**
+ * Utility class for evaluating mathematical expressions related to satisfaction levels and
+ * functions. This class provides methods for extracting variables, validating functions, and
+ * calculating sigma values.
+ */
 public class EvaluatorUtils {
 
   /**
-   * get length of ??CONTENT?? inside SIGMA{??CONTENT??}
+   * Calculates the length of the expression inside a sigma function. This function searches for the
+   * content between the start index and the closing bracket "{}".
    *
-   * @param function   function String
-   * @param startIndex "{" start bracket index
-   * @return length
+   * @param function   the function string containing the sigma expression
+   * @param startIndex the index where the sigma expression starts (index of "{}")
+   * @return the length of the expression inside the sigma function
    */
   public static int getSigmaFunctionExpressionLength(String function, int startIndex) {
     int num = 0;
@@ -34,15 +39,16 @@ public class EvaluatorUtils {
 
 
   /**
-   * Calculates sigma value based on satisfaction level and input expression.
+   * Calculates the satisfaction levels of a set based on the satisfaction levels of individuals.
+   * This function splits the satisfaction levels based on the set and the number of individuals in
+   * that set.
    *
-   * @param satisfactions            Array containing satisfaction levels of individuals.
-   * @param numberOfIndividuals      Total individuals.
-   * @param numberOfIndividualOfSet0 Set of individual numbers 0.
-   * @return The sum of the sigma values is calculated.
+   * @param satisfactions            the array containing the satisfaction levels of all
+   *                                 individuals
+   * @param expression               the set index (0 or 1)
+   * @param numberOfIndividuals      the total number of individuals
+   * @param numberOfIndividualOfSet0 the number of individuals in set 0
    */
-
-  @SuppressWarnings("unused")
   public static double sigmaCalculate(double[] satisfactions, String expression,
       int numberOfIndividuals, int numberOfIndividualOfSet0) {
     System.out.println("sigma calculating...");
@@ -93,7 +99,6 @@ public class EvaluatorUtils {
    * @param numberOfIndividualOfSet0 Set of individual numbers 0.
    * @return The sum of the sigma values is calculated.
    */
-
   public static double[] getSatisfactoryOfaSetByDefault(double[] satisfactions, int set,
       int numberOfIndividual, int numberOfIndividualOfSet0) {
     double[] setSatisfactions;
@@ -115,7 +120,13 @@ public class EvaluatorUtils {
 
 
   /**
-   * temp
+   * Validates a given fitness function by trimming whitespace and checking if it is empty or
+   * matches the default fitness function. If it is empty or matches the default, it returns an
+   * empty string.
+   *
+   * @param func the fitness function string to validate
+   * @return an empty string if the function is empty or matches the default fitness function;
+   *        otherwise, returns the function string
    */
   public static String getValidEvaluationFunction(String func) {
     func = func.trim();
@@ -126,7 +137,12 @@ public class EvaluatorUtils {
   }
 
   /**
-   * temp
+   * Checks if the function string is equal to the default function and returns an empty string if
+   * true.
+   *
+   * @param func the function string to check
+   * @return an empty string if the function matches the default; otherwise, returns the function
+   *        string
    */
   public static String getIfDefaultFunction(String func) {
     if (AppConst.DEFAULT_FUNC.equalsIgnoreCase(func)) {
@@ -135,13 +151,20 @@ public class EvaluatorUtils {
     return func;
   }
 
+
   /**
-   * temp
+   * Validates a given fitness function by trimming whitespace and checking if it is empty or
+   * matches the default fitness function. If it is empty or matches the default, it returns an
+   * empty string.
+   *
+   * @param func the fitness function string to validate
+   * @return an empty string if the function is empty or matches the default fitness function;
+   *      otherwise, returns the function string
    */
-  @SuppressWarnings("checkstyle:OperatorWrap")
   public static String getValidFitnessFunction(String func) {
     func = func.trim();
-    if (StringUtils.isEmptyOrNull(func) ||
+    if (StringUtils.isEmptyOrNull(func)
+        ||
         func.equalsIgnoreCase(StableMatchingConst.DEFAULT_FITNESS_FUNC)) {
       return "";
     }
@@ -149,13 +172,17 @@ public class EvaluatorUtils {
   }
 
 
-  @SuppressWarnings({"checkstyle:CommentsIndentation", "checkstyle:MissingJavadocMethod"})
+  /**
+   * Main method to demonstrate the usage of expressions with variables. This method builds and
+   * validates expressions using the exp4j library.
+   *
+   * @param args command line arguments (not used)
+   */
   public static void main(String[] args) {
     String[] vars = new String[]{
         "u", "u12", "u21", "u202"
     };
     String[] functions = new String[]{
-//                "u+1",
         "u202 + 1 + 2",
         "(u12 + 1) * 2",
         "abs(u12 - u21) / 2"

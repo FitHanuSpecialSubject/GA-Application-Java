@@ -3,7 +3,10 @@ package org.fit.ssapp.dto.validator;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
-@SuppressWarnings({"checkstyle:SummaryJavadoc", "checkstyle:MissingJavadocType"})
+/**
+ * Validator class for checking if the provided value for distributed cores is valid. The value must
+ * either be "all" or a positive integer that does not exceed the available CPU cores.
+ */
 public class DistributedCoresValidator implements
     ConstraintValidator<ValidDistributedCores, String> {
 
@@ -14,14 +17,21 @@ public class DistributedCoresValidator implements
   public void initialize(ValidDistributedCores annotation) {
   }
 
-  @SuppressWarnings("checkstyle:Indentation")
+  /**
+   * Validates whether the provided value is a valid representation of distributed cores. The value
+   * is valid if it is "all" or a positive integer that does not exceed the available CPU cores.
+   *
+   * @param value   the value to validate
+   * @param context the context in which the constraint is evaluated
+   * @return true if the value is valid, false otherwise
+   */
   @Override
   public boolean isValid(String value, ConstraintValidatorContext context) {
     int availableCores = Runtime.getRuntime().availableProcessors();
 
-      if (value.equalsIgnoreCase("all")) {
-          return true;
-      }
+    if (value.equalsIgnoreCase("all")) {
+      return true;
+    }
 
     try {
       int cores = Integer.parseInt(value);

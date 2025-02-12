@@ -73,7 +73,6 @@ public class SampleDataGenerator {
   /**
    * Generates a StableMatchingProblemDto instance based on the configured parameters.
    */
-  @SuppressWarnings("unused")
   public SampleDataGenerator(MatchingProblemType matchingProblemType, int[] numberForeachSet,
       int numberOfProperties) {
     this.matchingProblemType = matchingProblemType;

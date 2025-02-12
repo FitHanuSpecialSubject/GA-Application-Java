@@ -9,11 +9,21 @@ import oshi.hardware.HardwareAbstractionLayer;
 import oshi.software.os.OperatingSystem;
 import oshi.util.FormatUtil;
 
-@SuppressWarnings("checkstyle:MissingJavadocType")
+/**
+ * Utility class for retrieving the computer's system specifications such as OS, CPU, and memory
+ * information. Uses the OSHI library to gather the system details.
+ */
 @Slf4j
 public class ComputerSpecsUtil {
 
-  @SuppressWarnings("checkstyle:MissingJavadocMethod")
+  /**
+   * Retrieves the system specifications including the operating system details, CPU information,
+   * and memory. Uses the OSHI library to collect system data such as the operating system family,
+   * manufacturer, version, CPU name, number of physical and logical cores, and total memory. If
+   * there is an error during the process, default "Unknown" values will be returned for all specs.
+   *
+   * @return a {@link ComputerSpecs} object containing the system specifications
+   */
   public static ComputerSpecs getComputerSpecs() {
     ComputerSpecs computerSpecs;
     try {
