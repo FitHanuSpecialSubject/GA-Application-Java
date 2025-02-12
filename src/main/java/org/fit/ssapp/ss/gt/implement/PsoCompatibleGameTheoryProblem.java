@@ -7,8 +7,6 @@ import static org.fit.ssapp.util.StringExpressionEvaluator.evaluatePayoffFunctio
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import lombok.Data;
@@ -27,35 +25,37 @@ import org.moeaframework.core.NondominatedPopulation;
 import org.moeaframework.core.Solution;
 import org.moeaframework.core.variable.RealVariable;
 
+/**
+ * Represents a standard game theory problem. This class holds the necessary information for game
+ * theory calculations, including players, strategies, and payoff functions.
+ */
 @Data
 @NoArgsConstructor
-public class PSOCompatibleGameTheoryProblem implements GameTheoryProblem, Serializable {
+public class PsoCompatibleGameTheoryProblem implements GameTheoryProblem, Serializable {
 
-  int[] bestResponses = new int[4];
+  /** Array to store best response strategies for each player */
+  private int[] bestResponses = new int[4];
   private SpecialPlayer specialPlayer;
   private List<NormalPlayer> normalPlayers;
-  private List<NormalPlayer> oldNormalPlayers = new ArrayList<>(); // this is for problem with dynamic data
+  private List<NormalPlayer> oldNormalPlayers = new ArrayList<>();
   private List<Conflict> conflictSet = new ArrayList<>();
-  //Store average pure payoff differences
+  
+  /** Stores average pure payoff differences between strategies */
   private List<Double> playerAvgDiffs;
+  
   private String fitnessFunction;
   private String defaultPayoffFunction;
   private boolean isMaximizing;
 
-  public PSOCompatibleGameTheoryProblem(String path) {
-    super();
-
-    if (Objects.equals(path, "")) {
-      System.err.println("INVALID INPUT PATH FOUND: Unable to generate Game Theory Problem");
-      System.exit(-1);
-    }
-
-    eliminateConflictStrategies();
-  }
-
+  /**
+   * The main method to execute the PSO-based game theory problem. It reads the problem from a file,
+   * runs the OMOPSO algorithm, and prints the solution along with execution time.
+   *
+   * @param args Command-line arguments (not used).
+   */
   public static void main(String[] args) {
-    PSOCompatibleGameTheoryProblem problem = (PSOCompatibleGameTheoryProblem) ProblemUtils.readProblemFromFile(
-        ".data/gt_data_1.ser");
+    PsoCompatibleGameTheoryProblem problem = (PsoCompatibleGameTheoryProblem)
+        ProblemUtils.readProblemFromFile(".data/gt_data_1.ser");
     if (Objects.isNull(problem)) {
       return;
     }
@@ -70,21 +70,17 @@ public class PSOCompatibleGameTheoryProblem implements GameTheoryProblem, Serial
     long endTime = System.currentTimeMillis();
     double runtime = ((double) (endTime - startTime) / 1000);
     runtime = Math.round(runtime * 100.0) / 100.0;
+    System.out.println("Runtime: " + runtime);
 
     GameSolution solution = GameTheoryService.formatSolution(problem, result);
     System.out.println(solution);
   }
 
-  /**
-   * Remove all conflict strategies of conflict set declared in .xlsx file modifies: normalPlayers
-   * algorithm: Loop through conflict set -----------> set all strategies matching with strategies
-   * in conflict set to null -----------> remove all null strategies in normalPlayers Conflict set
-   * format: Left Player, Left Player Strategy, Right Player, Right Player Strategy
-   */
+  @SuppressWarnings("unused")
   private void eliminateConflictStrategies() {
-      if (Objects.isNull(this.conflictSet)) {
-          return;
-      }
+    if (Objects.isNull(this.conflictSet)) {
+      return;
+    }
 
     for (Conflict conflict : conflictSet) {
       NormalPlayer evaluatingLeftPlayer = normalPlayers.get(conflict.getLeftPlayer());
@@ -92,104 +88,32 @@ public class PSOCompatibleGameTheoryProblem implements GameTheoryProblem, Serial
       int leftConflictStrat = conflict.getLeftPlayerStrategy();
       int rightConflictStrat = conflict.getRightPlayerStrategy();
 
-      // IF STRATEGY BELONG TO SPECIAL PLAYER -> DON'T REMOVE
-      // Set conflict strategy of right player to null
-        if (evaluatingLeftPlayer.getStrategyAt(leftConflictStrat) != null &&
-                conflict.getLeftPlayer() > -1) {
-            evaluatingLeftPlayer.removeStrategiesAt(leftConflictStrat);
-        }
+      if (evaluatingLeftPlayer.getStrategyAt(leftConflictStrat) != null
+          &&
+          conflict.getLeftPlayer() > -1) {
+        evaluatingLeftPlayer.removeStrategiesAt(leftConflictStrat);
+      }
 
-      // Set conflict strategy of right player to null
-        if (evaluatingRightPlayer.getStrategyAt(rightConflictStrat) != null &&
-                conflict.getRightPlayer() > -1) {
-            evaluatingRightPlayer.removeStrategiesAt(rightConflictStrat);
-        }
+      if (evaluatingRightPlayer.getStrategyAt(rightConflictStrat) != null
+          &&
+          conflict.getRightPlayer() > -1) {
+        evaluatingRightPlayer.removeStrategiesAt(rightConflictStrat);
+      }
 
     }
-    //Completely remove all inappropriate strategies from Evaluating Strategies
-      for (NormalPlayer player : normalPlayers) {
-          player.removeAllNull();
-      }
-  }
-
-  private List<Double> buildPayoffGlopses(List<NormalPlayer> players) {
-
-    List<Double> playerAvgDiffs = new ArrayList<>();
-    for (NormalPlayer player : players) {
-      double playerAvgDiff = 0;
-      for (NormalPlayer opponent : players) {
-        playerAvgDiff += Math.abs(player.getPurePayoff() - opponent.getPurePayoff());
-      }
-      playerAvgDiff /= normalPlayers.size();
-      playerAvgDiffs.add(playerAvgDiff);
+    for (NormalPlayer player : normalPlayers) {
+      player.removeAllNull();
     }
-    return playerAvgDiffs;
   }
+
 
   /**
-   * @usage To get the smallest average pure payoff difference among players
-   * @algorithm 1) Loop through normalPlayers and calculate player average differences
-   * ______________with formula |playerPayoff - opponentPayoff| / normalPlayers.size() ___________2)
-   * Save result in a list ___________3) Assign result list to playerAvgDiffs property
+   * Returns a string representation of this game theory problem.
+   * Includes details of each normal player and their strategies.
+   *
+   * @return A string containing formatted details of all normal players
    */
-  private double computeNashEquilibrium() {
-    double nash;
-    List<Double> playerAvgDiffs = buildPayoffGlopses(normalPlayers);
-    nash = Collections.min(playerAvgDiffs);
-
-      if (specialPlayer != null) {
-          nash = Math.abs(nash - specialPlayer.getPayoff());
-      }
-    this.playerAvgDiffs = playerAvgDiffs;
-
-    return nash;
-  }
-
-  /**
-   * @usage To get player index with the highest pure payoff
-   * @algorithm 1) Save all pure payoff values to a list ___________2) Get max value in payoffs list
-   * ___________3) Return max value index in list (Since pure payoff index == player index)
-   */
-  public int getDominantPlayerIndex() {
-    List<Double> payoffs = new ArrayList<>();
-    normalPlayers.forEach(player -> payoffs.add(player.getPurePayoff()));
-    double max = Collections.max(payoffs);
-    return payoffs.indexOf(max);
-  }
-
-  /**
-   * @usage Get user with the best response strategy ----> The lower payoff average difference, the
-   * more equilibrium strategy is
-   */
-  public int getBestResponse() {
-    return playerAvgDiffs.indexOf(Collections.min(playerAvgDiffs));
-  }
-
-  public int[] getRemainAlliances() {
-    int[] bestResponse = new int[normalPlayers.size()];
-    Arrays.fill(bestResponse, 2);
-    int bestPlayerIndex = getBestResponse();
-    int bestStrategyIndex = normalPlayers.get(bestPlayerIndex).getDominantStrategyIndex();
-    bestResponse[bestPlayerIndex] = bestStrategyIndex;
-
-    if (bestStrategyIndex == normalPlayers.size() - 1) {
-        for (double p : bestResponse) {
-            p = bestStrategyIndex;
-        }
-    } else {
-      for (int i = 0; i < normalPlayers.size(); ++i) {
-        int upperBound = normalPlayers.size() - i;
-          if (bestStrategyIndex == i) {
-              bestResponses[i] =
-                      playerAvgDiffs.indexOf(Collections.min(playerAvgDiffs)) / upperBound;
-          } else {
-              bestResponses[i] = 2;
-          }
-      }
-    }
-    return bestResponse;
-  }
-
+  @Override
   public String toString() {
     StringBuilder gameString = new StringBuilder();
     for (NormalPlayer normalPlayer : normalPlayers) {
@@ -212,6 +136,13 @@ public class PSOCompatibleGameTheoryProblem implements GameTheoryProblem, Serial
     return normalPlayers.size();
   }
 
+  /**
+   * Sets the list of normal players and calculates their payoff values. If a player's payoff
+   * function is null, it is replaced with the default. If the payoff function contains "P", it is
+   * skipped.
+   *
+   * @param normalPlayers List of normal players to be set.
+   */
   public void setNormalPlayers(List<NormalPlayer> normalPlayers) {
     this.normalPlayers = normalPlayers;
 
@@ -221,12 +152,10 @@ public class PSOCompatibleGameTheoryProblem implements GameTheoryProblem, Serial
         payoffFunction = defaultPayoffFunction;
       }
 
-      // if the payoff function is relative to other players, then it must be calculated in the evaluation
       if (payoffFunction.contains("P")) {
         continue;
       }
 
-      // if the payoff function is relative to the player itself, then it can be calculated in the initialization
       List<BigDecimal> payoffValues = new ArrayList<>();
       for (int i = 0; i < player.getStrategies().size(); ++i) {
         BigDecimal payoffValue = evaluatePayoffFunctionNoRelative(player
@@ -253,7 +182,7 @@ public class PSOCompatibleGameTheoryProblem implements GameTheoryProblem, Serial
 
   @Override
   public void evaluate(Solution solution) {
-//        System.out.println("Evaluating " + count++);
+
     double[] payoffs = new double[solution.getNumberOfVariables()];
 
     int[] chosenStrategyIndices = new int[solution.getNumberOfVariables()];
@@ -264,23 +193,23 @@ public class PSOCompatibleGameTheoryProblem implements GameTheoryProblem, Serial
       chosenStrategyIndices[i] = (chosenStrategyIndex);
     }
 
-    // check if the solution violates any constraint
     for (int i = 0; i < conflictSet.size(); i++) {
       int leftPlayerIndex = conflictSet.get(i).getLeftPlayer();
       int rightPlayerIndex = conflictSet.get(i).getRightPlayer();
       int leftPlayerStrategy = conflictSet.get(i).getLeftPlayerStrategy();
       int rightPlayerStrategy = conflictSet.get(i).getRightPlayerStrategy();
 
-      // if 2 player indices are the same, meaning they are the same player and this is an old player
       if (leftPlayerIndex == rightPlayerIndex && oldNormalPlayers.size() > i) {
-        // this conflict is between 2 different strategies of the same player at 2 iterations, (for problem with dynamic data)
+
         int prevStrategyIndex = oldNormalPlayers.get(i).getPrevStrategyIndex();
         int currentStrategyIndex = chosenStrategyIndices[leftPlayerIndex];
 
-        // if the prevStrategyIndex is one of 2 conflict strategies, and the currentStrategyIndex is the other one
-        boolean violated = (prevStrategyIndex == leftPlayerStrategy &&
-            currentStrategyIndex == rightPlayerStrategy) ||
-            (prevStrategyIndex == rightPlayerStrategy &&
+        boolean violated = (prevStrategyIndex == leftPlayerStrategy
+            &&
+            currentStrategyIndex == rightPlayerStrategy)
+            ||
+            (prevStrategyIndex == rightPlayerStrategy
+                &&
                 currentStrategyIndex == leftPlayerStrategy);
 
         if (violated) {
@@ -288,8 +217,8 @@ public class PSOCompatibleGameTheoryProblem implements GameTheoryProblem, Serial
           solution.setConstraint(i, -1); // this solution violates the constraints[i]
         }
       } else {
-        // this conflict is between 2 strategies of the 2 players at the a iteration
-        if (chosenStrategyIndices[leftPlayerIndex - 1] == leftPlayerStrategy &&
+        if (chosenStrategyIndices[leftPlayerIndex - 1] == leftPlayerStrategy
+            &&
             chosenStrategyIndices[rightPlayerIndex - 1] == rightPlayerStrategy) {
           solution.setConstraint(i, -1); // this solution violates the constraints[i]
         }
@@ -309,9 +238,8 @@ public class PSOCompatibleGameTheoryProblem implements GameTheoryProblem, Serial
         payoffFunction = defaultPayoffFunction;
       }
 
-      BigDecimal chosenStrategyPayoff = new BigDecimal(0);
+      BigDecimal chosenStrategyPayoff;
       if (payoffFunction.contains("P")) {
-        // if the payoff function is relative to other players, then it must be calculated in the evaluation
 
         chosenStrategyPayoff = evaluatePayoffFunctionWithRelativeToOtherPlayers(
             chosenStrategy,
@@ -319,7 +247,6 @@ public class PSOCompatibleGameTheoryProblem implements GameTheoryProblem, Serial
             normalPlayers,
             chosenStrategyIndices);
       } else {
-        // if the payoff function is relative to the player itself, then it can be calculated in the initialization
         chosenStrategyPayoff = normalPlayer
             .getPayoffValues()
             .get(chosenStrategyIndices[i]);
@@ -332,25 +259,18 @@ public class PSOCompatibleGameTheoryProblem implements GameTheoryProblem, Serial
     BigDecimal fitnessValue = evaluateFitnessValue(payoffs, fitnessFunction);
 
     if (isMaximizing) {
-      fitnessValue = fitnessValue.negate(); // because the MOEA Framework only support minimization, for maximization problem, we need to negate the fitness value
+      fitnessValue = fitnessValue.negate();
     }
-
     solution.setObjective(0, fitnessValue.doubleValue());
-
   }
 
   @Override
   public Solution newSolution() {
 
-    // the variables[0] is the strategy index of each normalPlayers[0] choose
-    // the variable 1 is the strategy index of each player1 choose
-    // the variable 2 is the strategy index of each player2 choose
-    // ..
+    int numberOfNp = normalPlayers.size();
+    Solution solution = new Solution(numberOfNp, 1, conflictSet.size());
 
-    int numbeOfNP = normalPlayers.size();
-    Solution solution = new Solution(numbeOfNP, 1, conflictSet.size());
-
-    for (int i = 0; i < numbeOfNP; i++) {
+    for (int i = 0; i < numberOfNp; i++) {
       NormalPlayer player = normalPlayers.get(i);
       RealVariable variable = new RealVariable(0, player.getStrategies().size() - 0.01);
       solution.setVariable(i, variable);

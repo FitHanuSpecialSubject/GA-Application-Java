@@ -1,6 +1,6 @@
 package org.fit.ssapp.ss.smt.evaluator.impl;
 
-import static org.fit.ssapp.util.StringExpressionEvaluator.AfterTokenLength;
+import static org.fit.ssapp.util.StringExpressionEvaluator.afterTokenLength;
 import static org.fit.ssapp.util.StringExpressionEvaluator.convertToStringWithoutScientificNotation;
 import static org.fit.ssapp.util.StringExpressionEvaluator.isNumericValue;
 
@@ -66,7 +66,7 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
         }
         c += 3;
       } else if (ch == 'M') {
-        int ssLength = AfterTokenLength(fitnessFunction, c);
+        int ssLength = afterTokenLength(fitnessFunction, c);
         int positionOfM = Integer.parseInt(fitnessFunction.substring(c + 1,
             c + 1 + ssLength));
         if (positionOfM < 0 || positionOfM > matchingData.getSize()) {

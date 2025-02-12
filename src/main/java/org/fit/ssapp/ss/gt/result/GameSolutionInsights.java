@@ -6,9 +6,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.fit.ssapp.dto.response.ComputerSpecs;
-import org.fit.ssapp.util.ComputerSpecsUtil;
 
+
+/**
+ * Represents a standard game theory problem. This class holds the necessary information for game
+ * theory calculations, including players, strategies, and payoff functions.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -17,9 +20,6 @@ public class GameSolutionInsights {
 
   Map<String, List<Double>> fitnessValues;
   Map<String, List<Double>> runtimes;
-  private ComputerSpecs computerSpecs;
 
-  public ComputerSpecs getComputerSpecs() {
-    return ComputerSpecsUtil.getComputerSpecs();
-  }
+
 }

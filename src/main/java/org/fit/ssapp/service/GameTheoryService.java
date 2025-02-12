@@ -14,7 +14,7 @@ import org.fit.ssapp.dto.response.Progress;
 import org.fit.ssapp.dto.response.Response;
 import org.fit.ssapp.ss.gt.GameTheoryProblem;
 import org.fit.ssapp.ss.gt.NormalPlayer;
-import org.fit.ssapp.ss.gt.implement.PSOCompatibleGameTheoryProblem;
+import org.fit.ssapp.ss.gt.implement.PsoCompatibleGameTheoryProblem;
 import org.fit.ssapp.ss.gt.implement.StandardGameTheoryProblem;
 import org.fit.ssapp.ss.gt.result.GameSolution;
 import org.fit.ssapp.ss.gt.result.GameSolutionInsights;
@@ -30,6 +30,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+/**
+ * Service class for solving game theory problems and providing insights into algorithm performance.
+ * This class handles the execution of algorithms, formatting of solutions, and communication of
+ * progress.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -37,27 +42,24 @@ public class GameTheoryService {
 
   private final SimpMessagingTemplate simpMessagingTemplate;
 
-  private static final int RUN_COUNT_PER_ALGORITHM = 10; // for insight running, each algorithm will be run for 10 times
+  private static final int RUN_COUNT_PER_ALGORITHM = 10;
 
+  /**
+   * Solves a game theory problem using the specified algorithm and returns the solution.
+   *
+   * @param request the game theory problem request DTO
+   * @return a ResponseEntity containing the solution or an error message
+   */
   public ResponseEntity<Response> solveGameTheory(GameTheoryProblemDto request) {
 
     try {
-      log.info("Received request: " + request);
+      log.info("Received request: {}", request);
       GameTheoryProblem problem = GameTheoryProblemMapper.toProblem(request);
 
-//            log.info("start writing {} problem to file", problem.getName());
-//            boolean result = ProblemUtils.writeProblemToFile(problem, "gt_data_1");
-//            if (result) {
-//                log.info("finished writing {} problem to file", problem.getName());
-//            } else {
-//                log.info("failed writing {} problem to file", problem.getName());
-//            }
-
       long startTime = System.currentTimeMillis();
-      log.info("Running algorithm: " + request.getAlgorithm() + "...");
-
-      // solve the problem
-      NondominatedPopulation results = solveProblem(problem,
+      log.info("Running algorithm:  {}...", request.getAlgorithm());
+      NondominatedPopulation results;
+      results = solveProblem(problem,
           request.getAlgorithm(),
           request.getGeneration(),
           request.getPopulationSize(),
@@ -67,8 +69,7 @@ public class GameTheoryService {
       double runtime = ((double) (endTime - startTime) / 1000 / 60);
       runtime = Math.round(runtime * 100.0) / 100.0;
 
-      log.info("Algorithm: " + request.getAlgorithm() + " finished in " + runtime +
-          " minutes");
+      log.info("Algorithm: {} finished in {} minutes", request.getAlgorithm(), runtime);
 
       // format the output
       log.info("Preparing the solution ...");
@@ -89,6 +90,17 @@ public class GameTheoryService {
     }
   }
 
+  /**
+   * Solves the game theory problem using the specified algorithm and parameters.
+   *
+   * @param problem          the game theory problem to solve
+   * @param algorithm        the algorithm to use for solving the problem
+   * @param generation       the number of generations
+   * @param populationSize   the population size
+   * @param distributedCores the number of cores to distribute the computation
+   * @param maxTime          the maximum time allowed for computation
+   * @return the nominated population of solutions
+   */
   private NondominatedPopulation solveProblem(GameTheoryProblem problem,
       String algorithm,
       Integer generation,
@@ -102,8 +114,9 @@ public class GameTheoryService {
         results = new Executor()
             .withProblem(problem)
             .withAlgorithm(algorithm)
-            .withMaxEvaluations(generation *
-                populationSize) // we are using the number of generations and population size to calculate the number of evaluations
+            .withMaxEvaluations(generation
+                *
+                populationSize)
             .withProperty("populationSize", populationSize)
             .withProperty("maxTime", maxTime)
             .distributeOnAllCores()
@@ -115,8 +128,9 @@ public class GameTheoryService {
         results = new Executor()
             .withProblem(problem)
             .withAlgorithm(algorithm)
-            .withMaxEvaluations(generation *
-                populationSize) // we are using the number of generations and population size to calculate the number of evaluations
+            .withMaxEvaluations(generation
+                *
+                populationSize)
             .withProperty("populationSize", populationSize)
             .withProperty("maxTime", maxTime)
             .distributeOn(numberOfCores)
@@ -130,8 +144,9 @@ public class GameTheoryService {
         results = new Executor()
             .withProblem(problem)
             .withAlgorithm(algorithm)
-            .withMaxEvaluations(generation *
-                populationSize) // we are using the number of generations and population size to calculate the number of evaluations
+            .withMaxEvaluations(generation
+                *
+                populationSize)
             .withProperty("populationSize", populationSize)
             .withProperty("maxTime", maxTime)
             .distributeOnAllCores()
@@ -143,8 +158,7 @@ public class GameTheoryService {
         results = new Executor()
             .withProblem(problem)
             .withAlgorithm(algorithm)
-            .withMaxEvaluations(generation *
-                populationSize) // we are using the number of generations and population size to calculate the number of evaluations
+            .withMaxEvaluations(generation * populationSize)
             .withProperty("populationSize", populationSize)
             .withProperty("maxTime", maxTime)
             .distributeOn(numberOfCores)
@@ -156,6 +170,13 @@ public class GameTheoryService {
     }
   }
 
+  /**
+   * Formats the solution of the game theory problem into a user-friendly format.
+   *
+   * @param problem the game theory problem
+   * @param result  the nominated population of solutions
+   * @return the formatted game solution
+   */
   public static GameSolution formatSolution(GameTheoryProblem problem,
       NondominatedPopulation result) {
     Solution solution = result.get(0);
@@ -203,9 +224,17 @@ public class GameTheoryService {
     return gameSolution;
   }
 
+  /**
+   * Retrieves insights into the performance of different algorithms for solving the game theory
+   * problem.
+   *
+   * @param request     the game theory problem request DTO
+   * @param sessionCode the session code for progress communication
+   * @return a ResponseEntity containing the insights or an error message
+   */
   public ResponseEntity<Response> getProblemResultInsights(GameTheoryProblemDto request,
       String sessionCode) {
-    log.info("Received request: " + request);
+    log.info("Received request:.. {}", request);
     String[] algorithms = GameTheoryConst.ALLOWED_INSIGHT_ALGORITHMS;
 
     simpMessagingTemplate.convertAndSendToUser(sessionCode,
@@ -217,14 +246,14 @@ public class GameTheoryService {
     GameSolutionInsights gameSolutionInsights = initGameSolutionInsights(algorithms);
     int runCount = 1;
     int maxRunCount = algorithms.length * RUN_COUNT_PER_ALGORITHM;
-    // solve the problem with different algorithms and then evaluate the performance of the algorithms
+
     log.info("Start benchmarking the algorithms...");
     simpMessagingTemplate.convertAndSendToUser(sessionCode,
         "/progress",
         createProgressMessage("Start benchmarking the algorithms..."));
 
     for (String algorithm : algorithms) {
-      log.info("Running algorithm: " + algorithm + "...");
+      log.info("Running algorithm: {}...", algorithm);
       for (int i = 0; i < RUN_COUNT_PER_ALGORITHM; i++) {
         System.out.println("Iteration: " + i);
         long start = System.currentTimeMillis();
@@ -232,13 +261,13 @@ public class GameTheoryService {
         if (problem instanceof StandardGameTheoryProblem
             && AppConst.PSO_BASED_ALGOS.contains(algorithm)) {
           problem = GameTheoryProblemMapper
-              .toPSOProblem((StandardGameTheoryProblem) problem);
+              .toPsoProblem((StandardGameTheoryProblem) problem);
         }
 
-        if (problem instanceof PSOCompatibleGameTheoryProblem
+        if (problem instanceof PsoCompatibleGameTheoryProblem
             && !AppConst.PSO_BASED_ALGOS.contains(algorithm)) {
           problem = GameTheoryProblemMapper
-              .toStandardProblem((PSOCompatibleGameTheoryProblem) problem);
+              .toStandardProblem((PsoCompatibleGameTheoryProblem) problem);
         }
 
         NondominatedPopulation results = solveProblem(problem,
@@ -251,11 +280,13 @@ public class GameTheoryService {
         long end = System.currentTimeMillis();
 
         double runtime = (double) (end - start) / 1000;
-        double fitnessValue = getFitnessValue(results);
+        double fitnessValue;
+        fitnessValue = getFitnessValue(results);
 
         // send the progress to the client
         String message =
-            "Algorithm " + algorithm + " finished iteration: #" + (i + 1) + "/" +
+            "Algorithm " + algorithm + " finished iteration: #" + (i + 1) + "/"
+                +
                 RUN_COUNT_PER_ALGORITHM;
         Progress progress = createProgress(message, runtime, runCount, maxRunCount);
         System.out.println(progress);
@@ -283,6 +314,13 @@ public class GameTheoryService {
         .build());
   }
 
+  /**
+   * Initializes the game solution insights object with empty lists for fitness values and
+   * runtimes.
+   *
+   * @param algorithms the list of algorithms to initialize insights for
+   * @return the initialized game solution insights object
+   */
   private GameSolutionInsights initGameSolutionInsights(String[] algorithms) {
     GameSolutionInsights gameSolutionInsights = new GameSolutionInsights();
     Map<String, List<Double>> fitnessValueMap = new HashMap<>();
@@ -299,23 +337,38 @@ public class GameTheoryService {
     return gameSolutionInsights;
   }
 
+  /**
+   * Creates a progress object to communicate the current progress to the client.
+   *
+   * @param message     the progress message
+   * @param runtime     the runtime of the current iteration
+   * @param runCount    the current run count
+   * @param maxRunCount the maximum run count
+   * @return the progress object
+   */
   private Progress createProgress(String message,
       Double runtime,
       Integer runCount,
       int maxRunCount) {
     int percent = runCount * 100 / maxRunCount;
-    int minuteLeff = (int) Math.ceil(
+    int minuteLeft = (int) Math.ceil(
         ((maxRunCount - runCount) * runtime) / 60); // runtime is in seconds
     return Progress
         .builder()
         .inProgress(true) // this object is just to send to the client to show the progress
         .message(message)
         .runtime(runtime)
-        .minuteLeft(minuteLeff)
+        .minuteLeft(minuteLeft)
         .percentage(percent)
         .build();
   }
 
+  /**
+   * Creates a progress object with a message (no progress tracking).
+   *
+   * @param message the message to send
+   * @return the progress object
+   */
   private Progress createProgressMessage(String message) {
     return Progress
         .builder()
@@ -325,7 +378,13 @@ public class GameTheoryService {
         .build();
   }
 
-
+  /**
+   * Retrieves the name of a player, defaulting to a formatted string if the name is null.
+   *
+   * @param normalPlayer the player object
+   * @param index        the index of the player
+   * @return the player name
+   */
   public static String getPlayerName(NormalPlayer normalPlayer, int index) {
     String playerName = normalPlayer.getName();
     if (playerName == null) {
@@ -335,6 +394,14 @@ public class GameTheoryService {
     return playerName;
   }
 
+  /**
+   * Retrieves the name of a strategy, defaulting to a formatted string if the name is null.
+   *
+   * @param chosenStrategyIndex the index of the chosen strategy
+   * @param normalPlayer        the player object
+   * @param index               the index of the player
+   * @return the strategy name
+   */
   public static String getStrategyName(int chosenStrategyIndex,
       NormalPlayer normalPlayer,
       int index) {
@@ -347,6 +414,12 @@ public class GameTheoryService {
   }
 
 
+  /**
+   * Retrieves the fitness value from the first solution in the nominated population.
+   *
+   * @param result the nominated population of solutions
+   * @return the fitness value
+   */
   private static double getFitnessValue(NondominatedPopulation result) {
 
     Solution solution = result.get(0);

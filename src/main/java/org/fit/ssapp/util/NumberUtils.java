@@ -6,8 +6,17 @@ import java.util.Locale;
 import org.moeaframework.core.variable.EncodingUtils;
 import org.moeaframework.core.variable.RealVariable;
 
+/**
+ * Utility class for number-related operations.
+ */
 public class NumberUtils {
 
+  /**
+   * Checks if a given string can be parsed as an integer.
+   *
+   * @param str the string to check
+   * @return true if the string is a valid integer, false otherwise
+   */
   public static boolean isInteger(String str) {
     try {
       // Attempt to parse the String as an integer
@@ -19,6 +28,13 @@ public class NumberUtils {
     }
   }
 
+
+  /**
+   * Checks if a given string can be parsed as a double.
+   *
+   * @param str the string to check
+   * @return true if the string is a valid double, false otherwise
+   */
   public static boolean isDouble(String str) {
     if (!str.contains(",") || !str.contains(".")) {
       return false;
@@ -33,6 +49,12 @@ public class NumberUtils {
     }
   }
 
+  /**
+   * Formats a double value to two decimal places.
+   *
+   * @param val the double value to format
+   * @return the formatted double value
+   */
   public static Double formatDouble(double val) {
     DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.US);
     DecimalFormat df = new DecimalFormat("#.##", symbols);
@@ -41,10 +63,10 @@ public class NumberUtils {
   }
 
   /**
-   * floor real variable, parse int & return
+   * Converts a RealVariable object to an integer by taking the floor of its value.
    *
-   * @param variable Framework shi
-   * @return int
+   * @param variable the RealVariable to convert
+   * @return the integer representation of the variable
    */
   public static int toInteger(RealVariable variable) {
     double rawValue = EncodingUtils.getReal(variable);
