@@ -1,5 +1,6 @@
 package org.fit.ssapp.dto.request;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
@@ -9,6 +10,7 @@ import java.util.Arrays;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.fit.ssapp.config.ValidationConfig;
 import org.fit.ssapp.constants.MessageConst.ErrMessage;
 import org.fit.ssapp.dto.validator.ValidDistributedCores;
 import org.fit.ssapp.dto.validator.ValidEvaluateFunction;
@@ -17,6 +19,9 @@ import org.fit.ssapp.dto.validator.ValidFitnessFunction;
 import org.fit.ssapp.dto.validator.ValidIndividualArrayPropertyCount;
 import org.fit.ssapp.dto.validator.ValidIndividualArraysSize;
 import org.fit.ssapp.dto.validator.ValidRequirementSyntax;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 
 /**
@@ -28,16 +33,21 @@ import org.fit.ssapp.dto.validator.ValidRequirementSyntax;
 @ValidIndividualArraysSize
 @ValidEvaluateFunctionCount
 @ValidIndividualArrayPropertyCount
+@Component
 public class StableMatchingProblemDto implements ProblemRequestDto {
+
+  private  ValidationConfig validationConfig;
+
+  @Autowired
+  public StableMatchingProblemDto(ValidationConfig validationConfig) {
+    this.validationConfig = validationConfig;
+  }
 
   @Size(max = 255, message = ErrMessage.PROBLEM_NAME)
   private String problemName;
 
   @Min(value = 2, message = ErrMessage.MES_001)
   private int numberOfSets;
-
-  @Min(value = 3, message = ErrMessage.MES_002)
-  private int numberOfIndividuals;
 
   @Min(value = 1, message = ErrMessage.MES_003)
   private int numberOfProperty;
@@ -68,15 +78,25 @@ public class StableMatchingProblemDto implements ProblemRequestDto {
 
   private int[][] excludedPairs;
 
-  @Max(value = 3000, message = ErrMessage.POPULATION_SIZE)
   private int populationSize;
-
-  @Max(value = 1000, message = ErrMessage.GENERATION)
   private int generation;
+  private int numberOfIndividuals;
+
+  @PostConstruct
+  public void validate() {
+    if (populationSize > validationConfig.getPopulationMax()) {
+      throw new IllegalArgumentException(ErrMessage.POPULATION_SIZE);
+    }
+    if (generation > validationConfig.getGenerationMax()) {
+      throw new IllegalArgumentException(ErrMessage.GENERATION);
+    }
+    if (numberOfIndividuals < validationConfig.getIndividualsMin()) {
+      throw new IllegalArgumentException(ErrMessage.MES_002);
+    }
+  }
 
   private int maxTime;
 
-  //    @NotEmpty(message = ErrMessage.NOT_BLANK)
   private String algorithm;
 
   @ValidDistributedCores
@@ -84,16 +104,24 @@ public class StableMatchingProblemDto implements ProblemRequestDto {
 
   @Override
   public String toString() {
-    return "StableMatchingProblemDto{" + "problemName='" + problemName + '\'' + ", numberOfSets="
-        + numberOfSets + ", numberOfIndividuals=" + numberOfIndividuals + ", numberOfProperty="
-        + numberOfProperty + ", individualSetIndices=" + Arrays.toString(individualSetIndices)
-        + ", individualCapacities=" + Arrays.toString(individualCapacities) + Arrays.toString(
-        individualRequirements) + ", individualRequirements=" + ", individualWeights="
-        + Arrays.toString(individualWeights) + ", individualProperties=" + Arrays.toString(
-        individualProperties) + ", evaluateFunctions=" + Arrays.toString(evaluateFunctions)
-        + ", fitnessFunction='" + fitnessFunction + '\'' + ", excludedPairs=" + Arrays.toString(
-        excludedPairs) + ", populationSize=" + populationSize + ", generation=" + generation
-        + ", maxTime=" + maxTime + ", algorithm='" + algorithm + '\'' + ", distributedCores='"
-        + distributedCores + '\'' + '}';
+    return "StableMatchingProblemDto{" +
+            "problemName='" + problemName + '\'' +
+            ", numberOfSets=" + numberOfSets +
+            ", numberOfIndividuals=" + numberOfIndividuals +
+            ", numberOfProperty=" + numberOfProperty +
+            ", individualSetIndices=" + Arrays.toString(individualSetIndices) +
+            ", individualCapacities=" + Arrays.toString(individualCapacities) +
+            ", individualRequirements=" + Arrays.toString(individualRequirements) +
+            ", individualWeights=" + Arrays.toString(individualWeights) +
+            ", individualProperties=" + Arrays.toString(individualProperties) +
+            ", evaluateFunctions=" + Arrays.toString(evaluateFunctions) +
+            ", fitnessFunction='" + fitnessFunction + '\'' +
+            ", excludedPairs=" + Arrays.toString(excludedPairs) +
+            ", populationSize=" + populationSize +
+            ", generation=" + generation +
+            ", maxTime=" + maxTime +
+            ", algorithm='" + algorithm + '\'' +
+            ", distributedCores='" + distributedCores + '\'' +
+            '}';
   }
 }
