@@ -236,7 +236,7 @@ public class MTMProblem implements MatchingProblem {
 
   @Override
   public int getNumberOfVariables() {
-    return 1;
+    return problemSize;
   }
 
   @Override
