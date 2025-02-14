@@ -1,7 +1,5 @@
 package org.fit.ssapp.dto.request;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -10,18 +8,8 @@ import java.util.Arrays;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.fit.ssapp.config.ValidationConfig;
 import org.fit.ssapp.constants.MessageConst.ErrMessage;
-import org.fit.ssapp.dto.validator.ValidDistributedCores;
-import org.fit.ssapp.dto.validator.ValidEvaluateFunction;
-import org.fit.ssapp.dto.validator.ValidEvaluateFunctionCount;
-import org.fit.ssapp.dto.validator.ValidFitnessFunction;
-import org.fit.ssapp.dto.validator.ValidIndividualArrayPropertyCount;
-import org.fit.ssapp.dto.validator.ValidIndividualArraysSize;
-import org.fit.ssapp.dto.validator.ValidRequirementSyntax;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
+import org.fit.ssapp.dto.validator.*;
 
 
 /**
@@ -33,15 +21,8 @@ import org.springframework.stereotype.Component;
 @ValidIndividualArraysSize
 @ValidEvaluateFunctionCount
 @ValidIndividualArrayPropertyCount
-@Component
+@ValidStableMatching
 public class StableMatchingProblemDto implements ProblemRequestDto {
-
-  private  ValidationConfig validationConfig;
-
-  @Autowired
-  public StableMatchingProblemDto(ValidationConfig validationConfig) {
-    this.validationConfig = validationConfig;
-  }
 
   @Size(max = 255, message = ErrMessage.PROBLEM_NAME)
   private String problemName;
@@ -78,22 +59,14 @@ public class StableMatchingProblemDto implements ProblemRequestDto {
 
   private int[][] excludedPairs;
 
+  @Min(value = 1, message = ErrMessage.POPULATION_SIZE)
   private int populationSize;
-  private int generation;
-  private int numberOfIndividuals;
 
-  @PostConstruct
-  public void validate() {
-    if (populationSize > validationConfig.getPopulationMax()) {
-      throw new IllegalArgumentException(ErrMessage.POPULATION_SIZE);
-    }
-    if (generation > validationConfig.getGenerationMax()) {
-      throw new IllegalArgumentException(ErrMessage.GENERATION);
-    }
-    if (numberOfIndividuals < validationConfig.getIndividualsMin()) {
-      throw new IllegalArgumentException(ErrMessage.MES_002);
-    }
-  }
+  @Min(value = 1, message = ErrMessage.GENERATION)
+  private int generation;
+
+  @Min(value = 3, message = ErrMessage.MES_002)
+  private int numberOfIndividuals;
 
   private int maxTime;
 
