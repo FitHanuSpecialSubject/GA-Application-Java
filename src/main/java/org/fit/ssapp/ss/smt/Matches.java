@@ -165,10 +165,11 @@ public class Matches implements Serializable {
   }
 
   /**
-   * getLeftOvers.
+   * Retrieves the set of nodes that have no choices left for pairing.
+   * A node is considered a "leftover" if its matching preferList is empty .
+   * (It's can be unable to be matched with any node in the preferList)
    *
-   *
-   * @return Set.
+   *  @return Set.
    *
    */
   public Set<Integer> getLeftOvers() {

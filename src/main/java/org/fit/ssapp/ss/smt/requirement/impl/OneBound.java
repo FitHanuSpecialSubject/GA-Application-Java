@@ -8,7 +8,8 @@ import org.fit.ssapp.constants.StableMatchingConst;
 import org.fit.ssapp.ss.smt.requirement.Requirement;
 
 /**
- * OneBound.
+ * OneBound represents a single bound constraint for a given value.
+ * The expression variable indicates whether the constraint is increasing (++) or decreasing (--).
  */
 @Getter
 public class OneBound implements Requirement {

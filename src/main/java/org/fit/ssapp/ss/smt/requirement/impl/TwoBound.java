@@ -6,7 +6,9 @@ import org.fit.ssapp.constants.StableMatchingConst;
 import org.fit.ssapp.ss.smt.requirement.Requirement;
 
 /**
- * TwoBound.
+ * Represents a requirement with both lower and upper bounds.
+ * - The value is considered valid if it falls within the range `[lowerBound, upperBound]`.
+ * - If the value is outside the range, the requirement is not satisfied (`scaling = 0.0`).
  */
 public record TwoBound(double lowerBound, double upperBound) implements Requirement {
 
