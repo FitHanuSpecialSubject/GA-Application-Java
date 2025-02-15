@@ -412,6 +412,7 @@ $$
     \frac{10 - |P_i - x|}{11} & \text{else}
     \end{cases}
     $$
+
 ---
 
 ### Apply These Rules
@@ -505,7 +506,7 @@ Example here
 
 - Strategies:
 
-  - A strategy **$s_i$ ∈ $S_i$** for player **i**, then a function **$s_i$: H $\to$ $A_{i}$**, where the strategy space of **i** consists of **$K_{i}$** discrete strategies: that is, **$S_i$ = {$s_i^1$,$s_i^1$, ..., $s_i^{K_{i}}$ }**
+  - A strategy **$s_i$ ∈ $S_i$** for player **i**, then a function **$s_i$: H $\to$ $A_{i}$**, where the strategy space of **i** consists of **$K_{i}$** discrete strategies: that is, **$S_i = {s_i^1,s_i^1, ..., s_i^{K_{i}} }$**
   - Futhermore, denote a strategy combination of the **n** players except **$i$** by **$s_{-i}$ = ($s{1}$,..., $s{n}$)**
   - The set of joint-strategy profiles is denoted by **$S$ = $S_{1}$ x ... x $S_{n}$**
 
