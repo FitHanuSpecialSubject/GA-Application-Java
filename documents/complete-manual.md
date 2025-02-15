@@ -31,8 +31,8 @@ The primary goal of this manual is to provide a detailed, easy-to-understand gui
    - [Supported Environments](#81-supported-environments)
    - [Deployment Steps](#82-deployment-steps)
    - [Best Practices](#83-best-pratices)
-9. [Contributors](#9-contributors)
-10. [End](#10-end)
+10. [Contributors](#9-contributors)
+11. [End](#10-end)
 
 # **3\. Module Specifications**
 
@@ -585,7 +585,6 @@ _The "Get Result Insight" feature will be available after a successful solve._
 
 ![](img7.jpg)
 
-
 - "Get Result Insight" will run 6 algorithms, each executing 10 times.
 - Estimated completion time = average runtime of one algorithm _ number of executions per algorithm _ number of algorithms. **So That**: The runtime of getInsight may be very long, and users should not close the tab or shut down the computer, as it will result in a lost session.
 - After running GetInsight, users can export results and images using the "Export" feature.
@@ -597,7 +596,7 @@ _The "Get Result Insight" feature will be available after a successful solve._
 - **SMT**: A table containing matched pairs and unmatched pairs (if any).
 - **GT**: A table containing the strategies used and the corresponding scores of the players.
 
-### **7.2 Common Issues**
+### **7.3 Common Issues**
 
 - **Missing results**: Check if the solving process was completed successfully.
 - **Incorrect data**: Verify the input data and cross-check with the documentation.
