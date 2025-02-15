@@ -22,7 +22,16 @@ import org.moeaframework.core.variable.EncodingUtils;
 import org.moeaframework.core.variable.Permutation;
 
 /**
- * OTMProblem.
+ * Represents a Many-to-Many Stable Matching Problem.
+ * This class models a matching problem where multiple individuals must be paired optimally
+ * based on their preference lists. The goal is to find a stable
+ * matching while optimizing a fitness function.
+ * Many: Each participant can match with multiple partners
+ * One: Each participant can only have one pair
+ * Example for many to many match:
+ * Set 1: a, b, c, d
+ * Set 2: x, y, z
+ * Available match: x-[a,b,c], a-[x,y], b-[z]
  */
 @Slf4j
 @Getter
