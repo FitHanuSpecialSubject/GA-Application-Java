@@ -9,14 +9,20 @@ import net.objecthunter.exp4j.ValidationResult;
 import org.fit.ssapp.constants.AppConst;
 import org.fit.ssapp.constants.StableMatchingConst;
 
+/**
+ * Utility class for evaluating mathematical expressions related to satisfaction levels and
+ * functions. This class provides methods for extracting variables, validating functions, and
+ * calculating sigma values.
+ */
 public class EvaluatorUtils {
 
   /**
-   * get length of ??CONTENT?? inside SIGMA{??CONTENT??}
+   * Calculates the length of the expression inside a sigma function. This function searches for the
+   * content between the start index and the closing bracket "{}".
    *
-   * @param function   function String
-   * @param startIndex "{" start bracket index
-   * @return length
+   * @param function   the function string containing the sigma expression
+   * @param startIndex the index where the sigma expression starts (index of "{}")
+   * @return the length of the expression inside the sigma function
    */
   public static int getSigmaFunctionExpressionLength(String function, int startIndex) {
     int num = 0;
@@ -31,23 +37,17 @@ public class EvaluatorUtils {
     return num;
   }
 
+
   /**
-   * @param satisfactions - Double array contains satisfactions of the whole population sequentially
-   *                      (0, 1, 2, ... , n)
-   * @param expression    - Mathematical String that Express how each of the value calculated.
-   *                      Example: S0/2, S1^3
-   *                      <i>
-   *                      Cases:
-   *                                       <ol>
-   *                                       	<li>
-   *                                          		<i>S1</i>represents satisfactions of set 1 (array)
-   *                                       	</li>
-   *                                       	<li>
-   *                                      		<i>S2</i>represents satisfactions of set 2 (array)
-   *                                      	 </li>
-   *                                       </ol>
-   *                      </i>
-   * @return double value - Sum of satisfactions of the whole set sequentially
+   * Calculates the satisfaction levels of a set based on the satisfaction levels of individuals.
+   * This function splits the satisfaction levels based on the set and the number of individuals in
+   * that set.
+   *
+   * @param satisfactions            the array containing the satisfaction levels of all
+   *                                 individuals
+   * @param expression               the set index (0 or 1)
+   * @param numberOfIndividuals      the total number of individuals
+   * @param numberOfIndividualOfSet0 the number of individuals in set 0
    */
   public static double sigmaCalculate(double[] satisfactions, String expression,
       int numberOfIndividuals, int numberOfIndividualOfSet0) {
@@ -58,21 +58,20 @@ public class EvaluatorUtils {
       char ch = expression.charAt(i);
       if (ch == 'S') {
         char set = expression.charAt(i + 1);
-        switch (set) {
-          case '1':
-            streamValue = getSatisfactoryOfASetByDefault(satisfactions, 0, numberOfIndividuals,
+        regex = switch (set) {
+          case '1' -> {
+            streamValue = getSatisfactoryOfaSetByDefault(satisfactions, 0, numberOfIndividuals,
                 numberOfIndividualOfSet0);
-            regex = "S1";
-            break;
-          case '2':
-            streamValue = getSatisfactoryOfASetByDefault(satisfactions, 1, numberOfIndividuals,
+            yield "S1";
+          }
+          case '2' -> {
+            streamValue = getSatisfactoryOfaSetByDefault(satisfactions, 1, numberOfIndividuals,
                 numberOfIndividualOfSet0);
-            regex = "S2";
-            break;
-          default:
-            throw new IllegalArgumentException(
-                "Illegal value after S regex in sigma calculation: " + expression);
-        }
+            yield "S2";
+          }
+          default -> throw new IllegalArgumentException(
+              "Illegal value after S regex in sigma calculation: " + expression);
+        };
       }
     }
     if (regex == null) {
@@ -92,18 +91,26 @@ public class EvaluatorUtils {
         .sum();
   }
 
-  public static double[] getSatisfactoryOfASetByDefault(double[] Satisfactions, int set,
+  /**
+   * Calculates sigma value based on satisfaction level and input expression.
+   *
+   * @param satisfactions            Array containing satisfaction levels of individuals.
+   * @param set                      Tổng số cá nhân.
+   * @param numberOfIndividualOfSet0 Set of individual numbers 0.
+   * @return The sum of the sigma values is calculated.
+   */
+  public static double[] getSatisfactoryOfaSetByDefault(double[] satisfactions, int set,
       int numberOfIndividual, int numberOfIndividualOfSet0) {
     double[] setSatisfactions;
     if (set == 0) {
       setSatisfactions = new double[numberOfIndividualOfSet0];
-      System.arraycopy(Satisfactions, 0, setSatisfactions, 0, numberOfIndividualOfSet0);
+      System.arraycopy(satisfactions, 0, setSatisfactions, 0, numberOfIndividualOfSet0);
     } else {
       setSatisfactions = new double[numberOfIndividual - numberOfIndividualOfSet0];
       if (numberOfIndividual - numberOfIndividualOfSet0 >= 0) {
         int idx = 0;
         for (int i = numberOfIndividualOfSet0; i < numberOfIndividual; i++) {
-          setSatisfactions[idx] = Satisfactions[i];
+          setSatisfactions[idx] = satisfactions[i];
           idx++;
         }
       }
@@ -113,10 +120,13 @@ public class EvaluatorUtils {
 
 
   /**
-   * temp
+   * Validates a given fitness function by trimming whitespace and checking if it is empty or
+   * matches the default fitness function. If it is empty or matches the default, it returns an
+   * empty string.
    *
-   * @param func
-   * @return
+   * @param func the fitness function string to validate
+   * @return an empty string if the function is empty or matches the default fitness function;
+   *        otherwise, returns the function string
    */
   public static String getValidEvaluationFunction(String func) {
     func = func.trim();
@@ -127,10 +137,12 @@ public class EvaluatorUtils {
   }
 
   /**
-   * temp
+   * Checks if the function string is equal to the default function and returns an empty string if
+   * true.
    *
-   * @param func
-   * @return
+   * @param func the function string to check
+   * @return an empty string if the function matches the default; otherwise, returns the function
+   *        string
    */
   public static String getIfDefaultFunction(String func) {
     if (AppConst.DEFAULT_FUNC.equalsIgnoreCase(func)) {
@@ -139,15 +151,20 @@ public class EvaluatorUtils {
     return func;
   }
 
+
   /**
-   * temp
+   * Validates a given fitness function by trimming whitespace and checking if it is empty or
+   * matches the default fitness function. If it is empty or matches the default, it returns an
+   * empty string.
    *
-   * @param func
-   * @return
+   * @param func the fitness function string to validate
+   * @return an empty string if the function is empty or matches the default fitness function;
+   *      otherwise, returns the function string
    */
   public static String getValidFitnessFunction(String func) {
     func = func.trim();
-    if (StringUtils.isEmptyOrNull(func) ||
+    if (StringUtils.isEmptyOrNull(func)
+        ||
         func.equalsIgnoreCase(StableMatchingConst.DEFAULT_FITNESS_FUNC)) {
       return "";
     }
@@ -155,12 +172,17 @@ public class EvaluatorUtils {
   }
 
 
+  /**
+   * Main method to demonstrate the usage of expressions with variables. This method builds and
+   * validates expressions using the exp4j library.
+   *
+   * @param args command line arguments (not used)
+   */
   public static void main(String[] args) {
     String[] vars = new String[]{
         "u", "u12", "u21", "u202"
     };
     String[] functions = new String[]{
-//                "u+1",
         "u202 + 1 + 2",
         "(u12 + 1) * 2",
         "abs(u12 - u21) / 2"

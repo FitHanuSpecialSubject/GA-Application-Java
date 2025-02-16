@@ -3,26 +3,27 @@ package org.fit.ssapp.util;
 import java.util.Objects;
 
 /**
- * String related util functions
+ * Utility class for common string operations.
  */
 public class StringUtils {
 
   /**
-   * check if str is empty or null
+   * Checks if a string is null or empty.
    *
-   * @param str String
-   * @return true if empty or null
+   * @param str the input string.
+   * @return {@code true} if the string is null or empty, otherwise {@code false}.
    */
   public static boolean isEmptyOrNull(String str) {
     return Objects.isNull(str) || Objects.equals(str, "");
   }
 
   /**
-   * as name
+   * Creates a string filled with the specified character for the given length.
    *
-   * @param character char to fill
-   * @param length    fill length
-   * @return filled string
+   * @param character the character to repeat.
+   * @param length    the number of times the character should repeat.
+   * @return a string consisting of the repeated character.
+   * @throws IllegalArgumentException if length is negative.
    */
   public static String fillWithChar(char character, int length) {
     String format = "%" + length + "s";
@@ -30,15 +31,15 @@ public class StringUtils {
   }
 
   /**
-   * find first non-numeric character index in a String
+   * Finds the index of the first non-numeric character in a string.
    *
-   * @param str input string
-   * @return index of first non-numeric char
+   * @param str the input string to search.
    */
   public static int findFirstNonNumericCharIndex(String str) {
     str = str.trim();
     int index = 0;
-    while (index < str.length() &&
+    while (index < str.length()
+        &&
         (Character.isDigit(str.charAt(index)) || str.charAt(index) == '.')) {
       index++;
     }
