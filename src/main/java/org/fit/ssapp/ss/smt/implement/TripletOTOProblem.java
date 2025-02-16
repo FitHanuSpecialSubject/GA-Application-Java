@@ -100,7 +100,7 @@ public class TripletOTOProblem implements MatchingProblem {
     int[] decodeVar = new int[problemSize];
     for (int i = 0; i < problemSize; i++) {
       CustomIntegerVariable var = (CustomIntegerVariable) solution.getVariable(i);
-      decodeVar[i] = var.getValue();
+      decodeVar[i] = (int) Math.round(var.getValue());
     }
     Matches result = this.stableMatching(decodeVar);
     // Check Exclude Pairs

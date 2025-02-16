@@ -87,7 +87,7 @@ public class CustomVariation implements Variation {
       CustomIntegerVariable v1 = (CustomIntegerVariable) p1.getVariable(i);
       CustomIntegerVariable v2 = (CustomIntegerVariable) p2.getVariable(i);
 
-      int temp = v1.getValue();
+      double temp = v1.getValue();
       v1.setValue(v2.getValue());
       v2.setValue(temp);
     }
@@ -115,14 +115,12 @@ public class CustomVariation implements Variation {
     log.info("Before Swap: index1 = {}, value1 = {}, index2 = {}, value2 = {}",
             swapPoint1, v1.getValue(), swapPoint2, v2.getValue());
 
-    int temp = v1.getValue();
+    double temp = v1.getValue();
     v1.setValue(v2.getValue());
     v2.setValue(temp);
 
     log.info("AFter Swap: index1 = {}, value1 = {}, index2 = {}, value2 = {}",
             swapPoint1, v1.getValue(), swapPoint2, v2.getValue());
-
-    repair(offspring);
 
   }
 
@@ -132,11 +130,11 @@ public class CustomVariation implements Variation {
    * @param offspring offspring to be repaired
    */
   public void repair(Solution offspring) {
-    Set<Integer> fixRepeat = new HashSet<>();
+    Set<Double> fixRepeat = new HashSet<>();
 
     for (int i = 0; i < problemSize; i++) {
       CustomIntegerVariable v = (CustomIntegerVariable) offspring.getVariable(i);
-      int value = v.getValue();
+      double value = v.getValue();
 
       while (fixRepeat.contains(value)) {
         value = PRNG.nextInt(problemSize);
