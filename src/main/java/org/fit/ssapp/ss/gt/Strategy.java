@@ -4,50 +4,28 @@ package org.fit.ssapp.ss.gt;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+/**
+ * Represents a Strategy with a name, properties, and a payoff value. Implements Serializable for
+ * object persistence.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Strategy implements Serializable {
 
   private String name;
+  @Getter
   private List<Double> properties = new ArrayList<>();
+  @Setter
+  @Getter
   private double payoff;
 
-  public List<Double> getProperties() {
-
-    return properties;
-  }
-
-  public double getPayoff() {
-    return payoff;
-  }
-
-  public void setPayoff(double payoff) {
-    this.payoff = payoff;
-  }
-
-
-  private double evaluateStringExpression(String expression) {
-    ScriptEngineManager mgr = new ScriptEngineManager();
-    ScriptEngine engine = mgr.getEngineByName("JavaScript");
-    try {
-      Object result = engine.eval(expression);
-      return Double.parseDouble(result.toString());
-    } catch (ScriptException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  public void addProperty(double property) {
-    properties.add(property);
-  }
 
   @Override
   public String toString() {
