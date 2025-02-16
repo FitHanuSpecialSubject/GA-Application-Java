@@ -47,11 +47,9 @@ public class TwoSetPreferenceList implements PreferenceList {
 
 
   /**
-   * add.
+   * this method registers new competitor instance to the preference list.
    *
    * @param score score of the respective competitor
-   *
-   *<p>this method registers new competitor instance to the preference list
    *
    */
   public void add(double score) {

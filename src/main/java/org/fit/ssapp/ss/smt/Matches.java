@@ -36,7 +36,6 @@ public class Matches implements Serializable {
    * @param size int.
    *
    */
-  @SuppressWarnings("unchecked")
   public Matches(int size) {
     this.size = size;
     this.matches = new TreeSet[size];

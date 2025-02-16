@@ -7,7 +7,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.fit.ssapp.ss.smt.preference.PreferenceList;
 /**
- * TripletPreferenceList.
+ * TripletPreferenceList - Manages preference rankings for triplet-based stable matching.
  */
 @Slf4j
 @Data
@@ -23,10 +23,10 @@ public class TripletPreferenceList implements PreferenceList {
   int padding; // Used for index adjustments.
 
   /**
-   * TripletPreferenceList.
+   * Constructs a **TripletPreferenceList** with a given size and padding.
    *
-   * @param size    int
-   * @param padding int
+   * @param size    The total number of elements in the preference list.
+   * @param padding The index offset applied for position adjustments.
    */
   public TripletPreferenceList(int size, int padding) {
     scores = new double[size];

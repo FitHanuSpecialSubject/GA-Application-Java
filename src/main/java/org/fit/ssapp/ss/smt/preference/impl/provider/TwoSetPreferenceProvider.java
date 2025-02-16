@@ -73,10 +73,10 @@ public class TwoSetPreferenceProvider implements PreferenceBuilder {
 
 
   /**
-   * getVariableValuesForSet1.
+   * Retrieves variable values of set 1 for preference evaluation.
    *
-   * @param indexOfEvaluator int
-   * @param indexOfBeEvaluated int
+   * @param indexOfEvaluator   The index of the evaluating individual.
+   * @param indexOfBeEvaluated The index of the individual being evaluated.
    * @return Map
    */
   public Map<String, Double> getVariableValuesForSet1(int indexOfEvaluator,
@@ -85,10 +85,10 @@ public class TwoSetPreferenceProvider implements PreferenceBuilder {
   }
 
   /**
-   * getVariableValuesForSet2.
+   * Retrieves variable values of set 2 for preference evaluation.
    *
-   * @param indexOfEvaluator int
-   * @param indexOfBeEvaluated int
+   * @param indexOfEvaluator   The index of the evaluating individual.
+   * @param indexOfBeEvaluated The index of the individual being evaluated.
    * @return Map
    */
   public Map<String, Double> getVariableValuesForSet2(int indexOfEvaluator,

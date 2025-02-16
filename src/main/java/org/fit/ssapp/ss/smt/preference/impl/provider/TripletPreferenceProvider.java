@@ -17,7 +17,7 @@ import org.fit.ssapp.ss.smt.requirement.Requirement;
 import org.fit.ssapp.util.PreferenceProviderUtils;
 
 /**
- * TripletPreferenceProvider.
+ * Generates preference lists for a triplet-based stable matching problem.
  */
 public class TripletPreferenceProvider implements PreferenceBuilder {
 
@@ -31,10 +31,10 @@ public class TripletPreferenceProvider implements PreferenceBuilder {
   private final Map<Integer, Map<String, Set<Integer>>> variables;
 
   /**
-   * TripletPreferenceProvider.
+   Constructs a **TripletPreferenceProvider** and initializes evaluation functions.
    *
-   * @param individuals    MatchingData
-   * @param evaluationFunctions String[]
+   * @param individuals         The dataset containing all individuals.
+   * @param evaluationFunctions Array of evaluation functions used to compute preferences.
    */
   public TripletPreferenceProvider(MatchingData individuals, String[] evaluationFunctions) {
     this.individuals = individuals;
@@ -176,12 +176,12 @@ public class TripletPreferenceProvider implements PreferenceBuilder {
   }
 
   /**
-   * getVariableValuesForSet.
+   * Retrieves variable values for preference evaluation.
    *
-   * @param set int
-   * @param indexOfEvaluator int
-   * @param indexOfBeEvaluated int
-   * @return Map
+   * @param set                The set index for the evaluator.
+   * @param indexOfEvaluator   The index of the evaluating individual.
+   * @param indexOfBeEvaluated The index of the individual being evaluated.
+   * @return A map containing the extracted variable values.
    */
   public Map<String, Double> getVariableValuesForSet(int set, int indexOfEvaluator,
                                                      int indexOfBeEvaluated) {
