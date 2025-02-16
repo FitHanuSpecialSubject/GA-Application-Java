@@ -5,6 +5,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * Represents the specifications of a computer, including details about the operating system,
+ * CPU, and memory.
+ */
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
