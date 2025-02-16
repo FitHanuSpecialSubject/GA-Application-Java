@@ -59,13 +59,10 @@ public class StableMatchingProblemDto implements ProblemRequestDto {
 
   private int[][] excludedPairs;
 
-  @Min(value = 1, message = ErrMessage.POPULATION_SIZE)
   private int populationSize;
 
-  @Min(value = 1, message = ErrMessage.GENERATION)
   private int generation;
 
-  @Min(value = 3, message = ErrMessage.MES_002)
   private int numberOfIndividuals;
 
   private int maxTime;

@@ -3,6 +3,7 @@ package org.fit.ssapp.dto.validator;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import org.fit.ssapp.config.ValidationConfig;
+import org.fit.ssapp.constants.MessageConst;
 import org.fit.ssapp.dto.request.StableMatchingProblemDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -45,8 +46,33 @@ public class StableMatchingValidator implements ConstraintValidator<ValidStableM
             isValid = false;
         }
 
+        if (dto.getPopulationSize() < 1) {
+            context.disableDefaultConstraintViolation();
+            context.buildConstraintViolationWithTemplate(MessageConst.ErrMessage.POPULATION_SIZE)
+                    .addPropertyNode("populationSize")
+                    .addConstraintViolation();
+            isValid = false;
+        }
+
+        if (dto.getGeneration() < 1) {
+            context.disableDefaultConstraintViolation();
+            context.buildConstraintViolationWithTemplate(MessageConst.ErrMessage.GENERATION)
+                    .addPropertyNode("generation")
+                    .addConstraintViolation();
+            isValid = false;
+        }
+
+        if (dto.getNumberOfIndividuals() < 3) {
+            context.disableDefaultConstraintViolation();
+            context.buildConstraintViolationWithTemplate(MessageConst.ErrMessage.MES_002)
+                    .addPropertyNode("numberOfIndividuals")
+                    .addConstraintViolation();
+            isValid = false;
+        }
+
         return isValid;
     }
 }
+
 
 
