@@ -31,7 +31,8 @@ import org.moeaframework.core.variable.Permutation;
  * Example for many to many match:
  * Set 1: a, b, c, d
  * Set 2: x, y, z
- * Available match: x-[a,b,c], a-[x,y], b-[z]
+ * Available match: x-a, x-b, x-c, a-x, a-y, b-z, ...
+ * Wrong when an individual pairs with one also in the same Set
  */
 @Slf4j
 @Getter

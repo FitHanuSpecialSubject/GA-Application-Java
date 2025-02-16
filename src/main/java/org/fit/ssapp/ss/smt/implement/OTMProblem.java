@@ -32,7 +32,9 @@ import org.moeaframework.core.variable.Permutation;
  * Set 1: a, b, c, d
  * Set 2: x, y, z
  * Example matching for set 1 (One): a-x, b-y, c-z
- * Example matching for set 2 (One): x-[a,d], y-[b,c]
+ * Example matching for set 2 (Many): x-a, x-d, y-b, y-c
+ *  * Correct: a-x (x-a, x-b, x-c), b-y (y-b, y-d)
+ *  * Wrong: b-y (y-b) + b-x
  */
 @Slf4j
 @Getter

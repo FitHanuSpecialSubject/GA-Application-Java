@@ -28,7 +28,23 @@ import org.moeaframework.core.Variable;
 import org.moeaframework.core.variable.Permutation;
 
 /**
- * TripletOTOProblem.
+ * Represents a One-to-Many Stable Matching Problem.
+ * This class models a matching problem where each participant
+ * must be paired in *triplets* rather than traditional OTO, OTM, MTM pairs.
+ * The problem can be OTOTO, OTMTM, OTMTO, ...
+ * The goal is to find a stable
+ * matching while optimizing a fitness function.
+ * Many: Each participant can match with multiple partners
+ * One: Each participant can only have one pair
+ * Set 1: a, b, c, d, e
+ * Set 2: x, y, z, o
+ * Set 2: 1, 2, 3, 4, 5
+ * Example matching for set 1 (One): a-x-1, b-y-2, c-z-3
+ * Example matching for set 2 (Many): x-a-1, x-d-4, x-d-5
+ * Example matching for set 3 (One): 1-x-a, 2-y-b, 3-z-c
+ * Correct: a-x-1, b-y-2
+ * Wrong: a-x-1, a-x-3 ('a' in Set 1, which is one,
+ * paired with x-1 and x-3 simultaneously will be wrong)
  */
 @Slf4j
 @Getter

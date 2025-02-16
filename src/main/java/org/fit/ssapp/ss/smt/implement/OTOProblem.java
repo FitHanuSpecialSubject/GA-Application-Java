@@ -25,7 +25,19 @@ import org.moeaframework.core.variable.Permutation;
 
 
 /**
- *OTOProblem.
+ * Represents a One-to-One Stable Matching Problem.
+ * This class models a matching problem where each participant can be paired with
+ * at most one partner
+ * based on their preference lists. The goal is to find a stable
+ * matching while optimizing a fitness function.
+ * Many: Each participant can match with multiple partners
+ * One: Each participant can only have one pair
+ * Set 1: a, b, c, d
+ * Set 2: x, y, z
+ * Example matching for set 1 (One): a-x, b-y, c-z
+ * Example matching for set 2 (One): x-a, y-b, z-c
+ * Correct: a-x (x-a), b-y (y-b)
+ * Wrong: b-y (y-c), c-z (z-d)
  */
 @Slf4j
 @Getter
