@@ -8,7 +8,14 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * ValidDistributedCores.
+ * **ValidRequirementSyntax** - Annotation for validating individual requirement syntax.
+ * This annotation ensures that individual requirement expressions are correctly formatted.
+ * The validation is handled by `RequirementSyntaxValidator`.
+ * ## **Validation Logic:**
+ * - The requirement expressions must follow the expected format.
+ * - Uses regex matching to verify valid syntax.
+ * - If the syntax is incorrect, validation **fails**.
+ *
  */
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
@@ -16,23 +23,23 @@ import java.lang.annotation.Target;
 public @interface ValidRequirementSyntax {
 
   /**
-   * message .
+   * The default error message when validation fails.
    *
-   * @return default message.
+   * @return A string containing the default error message.
    */
   String message() default "Invalid individual requirement syntax";
 
   /**
-   * groups .
+   * Defines validation groups (optional).
    *
-   * @return .
+   * @return An array of validation groups.
    */
   Class<?>[] groups() default {};
 
   /**
-   * payload .
+   * Specifies additional payload (optional).
    *
-   * @return .
+   * @return An array of payload classes.
    */
   Class<? extends Payload>[] payload() default {};
 }

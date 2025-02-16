@@ -11,12 +11,24 @@ import net.objecthunter.exp4j.ExpressionBuilder;
 import org.fit.ssapp.constants.StableMatchingConst;
 
 /**
- * FitnessFunctionValidator.
+ * **FitnessFunctionValidator** - Validator for fitness function syntax.
+ * This class ensures that the provided fitness function follows **correct mathematical syntax**
+ * and only includes **allowed variables**. It supports:
+ * - **M{number}** → Represents matching-related variables.
+ * - **S{number}** → Represents satisfaction-related variables.
+ * - **SIGMA{expression}** → Represents a summation expression inside `{}`.
  */
 public class FitnessFunctionValidator implements ConstraintValidator<ValidFitnessFunction, String> {
 
   private static final Pattern VARIABLE_PATTERN = Pattern.compile("(M\\d+|S\\d+|SIGMA\\{[^}]+\\})");
 
+  /**
+   * Validates the fitness function by checking its syntax and allowed variables.
+   *
+   * @param value   The fitness function string to validate.
+   * @param context The validation context for constraint violations.
+   * @return `true` if the function is valid, otherwise `false`.
+   */
   @Override
   public boolean isValid(String value, ConstraintValidatorContext context) {
     if (value.equalsIgnoreCase(StableMatchingConst.DEFAULT_EVALUATE_FUNC)) {
@@ -60,6 +72,14 @@ public class FitnessFunctionValidator implements ConstraintValidator<ValidFitnes
     return true;
   }
 
+  /**
+   * Extracts valid variable names from a mathematical function.
+   * - Uses **regex matching** to identify valid variables (`M#`, `S#`, `SIGMA{}` expressions).
+   * - Returns a **set of unique variable names** found in the function.
+   *
+   * @param func The mathematical function as a string.
+   * @return A set of valid variable names found in the function.
+   */
   private Set<String> extractVariables(String func) {
     Set<String> variables = new HashSet<>();
     Matcher matcher = VARIABLE_PATTERN.matcher(func);

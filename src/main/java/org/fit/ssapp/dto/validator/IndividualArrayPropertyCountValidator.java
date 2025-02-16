@@ -6,22 +6,29 @@ import java.util.Arrays;
 import org.fit.ssapp.dto.request.StableMatchingProblemDto;
 
 /**
- * IndividualArrayPropertyCountValidator.
+ * **IndividualArrayPropertyCountValidator** - Validator for property count consistency.
+ * This class ensures that all **individual-related arrays** in `StableMatchingProblemDto`
+ * have the correct number of properties based on `dto.getNumberOfProperty()`.
+
  */
 public class IndividualArrayPropertyCountValidator implements
         ConstraintValidator<ValidIndividualArrayPropertyCount, StableMatchingProblemDto> {
 
   /**
-   * ValidIndividualArrayPropertyCount initialize.
+   * Initializes the validator.
+   *
+   * @param annotation The annotation instance for additional configurations (if needed).
    */
   @Override
   public void initialize(ValidIndividualArrayPropertyCount annotation) {
   }
 
   /**
-   * isValid .
+   * Validates whether all individual-related arrays match the expected number of properties.
    *
-   * @return boolean
+   * @param dto     The `StableMatchingProblemDto` containing the arrays to validate.
+   * @param context The validation context.
+   * @return `true` if all arrays have the correct property count, otherwise `false`.
    */
   @Override
   public boolean isValid(StableMatchingProblemDto dto, ConstraintValidatorContext context) {

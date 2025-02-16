@@ -11,17 +11,20 @@ public class IndividualArraysSizeValidator implements
         ConstraintValidator<ValidIndividualArraysSize, StableMatchingProblemDto> {
 
   /**
-   * ValidIndividualArraysSize initialize.
+   * Initializes the validator.
+   *
+   * @param annotation The annotation instance for additional configurations (if needed).
    */
   @Override
   public void initialize(ValidIndividualArraysSize annotation) {
   }
 
   /**
-   * isValid .
+   * Validates whether all individual-related arrays have the correct size.
    *
-   * @return boolean.
-   *
+   * @param dto     The `StableMatchingProblemDto` containing the arrays to validate.
+   * @param context The validation context.
+   * @return `true` if all arrays match the expected number of individuals, otherwise `false`.
    */
   @Override
   public boolean isValid(StableMatchingProblemDto dto, ConstraintValidatorContext context) {

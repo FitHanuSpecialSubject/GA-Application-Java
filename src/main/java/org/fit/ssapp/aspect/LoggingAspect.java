@@ -8,7 +8,9 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.stereotype.Component;
 
 /**
- * LoggingAspect.
+ * **LoggingAspect** - Aspect-Oriented Logging for Service Methods.
+ * This class provides **logging functionality** using **Aspect-Oriented Programming (AOP)**
+ * to track the execution of service methods in the application.
  */
 @Aspect
 @Component
@@ -16,28 +18,30 @@ import org.springframework.stereotype.Component;
 public class LoggingAspect {
 
   /**
-   * gameTheorySolver.
+   * Pointcut for game theory solver methods in the service layer.
+   * Matches all methods in `org.fit.ssapp.service.*`.
    */
   @Pointcut("execution(* org.fit.ssapp.service.*.*(..))")
   public void gameTheorySolver() {
   }
 
   /**
-   * stableMatchingSolver.
+   * Pointcut for stable matching solver methods in the service layer.
+   * Matches all methods in `org.fit.ssapp.service.*`.
    */
   @Pointcut("execution(* org.fit.ssapp.service.*.*(..))")
   public void stableMatchingSolver() {
   }
 
   /**
-   * logAroundGameTheorySolver.
+   * Logs the execution time of **game theory solver methods**.
+   * - Logs when the method **starts** execution.
+   * - Calls the actual method using `proceed()`.
+   * - Logs when the method **finishes** execution.
    *
-   * @param joinPoint is.
-   *
-   * @return Object
-   *
-   * @throws Throwable error
-   *
+   * @param joinPoint The method execution context.
+   * @return The result of the original method execution.
+   * @throws Throwable If an exception occurs during execution.
    */
   @Around("gameTheorySolver()")
   public Object logAroundGameTheorySolver(ProceedingJoinPoint joinPoint) throws Throwable {
@@ -56,14 +60,14 @@ public class LoggingAspect {
 
 
   /**
-   * logAroundStableMatchingSolver.
+   * Logs the execution time of **stable matching solver methods**.
+   * - Logs when the method **starts** execution.
+   * - Calls the actual method using `proceed()`.
+   * - Logs when the method **finishes** execution.
    *
-   * @param joinPoint ?
-   *
-   * @return Object
-   *
-   * @throws Throwable error
-   *
+   * @param joinPoint The method execution context.
+   * @return The result of the original method execution.
+   * @throws Throwable If an exception occurs during execution.
    */
   @Around("stableMatchingSolver()")
   public Object logAroundStableMatchingSolver(ProceedingJoinPoint joinPoint) throws Throwable {

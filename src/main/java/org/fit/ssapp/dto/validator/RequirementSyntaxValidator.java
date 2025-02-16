@@ -5,7 +5,8 @@ import jakarta.validation.ConstraintValidatorContext;
 import java.util.regex.Pattern;
 
 /**
- * RequirementSyntaxValidator.
+ * **RequirementSyntaxValidator** - Validator for checking requirement syntax.
+ * This class ensures that all **requirement expressions** follow the correct format.
  */
 public class RequirementSyntaxValidator implements
         ConstraintValidator<ValidRequirementSyntax, String[][]> {
@@ -14,11 +15,26 @@ public class RequirementSyntaxValidator implements
           "^(\\d+(?:\\.\\d+)?)(?::(\\d+(?:\\.\\d+)?))?(?:\\+\\+|--)?$");
   private String message;
 
+  /**
+   * Initializes the validator.
+   *
+   * @param annotation The annotation instance for additional configurations (e.g., error message).
+   */
   @Override
   public void initialize(ValidRequirementSyntax annotation) {
     this.message = annotation.message();
   }
 
+  /**
+   * Validates a **2D array of requirement expressions**.
+   * - Iterates through each row and requirement expression.
+   * - Applies **regex matching** to check syntax validity.
+   * - If an invalid expression is found, a **constraint violation message** is generated.
+   *
+   * @param value   The `String[][]` array containing requirement expressions.
+   * @param context The validation context for reporting violations.
+   * @return `true` if all expressions match the expected format, otherwise `false`.
+   */
   @Override
   public boolean isValid(String[][] value, ConstraintValidatorContext context) {
     for (String[] row : value) {

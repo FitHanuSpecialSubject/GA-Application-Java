@@ -8,7 +8,14 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * ValidEvaluateFunction.
+ * **ValidEvaluateFunction** - Annotation for validating evaluation function syntax.
+ * This annotation ensures that evaluation functions follow the correct **mathematical syntax**
+ * and contain only **allowed variables**. The validation is handled by `EvaluateFunctionValidator`.
+ * ## **Validation Logic:**
+ * - Checks if the function is syntactically valid.
+ * - Ensures only permitted variables and mathematical operations are used.
+ * - If the function is invalid, an error message is generated.
+ *
  */
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
@@ -16,23 +23,23 @@ import java.lang.annotation.Target;
 public @interface ValidEvaluateFunction {
 
   /**
-   * message .
+   * The default error message when validation fails.
    *
-   * @return default message.
+   * @return A string containing the default error message.
    */
   String message() default "Invalid evaluate function syntax";
 
   /**
-   * groups .
+   * Defines validation groups (optional).
    *
-   * @return .
+   * @return An array of validation groups.
    */
   Class<?>[] groups() default {};
 
   /**
-   * payload .
+   * Specifies additional payload (optional).
    *
-   * @return .
+   * @return An array of payload classes.
    */
   Class<? extends Payload>[] payload() default {};
 }

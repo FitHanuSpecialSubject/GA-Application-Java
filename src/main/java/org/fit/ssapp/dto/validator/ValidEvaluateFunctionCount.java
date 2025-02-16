@@ -8,7 +8,14 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * ValidDistributedCores.
+ * **ValidEvaluateFunctionCount** - Annotation for validating the number of evaluation functions.
+ * This annotation ensures that the number of evaluation functions provided in
+ * `StableMatchingProblemDto` matches the expected number of sets. The validation is handled
+ * by `EvaluateFunctionCountValidator`.
+ * ## **Validation Logic:**
+ * - The number of evaluation functions (`evaluateFunctions.length`) must be **equal to**
+ *   the number of sets (`numberOfSets`).
+ * - If they do not match, validation **fails**.
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
@@ -16,23 +23,23 @@ import java.lang.annotation.Target;
 public @interface ValidEvaluateFunctionCount {
 
   /**
-   * message .
+   * The default error message when validation fails.
    *
-   * @return default message.
+   * @return A string containing the default error message.
    */
   String message() default "Evaluate functions count mismatch with number of sets";
 
   /**
-   * groups .
+   * Defines validation groups (optional).
    *
-   * @return .
+   * @return An array of validation groups.
    */
   Class<?>[] groups() default {};
 
   /**
-   * payload .
+   * Specifies additional payload (optional).
    *
-   * @return .
+   * @return An array of payload classes.
    */
   Class<? extends Payload>[] payload() default {};
 }
