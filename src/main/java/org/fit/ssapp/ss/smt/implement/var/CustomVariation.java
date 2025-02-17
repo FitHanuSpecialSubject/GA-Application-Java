@@ -112,15 +112,15 @@ public class CustomVariation implements Variation {
 
     CustomIntegerVariable v1 = (CustomIntegerVariable) offspring.getVariable(swapPoint1);
     CustomIntegerVariable v2 = (CustomIntegerVariable) offspring.getVariable(swapPoint2);
-    log.info("Before Swap: index1 = {}, value1 = {}, index2 = {}, value2 = {}",
-            swapPoint1, v1.getValue(), swapPoint2, v2.getValue());
+    //    log.info("Before Swap: index1 = {}, value1 = {}, index2 = {}, value2 = {}",
+    //            swapPoint1, v1.getValue(), swapPoint2, v2.getValue());
 
     double temp = v1.getValue();
     v1.setValue(v2.getValue());
     v2.setValue(temp);
 
-    log.info("AFter Swap: index1 = {}, value1 = {}, index2 = {}, value2 = {}",
-            swapPoint1, v1.getValue(), swapPoint2, v2.getValue());
+    //    log.info("AFter Swap: index1 = {}, value1 = {}, index2 = {}, value2 = {}",
+    //            swapPoint1, v1.getValue(), swapPoint2, v2.getValue());
 
   }
 
