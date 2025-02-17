@@ -5,71 +5,42 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+
+/**
+ * Represents a Special Player with properties, weights, and a payoff. Implements Serializable for
+ * object persistence.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class SpecialPlayer implements Serializable {
 
+  @Setter
   private int numberOfProperties;
   private final List<Double> properties = new ArrayList<>();
   private final List<Double> weights = new ArrayList<>();
+  @Getter
   private double payoff;
 
-
   /**
-   * @return properties size
+   * Returns a formatted string representation of the Special Player.
+   *
+   * @return A string describing the player's properties, weights, and payoff.
    */
-  public int getNumberOfProperties() {
-    return numberOfProperties;
-  }
-
-  /**
-   * @modifies properties
-   * @effects add more property into properties
-   */
-  public void addProperty(double property) {
-    properties.add(property);
-  }
-
-  /**
-   * @modifies weight
-   * @effects add more weight into weights
-   */
-  public void addWeight(double weight) {
-    weights.add(weight);
-  }
-
-  /**
-   * @modifies properties
-   * @effects set number of Properties
-   */
-  public void setNumberOfProperties(int numberOfProperties) {
-    this.numberOfProperties = numberOfProperties;
-  }
-
-  public void setPayoff() {
-    double newPayoff = 0;
-    for (int i = 0; i < properties.size(); ++i) {
-      newPayoff += properties.get(i) * weights.get(i);
-    }
-    this.payoff = newPayoff;
-  }
-
-  public double getPayoff() {
-    return payoff;
-  }
-
+  @Override
   public String toString() {
-    StringBuilder SP = new StringBuilder("SPECIAL PLAYER: \nProperties: \n");
+    StringBuilder sb = new StringBuilder("SPECIAL PLAYER: \nProperties: \n");
     for (Double x : properties) {
-      SP.append(x).append("\t");
+      sb.append(x).append("\t");
     }
-    SP.append("\nWeight:\n");
+    sb.append("\nWeight:\n");
     for (Double x : weights) {
-      SP.append(x).append("\t");
+      sb.append(x).append("\t");
     }
-    return SP + "\nPayoff: " + payoff;
+    return sb + "\nPayoff: " + payoff;
   }
 }

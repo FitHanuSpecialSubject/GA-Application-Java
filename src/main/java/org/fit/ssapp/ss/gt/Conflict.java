@@ -1,11 +1,18 @@
 package org.fit.ssapp.ss.gt;
 
 import java.io.Serializable;
-import java.util.Arrays;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+/**
+ * Represents a conflict between two players in a game theory context, where each player has a
+ * strategy associated with their action. This class is used to store the conflict data and provide
+ * methods for displaying and handling conflict information.
+ */
+
+@Getter
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -16,37 +23,14 @@ public class Conflict implements Serializable {
   private int leftPlayerStrategy;
   private int rightPlayerStrategy;
 
-  public Conflict(String conflict) {
-    System.out.println("conflict = " + conflict);
-    String[] conflictSet = conflict.split(",");
-    System.out.println("Arrays.toString(conflictSet) = " + Arrays.toString(conflictSet));
-    if (conflictSet.length != 4) {
-      System.err.print(
-          "Invalid Conflict input data format, it should be: 'left player, left player strategy, right player, right player strategy'");
-      return;
-    }
-    leftPlayer = Integer.parseInt(conflictSet[0]) - 1;
-    leftPlayerStrategy = Integer.parseInt(conflictSet[1]) - 1;
-    rightPlayer = Integer.parseInt(conflictSet[2]) - 1;
-    rightPlayerStrategy = Integer.parseInt(conflictSet[3]) - 1;
-  }
 
-  public int getLeftPlayer() {
-    return leftPlayer;
-  }
-
-  public int getRightPlayer() {
-    return rightPlayer;
-  }
-
-  public int getLeftPlayerStrategy() {
-    return leftPlayerStrategy;
-  }
-
-  public int getRightPlayerStrategy() {
-    return rightPlayerStrategy;
-  }
-
+  /**
+   * Returns a string representation of the Conflict object, showing the players and their
+   * strategies. The returned string follows the format: "Player: leftPlayer, Strategy:
+   * leftPlayerStrategy, Player: rightPlayer, Strategy: rightPlayerStrategy"
+   *
+   * @return A formatted string displaying the players and their strategies.
+   */
   public String toString() {
     return String.format("Player: %s, Strategy: %s, Player: %s, Strategy: %s", leftPlayer + 1,
         leftPlayerStrategy + 1, rightPlayer + 1, rightPlayerStrategy + 1);

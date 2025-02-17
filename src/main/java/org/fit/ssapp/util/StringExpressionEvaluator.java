@@ -16,25 +16,39 @@ import net.objecthunter.exp4j.function.Function;
 import org.fit.ssapp.ss.gt.NormalPlayer;
 import org.fit.ssapp.ss.gt.Strategy;
 
+/**
+ * A utility class to evaluate mathematical expressions in string format. Supports variable
+ * replacement, basic arithmetic operations, and trigonometric functions.
+ */
 public class StringExpressionEvaluator {
 
   public static Pattern nonRelativePattern = Pattern.compile("p[0-9]+");
-  public static Pattern relativePattern = Pattern.compile("P[0-9]+p[0-9]+");
   public static Pattern fitnessPattern = Pattern.compile("u[0-9]+");
 
+  /**
+   * Evaluates a payoff function relative to other players.
+   */
   public enum DefaultFunction {
     SUM, AVERAGE, MIN, MAX, PRODUCT, MEDIAN, RANGE
   }
 
   static DecimalFormat decimalFormat = new DecimalFormat("#.##############");
 
+  /**
+   * Evaluates a payoff function relative to other players.
+   *
+   * @param strategy              The strategy of the current player.
+   * @param payoffFunction        The payoff function as a string.
+   * @param normalPlayers         List of all normal players.
+   * @param chosenStrategyIndices Indices of chosen strategies.
+   * @return The calculated payoff as a {@code BigDecimal}.
+   */
   public static BigDecimal evaluatePayoffFunctionWithRelativeToOtherPlayers(Strategy strategy,
                                                                             String payoffFunction,
                                                                             List<NormalPlayer> normalPlayers,
                                                                             int[] chosenStrategyIndices) {
     String expression = payoffFunction;
 
-    // match both relative and non-relative variables
     Pattern generalPattern = Pattern.compile("(P[0-9]+)?" + nonRelativePattern.pattern());
     Matcher generalMatcher = generalPattern.matcher(expression);
     while (generalMatcher.find()) {
@@ -65,10 +79,16 @@ public class StringExpressionEvaluator {
     return new BigDecimal(val).setScale(10, RoundingMode.HALF_UP);
   }
 
+  /**
+   * Evaluates a payoff function without relative variables.
+   *
+   * @param strategy       The strategy containing properties used in the function.
+   * @param payoffFunction The payoff function as a string.
+   * @return A {@code BigDecimal} result of the evaluated function.
+   * @throws IllegalArgumentException If the function contains invalid variables.
+   */
   public static BigDecimal evaluatePayoffFunctionNoRelative(Strategy strategy,
                                                             String payoffFunction) {
-
-    // this method is for some players only take their own strategies into account when calculating their payoff
 
     String expression = payoffFunction;
 
@@ -97,6 +117,15 @@ public class StringExpressionEvaluator {
     }
   }
 
+
+  /**
+   * Evaluates the fitness function based on given payoffs.
+   *
+   * @param payoffs         Array of payoff values.
+   * @param fitnessFunction The fitness function as a string.
+   * @return The computed fitness value as a {@code BigDecimal}.
+   * @throws IllegalArgumentException If the function contains invalid variables.
+   */
   public static BigDecimal evaluateFitnessValue(double[] payoffs, String fitnessFunction) {
     String expression = fitnessFunction;
     List<Double> payoffList = new ArrayList<>();
@@ -142,7 +171,14 @@ public class StringExpressionEvaluator {
     }
   }
 
-  public static int AfterTokenLength(String function, int startIndex) {
+  /**
+   * Finds the length of a numeric token after a given index in a string.
+   *
+   * @param function   The input string containing numbers.
+   * @param startIndex The starting index to check after.
+   * @return The length of the numeric sequence following the startIndex.
+   */
+  public static int afterTokenLength(String function, int startIndex) {
     int length = 0;
     for (int c = startIndex + 1; c < function.length(); c++) {
       char ch = function.charAt(c);
@@ -155,10 +191,22 @@ public class StringExpressionEvaluator {
     return length;
   }
 
+  /**
+   * Checks if a character represents a numeric digit.
+   *
+   * @param c The character to check.
+   * @return {@code true} if the character is a digit, otherwise {@code false}.
+   */
   public static boolean isNumericValue(char c) {
     return c >= '0' && c <= '9';
   }
 
+  /**
+   * Converts a double to a string without scientific notation, ensuring proper formatting.
+   *
+   * @param value The double value to convert.
+   * @return A string representation of the value without scientific notation.
+   */
   public static String convertToStringWithoutScientificNotation(double value) {
     String stringValue;
     if (value > 9999999) {
@@ -171,7 +219,6 @@ public class StringExpressionEvaluator {
   }
 
   private static String formatDouble(double propertyValue) {
-    // if the property value is too small it can be written as for example 1.0E-4, so we need to format it to 0.0001
     return decimalFormat.format(propertyValue);
   }
 
@@ -190,15 +237,23 @@ public class StringExpressionEvaluator {
   }
 
   private static double calMax(List<Double> values) {
-    return values.stream().mapToDouble(Double::doubleValue).max().getAsDouble();
+    return values.stream()
+        .mapToDouble(Double::doubleValue)
+        .max()
+        .orElseThrow(() -> new IllegalArgumentException("Cannot calculate maximum of empty list"));
   }
 
   private static double calMin(List<Double> values) {
-    return values.stream().mapToDouble(Double::doubleValue).min().getAsDouble();
+    return values.stream()
+        .mapToDouble(Double::doubleValue)
+        .min()
+        .orElseThrow(() -> new IllegalArgumentException("Cannot calculate minimum of empty list"));
   }
 
   private static double calAverage(List<Double> values) {
-    return values.stream().mapToDouble(Double::doubleValue).average().getAsDouble();
+    return values.stream().mapToDouble(Double::doubleValue)
+        .average()
+        .orElse(0.0);
   }
 
   private static double calMedian(List<Double> values) {
@@ -227,7 +282,6 @@ public class StringExpressionEvaluator {
     DefaultFunction function = (!StringUtils.isEmptyOrNull(defaultFunction))
             ? DefaultFunction.valueOf(defaultFunction.toUpperCase()) : DefaultFunction.SUM;
     double val = switch (function) {
-      case SUM -> calSum(values);
       case PRODUCT -> calProduct(values);
       case MAX -> calMax(values);
       case MIN -> calMin(values);
@@ -240,39 +294,170 @@ public class StringExpressionEvaluator {
     return new BigDecimal(val);
   }
 
-  private static double evaluateExpression(String expression) {
-    // Replace NaN with 0
-    String formattedExpression = expression.replaceAll("NaN", "0")
-            .replaceAll("\\s+", "") // Remove all whitespace characters
-            .replaceAll(",", ".");  // Replace , to . (default double decimal separator)
+  /**
+   * Evaluates a mathematical string expression.
+   *
+   * @param strExpression The expression to evaluate.
+   * @return The computed result as a double.
+   */
+  public static double eval(String strExpression) {
 
-    // Create an expression builder
-    ExpressionBuilder builder = new ExpressionBuilder(formattedExpression);
+    String formattedExpression = strExpression.replaceAll("NaN",
+            "0")// Replace NaN(Not A Number) with 0, so that the expression can be evaluated
+        .replaceAll("\\s+",
+            "")
+        .replaceAll(",", "."); // Replace , to . (default double decimal separator)
 
-    Function logFunction = new Function("log", 2) {
-      @Override
-      public double apply(double... args) {
-        if (args[0] <= 0 || args[1] <= 0) {
-          throw new IllegalArgumentException("Logarithm base and argument must be positive");
-        }
-        return Math.log(args[1]) / Math.log(args[0]);
+    return new Object() {
+      int pos = -1;
+      int ch;
+
+      void nextChar() {
+        ch = (++pos < formattedExpression.length()) ? formattedExpression.charAt(pos) : -1;
       }
-    };
 
-    builder.function(logFunction);
-    // Build the expression
-    Expression expr = builder.build();
+      boolean eat(int charToEat) {
+        while (ch == ' ') {
+          nextChar();
+        }
 
-    // Validate the expression
-    ValidationResult validationResult = expr.validate();
-    if (!validationResult.isValid()) {
-      throw new RuntimeException("Invalid expression: " + validationResult.getErrors().toString());
-    }
+        if (ch == charToEat) {
+          nextChar();
+          return true;
+        }
+        return false;
+      }
 
-    // Evaluate the expression
-    return expr.evaluate();
+      double parse() {
+        nextChar();
+        double x = parseExpression();
+
+        if (pos < formattedExpression.length()) {
+          System.out.println("wrong expression: " + formattedExpression);
+          throw new RuntimeException("Unexpected: " + (char) ch);
+        }
+        return x;
+      }
+
+      // Grammar:
+      // expression = term | expression `+` term | expression `-` term
+      //  = factor | term `*` factor | term `/` factor
+      // factor = `+` factor | `-` factor | `(` expression `)` | number
+      //        | functionName `(` expression `)` | functionName factor
+      //        | factor `^` factor
+
+      double parseExpression() {
+        double x = parseTerm();
+        for (; ; ) {
+          if (eat('+')) {
+            x += parseTerm(); // addition
+          } else if (eat('-')) {
+            x -= parseTerm(); // subtraction
+          } else {
+            return x;
+          }
+        }
+      }
+
+      double parseTerm() {
+        double x = parseFactor();
+        for (; ; ) {
+          if (eat('*')) {
+            x *= parseFactor(); // multiplication
+          } else if (eat('/')) {
+            x /= parseFactor(); // division
+          } else {
+            return x;
+          }
+        }
+      }
+
+      double getArgForFunction() {
+        double a;
+        if (eat('(')) {
+          if (eat('e') || eat('E')) {
+            a = Math.E;
+          } else {
+            a = parseExpression();
+          }
+          if (!eat(')')) {
+            throw new RuntimeException("Missing ')' after argument to log");
+          }
+        } else {
+          throw new RuntimeException("Incorrect arguments for log function");
+        }
+        return a;
+      }
+
+      double parseFactor() {
+        if (eat('+')) {
+          return +parseFactor(); // unary plus
+        }
+        if (eat('-')) {
+          return -parseFactor(); // unary minus
+        }
+
+        double x;
+        int startPos = this.pos;
+        if (eat('(')) { // parentheses
+          x = parseExpression();
+          if (!eat(')')) {
+            System.out.println("Missing ')'");
+            System.out.println(formattedExpression);
+            throw new RuntimeException("Missing ')'");
+          }
+        } else if ((ch >= '0' && ch <= '9') || ch == '.') { // numbers
+          while ((ch >= '0' && ch <= '9') || ch == '.') {
+            nextChar();
+          }
+          x = Double.parseDouble(formattedExpression.substring(startPos, this.pos));
+        } else if (ch >= 'a' && ch <= 'z') { // functions
+          while (ch >= 'a' && ch <= 'z') {
+            nextChar();
+          }
+          String func = formattedExpression.substring(startPos, this.pos);
+          if (Objects.equals(func, "log")) {
+            double a = getArgForFunction();
+            double b = getArgForFunction();
+            return customLog(a, b);
+          }
+          if (eat('(')) {
+            x = parseExpression();
+            if (!eat(')')) {
+              throw new RuntimeException("Missing ')' after argument to " + func);
+            }
+          } else {
+            x = parseFactor();
+          }
+          x = switch (func) {
+            case "abs" -> Math.abs(x);
+            case "sqrt" -> Math.sqrt(x);
+            case "sin" -> Math.sin(Math.toRadians(x));
+            case "cos" -> Math.cos(Math.toRadians(x));
+            case "tan" -> Math.tan(Math.toRadians(x));
+            default -> throw new RuntimeException("Unknown function: " + func);
+          };
+        } else {
+          System.out.println("wrong expression: " + formattedExpression);
+          throw new RuntimeException("Unexpected: " + (char) ch);
+        }
+        if (eat('^')) {
+          x = Math.pow(x, parseFactor()); // exponentiation
+        }
+        return x;
+      }
+    }.parse();
   }
 
+  private static double customLog(double base, double logNumber) {
+    return Math.log(logNumber) / Math.log(base);
+  }
+
+  /**
+   * Main method to demonstrate the conversion of a large number without scientific notation.
+   *
+   * @param args Command-line arguments (not used).
+   */
   public static void main(String[] args) {
     System.out.println(convertToStringWithoutScientificNotation(222222222222.2222222222222));
   }

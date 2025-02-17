@@ -28,22 +28,27 @@ import org.moeaframework.Executor;
 import org.moeaframework.core.NondominatedPopulation;
 import org.moeaframework.core.Problem;
 
-
+/**
+ * This class benchmarks various algorithms for solving game theory problems, logs their execution
+ * time, and outputs the results in CSV format. It also handles the configuration and management of
+ * multiple algorithms and their execution in parallel.
+ */
 @Slf4j
 public class AlgorithmsBenchmarking {
 
+  /**
+   * Runs the specified algorithm on a given problem and returns the execution time.
+   *
+   * @param problem the problem to solve
+   * @param algo    the algorithm to use
+   * @return the runtime of the algorithm in seconds
+   * @throws IllegalArgumentException if the algorithm is not supported
+   */
   public static double run(Problem problem, String algo) {
     List<String> algorithms = Arrays.asList(AppConst.SUPPORTED_ALGOS);
     if (!algorithms.contains(algo)) {
       throw new IllegalArgumentException("Algorithm not supported: " + algo);
     }
-
-//        System.out.println("\n[ Randomly Generated Population ]\n");
-//        problem.printIndividuals();
-//
-//        System.out.println("Number Of Individuals: " + problem.getIndividuals().getNumberOfIndividual());
-//
-//        System.out.println("\n[ Algorithm Output Solution ]\n");
 
     // Run the algorithm
     long startTime = System.currentTimeMillis();
@@ -59,50 +64,34 @@ public class AlgorithmsBenchmarking {
     runtime = Math.round(runtime * 100.0) / 100.0;
 
     log.info(result.iterator().next().toString());
-
-//        // Process and print the results
-//        for (Solution solution : result) {
-//            Matches matches = (Matches) solution.getAttribute("matches");
-////            System.out.println("Output Matches (by Gale Shapley):\n" + matches.toString());
-////            System.out.println("Randomized Individuals Input Order (by MOEA): " + solution.getVariable(0).toString());
-//            System.out.println("Fitness Score: " + -solution.getObjective(0));
-//            Testing tester = new Testing(matches,
-//                    problem.getIndividuals().getNumberOfIndividual(),
-//                    problem.getIndividuals().getCapacities());
-//            System.out.println("Solution has duplicate individual? : " + tester.hasDuplicate());
-//        }
     return runtime;
   }
 
+  /**
+   * The main method to initialize and run the benchmarking process for the algorithms. It reads a
+   * serialized game theory problem, runs the specified algorithm, and logs the runtime.
+   *
+   * @param args the command-line arguments
+   */
   public static void main(String[] args) {
-
-//        SampleDataGenerator generator = new SampleDataGenerator(10, 10);
-//        String[] propNames = {"Prop1", "Prop2", "Prop3", "Prop4"};
-//        generator.setPropNames(propNames);
-//        generator.setSet1Cap(20);
-//        generator.setSet2Cap(1000);
-//        generator.setRandCapSet1(false);
-//        generator.setRandCapSet2(false);
-//        generator.setF1("none");
-//        generator.setF2("none");
-//        generator.setFnf("none");
-//        // Generate the StableMatchingProblem instance
-//        StableMatchingProblem problem = generator.generate();
-//        String logFileName = "smt_log";
-
     String problemSerializedFilePath = ".data/gt_data.ser";
-    String logFileName = "gt_log";
-    StandardGameTheoryProblem problem = (StandardGameTheoryProblem) ProblemUtils.readProblemFromFile(
-        problemSerializedFilePath);
+    StandardGameTheoryProblem problem = (StandardGameTheoryProblem) ProblemUtils
+        .readProblemFromFile(
+            problemSerializedFilePath);
 
     double runtime = run(problem, "OMOPSO");
 
     log.info("{}", runtime);
-//        AlgorithmsBenchmarking algo = new AlgorithmsBenchmarking();
-//        algo.start(problem, logFileName);
-
   }
 
+  /**
+   * Logs the given data to a file in CSV format.
+   *
+   * @param path   the file path where the data should be saved
+   * @param data   the data to be written to the file
+   * @param format the CSV format to use
+   * @return true if the data was written successfully, false otherwise
+   */
   public static boolean logData(String path, String[][] data, CSVFormat format) {
 
     if (!SimpleFileUtils.isFileExist(path)) {
@@ -131,10 +120,21 @@ public class AlgorithmsBenchmarking {
     }
   }
 
+  /**
+   * Checks whether the given CSV format is supported.
+   *
+   * @param format the CSV format to check
+   * @return true if the format is supported, false otherwise
+   */
   private static boolean isValidDelimiterType(CSVFormat format) {
     return List.of(CSVFormat.DEFAULT, CSVFormat.TDF).contains(format);
   }
 
+  /**
+   * Starts the benchmarking process with a default log file name.
+   *
+   * @param problem the problem to solve
+   */
   public void start(Problem problem) {
     String logFileName = "log";
     FastDateFormat dateFormat = FastDateFormat.getInstance("MMddHHss");
@@ -143,6 +143,12 @@ public class AlgorithmsBenchmarking {
     start(problem, logFileName);
   }
 
+  /**
+   * Starts the benchmarking process and logs the results to a specified log file.
+   *
+   * @param problem     the problem to solve
+   * @param logFileName the name of the log file
+   */
   public void start(Problem problem, String logFileName) {
     String[] algorithms = AppConst.SUPPORTED_ALGOS;
     List<AlgorithmRunResult> runResults = new ArrayList<>();
@@ -191,24 +197,32 @@ public class AlgorithmsBenchmarking {
     System.exit(0);
   }
 
+  /**
+   * Class representing the results of an algorithm run.
+   */
   @AllArgsConstructor
   @NoArgsConstructor
   @Data
   public static class AlgorithmRunResult {
 
     /**
-     * name
+     * The name of the algorithm.
      */
     String algorithmName;
     /**
-     * run ability
+     * Indicates whether the algorithm was successfully executed.
      */
     boolean runnable;
     /**
-     * runtime in seconds
+     * The runtime of the algorithm in seconds.
      */
     double runtime;
 
+    /**
+     * Converts the algorithm run result to a data point for logging.
+     *
+     * @return an array of strings representing the algorithm's result
+     */
     public String[] toDataPoint() {
 
       String algorithmNameStr = Objects.nonNull(this.algorithmName) ? this.algorithmName : "null";
