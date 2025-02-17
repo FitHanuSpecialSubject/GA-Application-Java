@@ -94,7 +94,7 @@ public class AlgorithmsBenchmarking {
    */
   public static boolean logData(String path, String[][] data, CSVFormat format) {
 
-    if (!SimpleFileUtils.isFileNotExist(path)) {
+    if (!SimpleFileUtils.isFileExist(path)) {
       try {
         FileUtils.touch(new File(path));
       } catch (IOException e) {
