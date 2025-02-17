@@ -144,28 +144,6 @@ public class TripletMatchingService {
     properties.setInt("maxTime", maxTime);
     TerminationCondition maxEval = new MaxFunctionEvaluations(generation * populationSize);
 
-    OperatorFactory.getInstance().addProvider(new OperatorProvider() {
-      @Override
-      public String getMutationHint(Problem problem) {
-        return null;
-      }
-
-      @Override
-      public String getVariationHint(Problem problem) {
-        return null;
-      }
-
-      @Override
-      public Variation getVariation(String name, TypedProperties typedProperties, Problem problem) {
-        if (name.equalsIgnoreCase("CV")) {
-          double crossoverRate = typedProperties.getDouble("cr.rate", 0.9);
-          double mutationRate = typedProperties.getDouble("mut.rate", 0.1);
-
-          return new CustomVariation(crossoverRate, mutationRate, problem.getNumberOfVariables());
-        }
-        return null;
-      }
-    });
 
     try {
       if (distributedCores.equals("all")) {
