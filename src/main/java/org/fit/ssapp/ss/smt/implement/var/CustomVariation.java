@@ -53,10 +53,11 @@ public class CustomVariation implements Variation {
       throw new IllegalArgumentException("CustomVariation requires exactly 2 parents!");
     }
 
-    Solution[] offsprings = {parents[0].copy(), parents[1].copy()};
+    Solution[] offsprings = { parents[0].copy(), parents[1].copy() };
 
     if ((PRNG.nextDouble() <= crossoverRate)) {
-      crossover(offsprings[0], offsprings[1]);
+      offsprings[0] =  crossover(parents[0], parents[1]);
+      offsprings[1] = crossover(parents[1], parents[0]);
     }
 
     for (Solution offspring : offsprings) {
@@ -69,31 +70,49 @@ public class CustomVariation implements Variation {
 
   /**
    * Implement crossover phase of the system.
+   * Split the gene of P1, taking the left half.
+   * Place the left half of P1 into a new gene, leaving the other half empty.
+   * Iterate through the gene of P2 from the beginning,
+   * filling the remaining empty half if the values do not already exist in the new gene.
    *
    * @param p1 first parents
    * @param p2 second parents
    */
-  public void crossover(Solution p1, Solution p2) {
-    int crossoverPoint1 = PRNG.nextInt(problemSize - 1);
-    int crossoverPoint2 = PRNG.nextInt(problemSize - 1);
+  public Solution crossover(Solution p1, Solution p2) {
+    int crossoverPoint = problemSize / 2;
+    Solution offspring = p1.copy();
 
-    if (crossoverPoint1 > crossoverPoint2) {
-      int temp = crossoverPoint1;
-      crossoverPoint1 = crossoverPoint2;
-      crossoverPoint2 = temp;
+    Set<Double> existValue = new HashSet<>();
+
+    for (int i = 0; i < crossoverPoint; i++) {
+      CustomIntegerVariable v = (CustomIntegerVariable) offspring.getVariable(i);
+      existValue.add(v.getValue());
     }
 
-    for (int i = crossoverPoint1; i <= crossoverPoint2; i++) {
-      CustomIntegerVariable v1 = (CustomIntegerVariable) p1.getVariable(i);
+    int parent2Start = crossoverPoint;
+    for (int i = 0; i < problemSize && parent2Start < problemSize; i++) {
       CustomIntegerVariable v2 = (CustomIntegerVariable) p2.getVariable(i);
+      double value = v2.getValue();
 
-      double temp = v1.getValue();
-      v1.setValue(v2.getValue());
-      v2.setValue(temp);
+      if (!existValue.contains(value)) {
+        CustomIntegerVariable v = (CustomIntegerVariable) offspring.getVariable(parent2Start);
+        v.setValue(value);
+        existValue.add(value);
+        parent2Start++;
+      }
     }
 
-    repair(p1);
-    repair(p2);
+    if (parent2Start < problemSize) {
+      for (int value = 0; value < problemSize && parent2Start < problemSize; value++) {
+        if (!existValue.contains((double) value)) {
+          CustomIntegerVariable v = (CustomIntegerVariable) offspring.getVariable(parent2Start);
+          v.setValue(value);
+          parent2Start++;
+        }
+      }
+    }
+
+    return offspring;
 
   }
 
@@ -123,27 +142,5 @@ public class CustomVariation implements Variation {
     //            swapPoint1, v1.getValue(), swapPoint2, v2.getValue());
 
   }
-
-  /**
-   * repair when repeat value appears after crossover.
-   *
-   * @param offspring offspring to be repaired
-   */
-  public void repair(Solution offspring) {
-    Set<Double> fixRepeat = new HashSet<>();
-
-    for (int i = 0; i < problemSize; i++) {
-      CustomIntegerVariable v = (CustomIntegerVariable) offspring.getVariable(i);
-      double value = v.getValue();
-
-      while (fixRepeat.contains(value)) {
-        value = PRNG.nextInt(problemSize);
-      }
-
-      v.setValue(value);
-      fixRepeat.add(value);
-    }
-  }
-
 
 }
