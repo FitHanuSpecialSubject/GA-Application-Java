@@ -11,24 +11,22 @@ import net.objecthunter.exp4j.ExpressionBuilder;
 import org.fit.ssapp.constants.StableMatchingConst;
 
 /**
- * **EvaluateFunctionValidator** - Validator for evaluation function syntax.
- * This class validates whether the given evaluation functions are **mathematically valid**
- * and conform to the expected format with **allowed variables**.
+ * Validator class for checking the validity of evaluate functions provided as an array of strings.
+ * Ensures that each function is either the default evaluate function or a valid mathematical
+ * expression with supported variables.
  */
 public class EvaluateFunctionValidator implements
-        ConstraintValidator<ValidEvaluateFunction, String[]> {
+    ConstraintValidator<ValidEvaluateFunction, String[]> {
 
   private static final Pattern VARIABLE_PATTERN = Pattern.compile("(P\\d+|W\\d+|R\\d+)");
 
   /**
-   * Validates an array of evaluation functions.
-   * - Each function is checked for **correct syntax** and **valid variables**.
-   * - Uses `exp4j` to **parse and evaluate** mathematical expressions.
-   * - If a function is invalid, a constraint violation message is generated.
+   * Validates the array of evaluate functions. Each function is checked to ensure it is either the
+   * default evaluate function or a valid mathematical expression with supported variables.
    *
-   * @param values  The array of evaluation functions to validate.
-   * @param context The validation context for adding constraint violations.
-   * @return `true` if all functions are valid, otherwise `false`.
+   * @param values  the array of evaluate functions to validate
+   * @param context the context in which the constraint is evaluated
+   * @return true if all evaluate functions are valid, false otherwise
    */
   @Override
   public boolean isValid(String[] values, ConstraintValidatorContext context) {
@@ -51,21 +49,21 @@ public class EvaluateFunctionValidator implements
       } catch (Exception e) {
         context.disableDefaultConstraintViolation();
         context.buildConstraintViolationWithTemplate(
-                        "Invalid evaluate function syntax: '" + func + "'")
-                .addConstraintViolation();
+                "Invalid evaluate function syntax: '" + func + "'")
+            .addConstraintViolation();
         return false;
       }
     }
     return true;
   }
 
+
   /**
-   * Extracts valid variable names from a mathematical expression.
-   * - Uses **regex matching** to identify variables in the form `P#`, `W#`, `R#`.
-   * - Returns a **set of unique variable names** found in the function.
+   * Extracts variables from the evaluate function using a predefined pattern. Variables must match
+   * the pattern (P\\d+|W\\d+|R\\d+).
    *
-   * @param func The mathematical function as a string.
-   * @return A set of valid variable names found in the function.
+   * @param func the evaluate function from which to extract variables
+   * @return a set of variables found in the function
    */
   private Set<String> extractVariables(String func) {
     Set<String> variables = new HashSet<>();

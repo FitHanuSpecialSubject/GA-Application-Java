@@ -3,36 +3,38 @@ package org.fit.ssapp.dto.mapper;
 import org.fit.ssapp.constants.AppConst;
 import org.fit.ssapp.dto.request.GameTheoryProblemDto;
 import org.fit.ssapp.ss.gt.GameTheoryProblem;
-import org.fit.ssapp.ss.gt.implement.PSOCompatibleGameTheoryProblem;
+import org.fit.ssapp.ss.gt.implement.PsoCompatibleGameTheoryProblem;
 import org.fit.ssapp.ss.gt.implement.StandardGameTheoryProblem;
 import org.fit.ssapp.util.EvaluatorUtils;
 import org.fit.ssapp.util.StringUtils;
 
 /**
- * Mapper layer, xử lý các công việc sau đối với từng loại matching problem: 1. map problem data từ
- * dto vào GameTheoryProblem 2. tính toán các preference list và set vào StableMatchingProblem
+ * Mapper class for converting a GameTheoryProblemDto request into a GameTheoryProblem object. This
+ * class helps in mapping data from DTO format to the appropriate game theory problem type.
  */
 public class GameTheoryProblemMapper {
 
   /**
-   * Map from request to problem
+   * Converts a GameTheoryProblemDto request to a GameTheoryProblem object. Depending on the
+   * algorithm type, it returns either a {@link PsoCompatibleGameTheoryProblem} or a
+   * {@link StandardGameTheoryProblem}.
    *
-   * @param request GameTheoryProblemDto
-   * @return GameTheoryProblem
+   * @param request The DTO containing game theory problem details.
+   * @return A mapped GameTheoryProblem object.
    */
   public static GameTheoryProblem toProblem(GameTheoryProblemDto request) {
     GameTheoryProblem problem;
     String algorithm = request.getAlgorithm();
     if (!StringUtils.isEmptyOrNull(algorithm)
-            && AppConst.PSO_BASED_ALGOS.contains(algorithm)) {
-      problem = new PSOCompatibleGameTheoryProblem();
+        && AppConst.PSO_BASED_ALGOS.contains(algorithm)) {
+      problem = new PsoCompatibleGameTheoryProblem();
     } else {
       problem = new StandardGameTheoryProblem();
     }
     problem.setDefaultPayoffFunction(EvaluatorUtils
-            .getIfDefaultFunction(request.getDefaultPayoffFunction()));
+        .getIfDefaultFunction(request.getDefaultPayoffFunction()));
     problem.setFitnessFunction(EvaluatorUtils
-            .getValidFitnessFunction(request.getFitnessFunction()));
+        .getValidFitnessFunction(request.getFitnessFunction()));
     problem.setSpecialPlayer(request.getSpecialPlayer());
     problem.setNormalPlayers(request.getNormalPlayers());
     problem.setConflictSet(request.getConflictSet());
@@ -42,17 +44,17 @@ public class GameTheoryProblemMapper {
   }
 
   /**
-   * Map from StandardGameTheoryProblem to PSOCompatibleGameTheoryProblem
+   * Converts a StandardGameTheoryProblem to a PsoCompatibleGameTheoryProblem.
    *
-   * @param problem StandardGameTheoryProblem
-   * @return PSOCompatibleGameTheoryProblem
+   * @param problem The standard game theory problem to convert.
+   * @return A PsoCompatibleGameTheoryProblem instance with copied data.
    */
-  public static PSOCompatibleGameTheoryProblem toPSOProblem(StandardGameTheoryProblem problem) {
-    PSOCompatibleGameTheoryProblem result = new PSOCompatibleGameTheoryProblem();
+  public static PsoCompatibleGameTheoryProblem toPsoProblem(StandardGameTheoryProblem problem) {
+    PsoCompatibleGameTheoryProblem result = new PsoCompatibleGameTheoryProblem();
     result.setDefaultPayoffFunction(EvaluatorUtils
-            .getIfDefaultFunction(problem.getDefaultPayoffFunction()));
+        .getIfDefaultFunction(problem.getDefaultPayoffFunction()));
     result.setFitnessFunction(EvaluatorUtils
-            .getValidFitnessFunction(problem.getFitnessFunction()));
+        .getValidFitnessFunction(problem.getFitnessFunction()));
     result.setSpecialPlayer(problem.getSpecialPlayer());
     result.setNormalPlayers(problem.getNormalPlayers());
     result.setConflictSet(problem.getConflictSet());
@@ -61,18 +63,18 @@ public class GameTheoryProblemMapper {
   }
 
   /**
-   * Map from StandardGameTheoryProblem to PSOCompatibleGameTheoryProblem
+   * Converts a PsoCompatibleGameTheoryProblem to a StandardGameTheoryProblem.
    *
-   * @param problem StandardGameTheoryProblem
-   * @return PSOCompatibleGameTheoryProblem
+   * @param problem The PSO-compatible game theory problem to convert.
+   * @return A StandardGameTheoryProblem instance with copied data.
    */
   public static StandardGameTheoryProblem toStandardProblem(
-          PSOCompatibleGameTheoryProblem problem) {
+      PsoCompatibleGameTheoryProblem problem) {
     StandardGameTheoryProblem result = new StandardGameTheoryProblem();
     result.setDefaultPayoffFunction(EvaluatorUtils
-            .getIfDefaultFunction(problem.getDefaultPayoffFunction()));
+        .getIfDefaultFunction(problem.getDefaultPayoffFunction()));
     result.setFitnessFunction(EvaluatorUtils
-            .getValidFitnessFunction(problem.getFitnessFunction()));
+        .getValidFitnessFunction(problem.getFitnessFunction()));
     result.setSpecialPlayer(problem.getSpecialPlayer());
     result.setNormalPlayers(problem.getNormalPlayers());
     result.setConflictSet(problem.getConflictSet());

@@ -6,21 +6,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * Hardware details of the machine running the algorithm.
- * **Main Attributes:**
- * Operating System:**
- * `osFamily` → The general OS category (e.g., "Windows", "Linux", "Mac").
- * `osManufacturer` → The OS provider (e.g., "Microsoft", "Canonical").
- * `osVersion` → The specific version of the OS.
- *  *
- * CPU Information:**
- * `cpuName` → The processor model (e.g., "Intel Core i7-12700K").
- * `cpuPhysicalCores` → The number of **physical** CPU cores.
- * `cpuLogicalCores` → The number of **logical** CPU cores (including hyper-threading).
- *  *
- * Memory Information:**
- * `totalMemory` → The total available system memory (e.g., "32 GB RAM").
+ * Represents the specifications of a computer, including details about the operating system,
+ * CPU, and memory.
  */
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

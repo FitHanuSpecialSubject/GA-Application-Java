@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Test;
  */
 public class StableMatchingProblemDtoTest {
 
-  private StableMatchingProblemDto dto;
   private Validator validator;
 
   @BeforeEach
@@ -24,7 +23,7 @@ public class StableMatchingProblemDtoTest {
 
   @Test
   void testValidDTO() {
-    dto = new StableMatchingProblemDto(
+    StableMatchingProblemDto dto = new StableMatchingProblemDto(
         "Stable Matching Problem",
         2,
         3,

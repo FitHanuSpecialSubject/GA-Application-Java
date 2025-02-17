@@ -5,28 +5,26 @@ import jakarta.validation.ConstraintValidatorContext;
 import org.fit.ssapp.dto.request.StableMatchingProblemDto;
 
 /**
- * **EvaluateFunctionCountValidator** - Validator for evaluating function count in matching problems.
- * This validator ensures that the number of evaluation functions provided in the
- * `StableMatchingProblemDto` matches the expected number of sets in the problem.
+ * Validator class for ensuring that the number of evaluate functions in a
+ * {@link StableMatchingProblemDto} matches the specified number of sets.
  */
 public class EvaluateFunctionCountValidator implements
-        ConstraintValidator<ValidEvaluateFunctionCount, StableMatchingProblemDto> {
+    ConstraintValidator<ValidEvaluateFunctionCount, StableMatchingProblemDto> {
 
   /**
-   * Initializes the validator.
-   *
-   * @param annotation The annotation instance for additional configurations (if needed).
+   * @param annotation annotation instance for a given constraint declaration
    */
   @Override
   public void initialize(ValidEvaluateFunctionCount annotation) {
   }
 
   /**
-   * Validates whether the number of evaluation functions matches the number of sets.
+   * Validates whether the number of evaluate functions in the provided
+   * {@link StableMatchingProblemDto} matches the specified number of sets.
    *
-   * @param dto     The `StableMatchingProblemDto` containing the evaluation functions and set count.
-   * @param context The validation context.
-   * @return `true` if the function count matches the number of sets, otherwise `false`.
+   * @param dto     the {@link StableMatchingProblemDto} to validate
+   * @param context the context in which the constraint is evaluated
+   * @return true if the number of evaluate functions matches the number of sets, false otherwise
    */
   @Override
   public boolean isValid(StableMatchingProblemDto dto, ConstraintValidatorContext context) {

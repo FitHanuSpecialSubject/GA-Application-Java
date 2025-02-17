@@ -13,6 +13,9 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.fit.ssapp.constants.AppConst;
 import org.moeaframework.core.Problem;
 
+/**
+ * Enables logging using Lombok's @Slf4j. Provides a static logger instance for this class.
+ */
 @Slf4j
 public class ProblemUtils {
 
@@ -20,12 +23,13 @@ public class ProblemUtils {
   }
 
   /**
-   * Handle write problem to file
+   * Writes a given Problem object to a file.
    *
-   * @param problem  problem Obj
-   * @param fileName file name
-   * @return true if success
+   * @param problem  the Problem object to serialize and save
+   * @param fileName the name of the file where the object should be written
+   * @return {@code true} if the problem was successfully written, {@code false} otherwise
    */
+  @SuppressWarnings("unused")
   public static boolean writeProblemToFile(Problem problem, String fileName) {
     if (!SimpleFileUtils.isObjectSerializable(problem)) {
       return false;
@@ -36,8 +40,8 @@ public class ProblemUtils {
       boolean isAppend = false;
 
       FileUtils.touch(file);
-      FileOutputStream fOut = new FileOutputStream(file, isAppend);
-      SerializationUtils.serialize((Serializable) problem, fOut);
+      FileOutputStream fut = new FileOutputStream(file, isAppend);
+      SerializationUtils.serialize((Serializable) problem, fut);
 
       return true;
 
@@ -46,13 +50,19 @@ public class ProblemUtils {
     }
   }
 
+  /**
+   * Reads a Problem object from a file.
+   *
+   * @param dataFilePath the file path to read from
+   * @return the deserialized Problem object, or {@code null} if the operation fails
+   */
   public static Problem readProblemFromFile(String dataFilePath) {
-    if (!SimpleFileUtils.isFileNotExist(dataFilePath)) {
+    if (SimpleFileUtils.isFileExist(dataFilePath)) {
       return null;
     }
     try {
-      FileInputStream fIn = new FileInputStream(dataFilePath);
-      Object obj = SerializationUtils.deserialize(fIn);
+      FileInputStream fin = new FileInputStream(dataFilePath);
+      Object obj = SerializationUtils.deserialize(fin);
       if (obj instanceof Problem) {
         return (Problem) obj;
       }

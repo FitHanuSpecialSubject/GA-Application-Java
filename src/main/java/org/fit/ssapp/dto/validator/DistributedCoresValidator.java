@@ -4,30 +4,26 @@ import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
 /**
- * **DistributedCoresValidator** - Validator for distributed core allocation.
- * This class validates whether the specified number of CPU cores is valid for
- * distributed computing. It ensures that:
- * - The value is `"all"`, meaning all available cores can be used.
- * - The value is a **positive integer** that does not exceed the system's available cores.
+ * Validator class for checking if the provided value for distributed cores is valid. The value must
+ * either be "all" or a positive integer that does not exceed the available CPU cores.
  */
 public class DistributedCoresValidator implements
-        ConstraintValidator<ValidDistributedCores, String> {
+    ConstraintValidator<ValidDistributedCores, String> {
 
   /**
-   * Initializes the validator.
-   *
-   * @param annotation The annotation instance for additional configurations (if needed).
+   * @param annotation annotation instance for a given constraint declaration
    */
   @Override
   public void initialize(ValidDistributedCores annotation) {
   }
 
   /**
-   * Validates the given core allocation value.
+   * Validates whether the provided value is a valid representation of distributed cores. The value
+   * is valid if it is "all" or a positive integer that does not exceed the available CPU cores.
    *
-   * @param value   The number of cores requested (as a String).
-   * @param context The validation context.
-   * @return `true` if the value is `"all"` or a valid number within the system's available cores.
+   * @param value   the value to validate
+   * @param context the context in which the constraint is evaluated
+   * @return true if the value is valid, false otherwise
    */
   @Override
   public boolean isValid(String value, ConstraintValidatorContext context) {
