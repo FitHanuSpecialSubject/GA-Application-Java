@@ -12,10 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.fit.ssapp.constants.StableMatchingConst.ReqTypes;
 import org.fit.ssapp.dto.mapper.StableMatchingProblemMapper;
 import org.fit.ssapp.dto.request.StableMatchingProblemDto;
-import org.fit.ssapp.ss.smt.Matches;
 import org.fit.ssapp.ss.smt.MatchingProblem;
-import org.fit.ssapp.ss.smt.requirement.Requirement;
-import org.fit.ssapp.ss.smt.requirement.RequirementDecoder;
 import org.moeaframework.Executor;
 import org.moeaframework.core.NondominatedPopulation;
 import org.moeaframework.core.Solution;
@@ -28,21 +25,26 @@ import org.moeaframework.core.Solution;
 @AllArgsConstructor
 public class SampleDataGenerator {
 
-  private static final Random RANDOM = new Random(); // Random generator
-  public Map<Integer, Integer> setCapacities = new HashMap<Integer, Integer>();
-  // capRandomize: Căn cứ với set Capacities để generate capacity cho matching data
-  // Mặc định để xử lý MTM Problem nên sẽ để cả hai đều là `true`
+  private static final Random RANDOM = new Random();
+  public Map<Integer, Integer> setCapacities = new HashMap<>();
   boolean[] capRandomize = {true, true};
   // Configuration parameters
-  private MatchingProblemType matchingProblemType = MatchingProblemType.MTM;
+  private MatchingProblemType matchingProblemType;
   // problemSize
   private int individualNum;
   private int numberOfProperties;
-  // max capacity tiêu chuẩn cho mỗi set dạng map<int, int>, vd: với MTM: {0: 2, 1: 10}, 3Set: {0: 1, 1: 10, 2: 12}
   private int[] numberForeachSet;
   private String[] evaluateFunctions = {DEFAULT_EVALUATE_FUNC, DEFAULT_EVALUATE_FUNC};
-  private String fnf = DEFAULT_FITNESS_FUNC; // Fitness function
+  private String fnf = DEFAULT_FITNESS_FUNC;
 
+  /**
+   * Constructs a SampleDataGenerator with the specified matching problem type and parameters.
+   *
+   * @param matchingProblemType The type of matching problem (MTM, OTM, OTO).
+   * @param numberOfSet1        Number of individuals in the first set.
+   * @param numberOfSet2        Number of individuals in the second set.
+   * @param numberOfProperties  Number of properties per individual.
+   */
   public SampleDataGenerator(MatchingProblemType matchingProblemType, int numberOfSet1,
       int numberOfSet2, int numberOfProperties) {
     if (numberOfSet1 <= 0 || numberOfSet2 <= 0 || numberOfProperties <= 0) {
@@ -64,9 +66,13 @@ public class SampleDataGenerator {
       case MTM -> this.capRandomize = new boolean[]{true, true};
       case OTM -> this.capRandomize = new boolean[]{true, false};
       case OTO -> this.capRandomize = new boolean[]{false, false};
+      default -> log.warn("Unknown Matching Problem Type");
     }
   }
 
+  /**
+   * Generates a StableMatchingProblemDto instance based on the configured parameters.
+   */
   public SampleDataGenerator(MatchingProblemType matchingProblemType, int[] numberForeachSet,
       int numberOfProperties) {
     this.matchingProblemType = matchingProblemType;
@@ -81,6 +87,8 @@ public class SampleDataGenerator {
       case MTM -> this.capRandomize = new boolean[]{true, true};
       case OTM -> this.capRandomize = new boolean[]{true, false};
       case OTO -> this.capRandomize = new boolean[]{false, false};
+      default -> throw new IllegalArgumentException(
+          "Unknown Matching Problem Type:" + this.matchingProblemType);
     }
   }
 
@@ -115,7 +123,7 @@ public class SampleDataGenerator {
 
     // Process and print the results
     for (Solution solution : result) {
-      Matches matches = (Matches) solution.getAttribute("matches");
+      System.out.println("Matches: " + solution.getAttribute("matches"));
       System.out.println("Fitness Score: " + -solution.getObjective(0));
     }
     System.out.println("\nExecution time: " + runtime + " Second(s) with Algorithm: " + algo);
@@ -128,18 +136,18 @@ public class SampleDataGenerator {
    * @return A StableMatchingProblemDto object
    */
   public StableMatchingProblemDto generateDto() {
-    StableMatchingProblemDto problemDTO = new StableMatchingProblemDto();
-    problemDTO.setNumberOfIndividuals(individualNum);
-    problemDTO.setNumberOfSets(numberForeachSet.length);
-    problemDTO.setNumberOfProperty(numberOfProperties);
-    problemDTO.setIndividualSetIndices(generateSetIndices());
-    problemDTO.setIndividualCapacities(generateCapacities());
-    problemDTO.setIndividualProperties((double[][]) generatePW().get("property"));
-    problemDTO.setIndividualWeights((double[][]) generatePW().get("weight"));
-    problemDTO.setIndividualRequirements(generateRequirementString());
-    problemDTO.setEvaluateFunctions(evaluateFunctions);
-    problemDTO.setFitnessFunction(fnf);
-    return problemDTO;
+    StableMatchingProblemDto problemDto = new StableMatchingProblemDto();
+    problemDto.setNumberOfIndividuals(individualNum);
+    problemDto.setNumberOfSets(numberForeachSet.length);
+    problemDto.setNumberOfProperty(numberOfProperties);
+    problemDto.setIndividualSetIndices(generateSetIndices());
+    problemDto.setIndividualCapacities(generateCapacities());
+    problemDto.setIndividualProperties((double[][]) generatePw().get("property"));
+    problemDto.setIndividualWeights((double[][]) generatePw().get("weight"));
+    problemDto.setIndividualRequirements(generateRequirementString());
+    problemDto.setEvaluateFunctions(evaluateFunctions);
+    problemDto.setFitnessFunction(fnf);
+    return problemDto;
   }
 
   /**
@@ -152,15 +160,9 @@ public class SampleDataGenerator {
 
     StableMatchingProblemDto newDto = this.generateDto();
     switch (this.matchingProblemType) {
-      case MTM -> {
-        matchingProblem = StableMatchingProblemMapper.toMTM(newDto);
-      }
-      case OTM -> {
-        matchingProblem = StableMatchingProblemMapper.toOTM(newDto);
-      }
-      case OTO -> {
-        matchingProblem = StableMatchingProblemMapper.toOTO(newDto);
-      }
+      case MTM -> matchingProblem = StableMatchingProblemMapper.toMTM(newDto);
+      case OTM -> matchingProblem = StableMatchingProblemMapper.toOTM(newDto);
+      case OTO -> matchingProblem = StableMatchingProblemMapper.toOTO(newDto);
       default -> {
         log.info("[ERROR] Match Problem Type hasn't been initialized yet. Terminated...");
         matchingProblem = null;
@@ -173,7 +175,7 @@ public class SampleDataGenerator {
   /**
    * Adds properties to an individual.
    */
-  private Map<String, Object> generatePW() {
+  private Map<String, Object> generatePw() {
     Map<String, Object> result = new HashMap<>();
     double[][] individualProperties = new double[this.individualNum][this.numberOfProperties];
     double[][] individualWeights = new double[this.individualNum][this.numberOfProperties];
@@ -205,13 +207,10 @@ public class SampleDataGenerator {
         if (ReqTypes.ONE_BOUND == randomType) {
           int randomExpression = RANDOM.nextInt(2) + 1;
           requirement = propertyBound + expression[randomExpression];
-        } else if (ReqTypes.TWO_BOUND == randomType) {
+        } else {
           double propertyBound2 = RANDOM.nextDouble() * (70.0 - 20.0) + 20.0;
           requirement = propertyBound + ":" + propertyBound2;
           //  if (ReqTypes.SCALE_TARGET == randomType)
-        } else {
-          int requirementScale = 1 + (10 - 1) * RANDOM.nextInt();
-          requirement = String.valueOf(requirementScale);
         }
         individualRequirements[i][j] = requirement;
       }
@@ -220,19 +219,7 @@ public class SampleDataGenerator {
     return individualRequirements;
   }
 
-  //    private int[] generateSetIndices() {
-//        int[] setIndices = new int[individualNum];
-//        /* Finish this function
-//        * */
-//        return setIndices;
-//    }
-//
-//    private int[] generateCapacities() {
-//        int[] capacities = new int[individualNum];
-//        /* Finish this function
-//         * */
-//        return capacities;
-//    }
+
   private int[] generateSetIndices() {
     int[] setIndices = new int[individualNum];
     int currentIndex = 0;
@@ -262,15 +249,6 @@ public class SampleDataGenerator {
     }
     return capacities;
   }
-
-
-  public Requirement[][] generateRequirement() {
-    String[][] requirementString = generateRequirementString();
-    Requirement[][] individualRequirements = new Requirement[this.individualNum][this.numberOfProperties];
-    individualRequirements = RequirementDecoder.decode(requirementString);
-    return individualRequirements;
-  }
-
 
   private interface ObjectKeys {
 
