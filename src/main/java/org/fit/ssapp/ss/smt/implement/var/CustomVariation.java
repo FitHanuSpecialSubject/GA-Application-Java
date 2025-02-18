@@ -79,41 +79,35 @@ public class CustomVariation implements Variation {
    * @param p2 second parents
    */
   public Solution crossover(Solution p1, Solution p2) {
-    int crossoverPoint = problemSize / 2;
+    int crossoverPoint = p2.getNumberOfVariables() / 2;
     Solution offspring = p1.copy();
 
-    Set<Double> existValue = new HashSet<>();
+    // Set capacity to reduce insert time
+    Set<CustomIntegerVariable> existValue = new HashSet<>(p1.getNumberOfVariables());
 
     for (int i = 0; i < crossoverPoint; i++) {
       CustomIntegerVariable v = (CustomIntegerVariable) offspring.getVariable(i);
-      existValue.add(v.getValue());
+      existValue.add(v);
     }
 
-    int parent2Start = crossoverPoint;
-    for (int i = 0; i < problemSize && parent2Start < problemSize; i++) {
-      CustomIntegerVariable v2 = (CustomIntegerVariable) p2.getVariable(i);
-      double value = v2.getValue();
+    {
+      int i = 0;
+      int offspringIdx = crossoverPoint + 1;
+      while (i < p1.getNumberOfVariables() && offspringIdx < p1.getNumberOfVariables())
+      {
+        CustomIntegerVariable v2 = (CustomIntegerVariable) p2.getVariable(i);
 
-      if (!existValue.contains(value)) {
-        CustomIntegerVariable v = (CustomIntegerVariable) offspring.getVariable(parent2Start);
-        v.setValue(value);
-        existValue.add(value);
-        parent2Start++;
-      }
-    }
-
-    if (parent2Start < problemSize) {
-      for (int value = 0; value < problemSize && parent2Start < problemSize; value++) {
-        if (!existValue.contains((double) value)) {
-          CustomIntegerVariable v = (CustomIntegerVariable) offspring.getVariable(parent2Start);
-          v.setValue(value);
-          parent2Start++;
+        if (!existValue.contains(v2)) {
+          existValue.add(v2);
+          offspring.setVariable(offspringIdx, v2);
+          offspringIdx++;
         }
+
+        i++;
       }
     }
 
     return offspring;
-
   }
 
   /**
@@ -131,16 +125,9 @@ public class CustomVariation implements Variation {
 
     CustomIntegerVariable v1 = (CustomIntegerVariable) offspring.getVariable(swapPoint1);
     CustomIntegerVariable v2 = (CustomIntegerVariable) offspring.getVariable(swapPoint2);
-    //    log.info("Before Swap: index1 = {}, value1 = {}, index2 = {}, value2 = {}",
-    //            swapPoint1, v1.getValue(), swapPoint2, v2.getValue());
 
     double temp = v1.getValue();
     v1.setValue(v2.getValue());
     v2.setValue(temp);
-
-    //    log.info("AFter Swap: index1 = {}, value1 = {}, index2 = {}, value2 = {}",
-    //            swapPoint1, v1.getValue(), swapPoint2, v2.getValue());
-
   }
-
 }
