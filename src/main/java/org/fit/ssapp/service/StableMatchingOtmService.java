@@ -144,9 +144,9 @@ public class StableMatchingOtmService {
                 .withMaxEvaluations(generation * populationSize)
                 .withTerminationCondition(maxEval)
                 .withProperties(properties)
-                .withProperty("operator", "CV")
-                .withProperty("cr.rate", 0.9)
-                .withProperty("mut.rate", 0.1)
+                .withProperty("operator", "CustomVariation")
+                .withProperty("CustomVariation.crossoverRate", 0.9)
+                .withProperty("CustomVariation.mutationRate", 0.1)
                 .distributeOnAllCores()
                 .run();
       } else {
@@ -157,9 +157,9 @@ public class StableMatchingOtmService {
                 .withMaxEvaluations(generation * populationSize)
                 .withTerminationCondition(maxEval)
                 .withProperties(properties)
-                .withProperty("operator", "CV")
-                .withProperty("cr.rate", 0.9)
-                .withProperty("mut.rate", 0.1)
+                .withProperty("operator", "CustomVariation")
+                .withProperty("CustomVariation.crossoverRate", 0.9)
+                .withProperty("CustomVariation.mutationRate", 0.1)
                 .distributeOn(numberOfCores)
                 .run();
       }
