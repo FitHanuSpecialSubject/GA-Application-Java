@@ -59,11 +59,12 @@ public class TwoSetPreferenceList implements PreferenceList {
   }
 
   /**
-   * add.
+   * Finds the least preferred node among the given candidates.
    *
-   * @param set int
-   * @param newNode int
-   * @param currentNodes Set
+   * @param set The set identifier
+   * @param newNode The new node to be compared.
+   * @param currentNodes The set of currently matched nodes.
+   * @return The least preferred node.
    */
   public int getLeastNode(int set, int newNode, Set<Integer> currentNodes) {
     int leastNode = newNode - this.padding;
@@ -85,11 +86,12 @@ public class TwoSetPreferenceList implements PreferenceList {
   }
 
   /**
-   * isScoreGreater.
+   * Determines if one node is preferred over another.
    *
-   * @param set int
-   * @param node int
-   * @param nodeToCompare int
+   * @param set The set identifier
+   * @param node The first node.
+   * @param nodeToCompare The second node.
+   * @return `true` if `node` is preferred over `nodeToCompare`, `false` otherwise.
    */
   public boolean isScoreGreater(int set, int node, int nodeToCompare) {
     return this.scores[node - this.padding] > this.scores[nodeToCompare - this.padding];

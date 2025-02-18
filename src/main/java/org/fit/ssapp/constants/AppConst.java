@@ -6,12 +6,12 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * App related constants.
+ * AppConst - Defines system-wide constants used in the application.
  */
 public class AppConst {
 
   /**
-   * Algorithm available for the system.
+   * List of supported optimization algorithms in the system.
    */
   public static final String[] SUPPORTED_ALGOS = {
       "AGE-MOEA-II",
@@ -43,7 +43,7 @@ public class AppConst {
   };
 
   /**
-   * based on net.objecthunter.exp4j version 0.4.8 supported math functions.
+   * Based on net.objecthunter.exp4j version 0.4.8 supported math functions.
    */
   public static final Set<String> BUILTIN_FUNCTION_NAMES = new HashSet<>(Arrays.asList(
       "sin",

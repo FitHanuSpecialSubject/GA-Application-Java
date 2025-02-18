@@ -7,7 +7,15 @@ import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
 /**
- * ws config class.
+ * WebsocketConfiguration - Configures WebSocket messaging for real-time communication.
+ * This class sets up a STOMP (Simple Text Oriented Messaging Protocol) WebSocket broker
+ * for handling real-time messaging between clients and the server.
+ * ## Configuration Details:
+ * - Enables WebSocket message brokering with `@EnableWebSocketMessageBroker`.
+ * - Configures a simple message broker (`/topic`, `/session`) for client-server messaging.
+ * - Defines user-specific destinations with prefix `/session`.
+ * - Sets an application destination prefix `/app` for client-to-server communication.
+ * - Registers WebSocket endpoints at `/ws` with SockJS fallback support.
  */
 @Configuration
 @EnableWebSocketMessageBroker

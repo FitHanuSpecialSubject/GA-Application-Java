@@ -20,7 +20,16 @@ import org.fit.ssapp.dto.validator.ValidRequirementSyntax;
 
 
 /**
- * Dto class for SMT problem request.
+ * StableMatchingProblemDto - Data Transfer Object for Stable Matching Problem requests.
+ * This DTO is used to receive and validate input data for a Stable Matching Problem (SMT).
+ * It contains all necessary parameters to define the problem, including individuals, sets,
+ * properties, requirements, and algorithm settings.
+ * ## Key Fields:
+ * - Problem Definition: `problemName`, `numberOfSets`, `numberOfIndividuals`, `numberOfProperty`
+ * - Individual Assignments: `individualSetIndices`, `individualCapacities`
+ * - Preferences & Weights: `individualRequirements`, `individualWeights`, `individualProperties`
+ * - Function Evaluations: `evaluateFunctions`, `fitnessFunction`
+ * - Algorithm Configurations: `populationSize`, `generation`, `maxTime`, `algorithm`
  */
 @Data
 @NoArgsConstructor

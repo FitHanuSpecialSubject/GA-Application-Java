@@ -31,7 +31,17 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 /**
- * StableMatchingService.
+ * StableMatchingService - Provides stable matching problem-solving services.
+ * This service handles the execution of stable matching algorithms using different approaches.
+ * It integrates with **MOEA Framework** for multi-objective optimization and allows:
+ * - Solving a stable matching problem using various algorithms.
+ * - Benchmarking multiple algorithms to compare performance.
+ * - Real-time progress tracking and updates via WebSockets.
+ * ## Main Features
+ * - Solves stable matching problems based on provided configurations.
+ * - Supports parallel execution using multiple computing cores.
+ * - Collects performance insights for different algorithms.
+ * - Handles WebSocket communication to send progress updates.
  */
 @Service
 @Slf4j
@@ -42,9 +52,9 @@ public class StableMatchingService implements ProblemService {
   private final SimpMessagingTemplate simpMessagingTemplate;
 
   /**
-   * solve.
+   * Solves a stable matching problem based on the given request.
    *
-   * @param request StableMatchingProblemDto
+   * @param request request The stable matching problem configuration.
    */
   public ResponseEntity<Response> solve(StableMatchingProblemDto request) {
 
@@ -151,7 +161,17 @@ public class StableMatchingService implements ProblemService {
   //        return unsafe.getLong(array, baseOffset);
   //    }
 
-
+  /**
+   * **Executes the matching problem using the specified algorithm.**
+   *
+   * @param problem The stable matching problem instance.
+   * @param algorithm The algorithm to use for solving.
+   * @param populationSize The population size for evolutionary algorithms.
+   * @param generation The number of generations to run.
+   * @param maxTime The maximum execution time allowed.
+   * @param distributedCores The number of computing cores used for execution.
+   * @return A `NondominatedPopulation` containing the solutions.
+   */
   private NondominatedPopulation solveProblem(Problem problem,
                                               String algorithm,
                                               int populationSize,
