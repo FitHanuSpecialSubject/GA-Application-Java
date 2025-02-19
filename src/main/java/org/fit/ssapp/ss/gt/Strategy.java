@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.fit.ssapp.util.StringExpressionEvaluator;
 
 /**
  * Represents a Strategy with a name, properties, and a payoff value. Implements Serializable for
@@ -25,6 +26,13 @@ public class Strategy implements Serializable {
   @Getter
   private double payoff;
 
+  public double evaluateStringExpression(String expression, List<NormalPlayer> normalPlayers, int[] chosenStrategyIndices) {
+    return StringExpressionEvaluator.evaluatePayoffFunctionWithRelativeToOtherPlayers(this, expression, normalPlayers, chosenStrategyIndices).doubleValue();
+  }
+
+  public void addProperty(double property) {
+    properties.add(property);
+  }
 
   @Override
   public String toString() {

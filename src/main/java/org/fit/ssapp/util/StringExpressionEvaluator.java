@@ -6,7 +6,6 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import net.objecthunter.exp4j.Expression;
@@ -23,7 +22,7 @@ import org.fit.ssapp.ss.gt.Strategy;
 public class StringExpressionEvaluator {
 
   public static Pattern nonRelativePattern = Pattern.compile("p[0-9]+");
-  public static Pattern fitnessPattern = Pattern.compile("u[0-9]+");
+//  public static Pattern fitnessPattern = Pattern.compile("u[0-9]+");
 
   /**
    * Evaluates a payoff function relative to other players.
@@ -297,160 +296,43 @@ public class StringExpressionEvaluator {
   /**
    * Evaluates a mathematical string expression.
    *
-   * @param strExpression The expression to evaluate.
+   * @param expression The expression to evaluate.
    * @return The computed result as a double.
    */
-  public static double eval(String strExpression) {
+  private static double evaluateExpression(String expression) {
+    // Replace NaN with 0
+    String formattedExpression = expression.replaceAll("NaN", "0")
+            .replaceAll("\\s+", "") // Remove all whitespace characters
+            .replaceAll(",", ".");  // Replace , to . (default double decimal separator)
+    Expression expr = getExpression(formattedExpression);
 
-    String formattedExpression = strExpression.replaceAll("NaN",
-            "0")// Replace NaN(Not A Number) with 0, so that the expression can be evaluated
-        .replaceAll("\\s+",
-            "")
-        .replaceAll(",", "."); // Replace , to . (default double decimal separator)
+    // Validate the expression
+    ValidationResult validationResult = expr.validate();
+    if (!validationResult.isValid()) {
+      throw new RuntimeException("Invalid expression: " + validationResult.getErrors().toString());
+    }
 
-    return new Object() {
-      int pos = -1;
-      int ch;
-
-      void nextChar() {
-        ch = (++pos < formattedExpression.length()) ? formattedExpression.charAt(pos) : -1;
-      }
-
-      boolean eat(int charToEat) {
-        while (ch == ' ') {
-          nextChar();
-        }
-
-        if (ch == charToEat) {
-          nextChar();
-          return true;
-        }
-        return false;
-      }
-
-      double parse() {
-        nextChar();
-        double x = parseExpression();
-
-        if (pos < formattedExpression.length()) {
-          System.out.println("wrong expression: " + formattedExpression);
-          throw new RuntimeException("Unexpected: " + (char) ch);
-        }
-        return x;
-      }
-
-      // Grammar:
-      // expression = term | expression `+` term | expression `-` term
-      //  = factor | term `*` factor | term `/` factor
-      // factor = `+` factor | `-` factor | `(` expression `)` | number
-      //        | functionName `(` expression `)` | functionName factor
-      //        | factor `^` factor
-
-      double parseExpression() {
-        double x = parseTerm();
-        for (; ; ) {
-          if (eat('+')) {
-            x += parseTerm(); // addition
-          } else if (eat('-')) {
-            x -= parseTerm(); // subtraction
-          } else {
-            return x;
-          }
-        }
-      }
-
-      double parseTerm() {
-        double x = parseFactor();
-        for (; ; ) {
-          if (eat('*')) {
-            x *= parseFactor(); // multiplication
-          } else if (eat('/')) {
-            x /= parseFactor(); // division
-          } else {
-            return x;
-          }
-        }
-      }
-
-      double getArgForFunction() {
-        double a;
-        if (eat('(')) {
-          if (eat('e') || eat('E')) {
-            a = Math.E;
-          } else {
-            a = parseExpression();
-          }
-          if (!eat(')')) {
-            throw new RuntimeException("Missing ')' after argument to log");
-          }
-        } else {
-          throw new RuntimeException("Incorrect arguments for log function");
-        }
-        return a;
-      }
-
-      double parseFactor() {
-        if (eat('+')) {
-          return +parseFactor(); // unary plus
-        }
-        if (eat('-')) {
-          return -parseFactor(); // unary minus
-        }
-
-        double x;
-        int startPos = this.pos;
-        if (eat('(')) { // parentheses
-          x = parseExpression();
-          if (!eat(')')) {
-            System.out.println("Missing ')'");
-            System.out.println(formattedExpression);
-            throw new RuntimeException("Missing ')'");
-          }
-        } else if ((ch >= '0' && ch <= '9') || ch == '.') { // numbers
-          while ((ch >= '0' && ch <= '9') || ch == '.') {
-            nextChar();
-          }
-          x = Double.parseDouble(formattedExpression.substring(startPos, this.pos));
-        } else if (ch >= 'a' && ch <= 'z') { // functions
-          while (ch >= 'a' && ch <= 'z') {
-            nextChar();
-          }
-          String func = formattedExpression.substring(startPos, this.pos);
-          if (Objects.equals(func, "log")) {
-            double a = getArgForFunction();
-            double b = getArgForFunction();
-            return customLog(a, b);
-          }
-          if (eat('(')) {
-            x = parseExpression();
-            if (!eat(')')) {
-              throw new RuntimeException("Missing ')' after argument to " + func);
-            }
-          } else {
-            x = parseFactor();
-          }
-          x = switch (func) {
-            case "abs" -> Math.abs(x);
-            case "sqrt" -> Math.sqrt(x);
-            case "sin" -> Math.sin(Math.toRadians(x));
-            case "cos" -> Math.cos(Math.toRadians(x));
-            case "tan" -> Math.tan(Math.toRadians(x));
-            default -> throw new RuntimeException("Unknown function: " + func);
-          };
-        } else {
-          System.out.println("wrong expression: " + formattedExpression);
-          throw new RuntimeException("Unexpected: " + (char) ch);
-        }
-        if (eat('^')) {
-          x = Math.pow(x, parseFactor()); // exponentiation
-        }
-        return x;
-      }
-    }.parse();
+    // Evaluate the expression
+    return expr.evaluate();
   }
 
-  private static double customLog(double base, double logNumber) {
-    return Math.log(logNumber) / Math.log(base);
+  private static Expression getExpression(String formattedExpression) {
+    ExpressionBuilder builder = new ExpressionBuilder(formattedExpression);
+
+    Function logFunction = new Function("log", 2) {
+      @Override
+      public double apply(double... args) {
+        if (args[0] <= 0 || args[1] <= 0) {
+          throw new IllegalArgumentException("Logarithm base and argument must be positive");
+        }
+        return Math.log(args[1]) / Math.log(args[0]);
+      }
+    };
+
+    builder.function(logFunction);
+    // Build the expression
+    Expression expr = builder.build();
+    return expr;
   }
 
   /**

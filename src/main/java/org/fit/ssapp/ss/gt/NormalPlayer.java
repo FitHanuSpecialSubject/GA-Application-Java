@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.fit.ssapp.util.StringExpressionEvaluator;
 
 /**
  * Represents a game player with various attributes. a @Setter annotation automatically generates
@@ -71,6 +72,15 @@ public class NormalPlayer implements Serializable {
     return payoffs.indexOf(maxPayoffValue);
   }
 
+
+  public void evaluatePayoff(List<NormalPlayer> normalPlayers, int[] chosenStrategyIndices) {
+    if (payoffFunction != null && !payoffFunction.isBlank()) {
+      this.payoff = StringExpressionEvaluator.evaluatePayoffFunctionWithRelativeToOtherPlayers(this.getStrategyAt(chosenStrategyIndices[this.strategies.indexOf(this)]), payoffFunction, normalPlayers, chosenStrategyIndices);
+    } else {
+      // Default behavior: sum all properties of the strategy
+      this.payoff = StringExpressionEvaluator.calculateDefault(this.getStrategyAt(chosenStrategyIndices[this.strategies.indexOf(this)]).getProperties(), null);
+    }
+  }
   /**
    * Generates a string representation of the strategies and their payoffs.
    *
