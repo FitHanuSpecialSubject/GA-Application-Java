@@ -205,7 +205,7 @@ public class StandardGameTheoryProblem implements GameTheoryProblem, Serializabl
 
     for (int i = 0; i < normalPlayers.size(); i++) {
       BinaryIntegerVariable chosenStrategyIndex = (BinaryIntegerVariable) solution.getVariable(i);
-      chosenStrategyIndices[i] = (chosenStrategyIndex.getValue());
+      chosenStrategyIndices[i] = chosenStrategyIndex.getValue();
     }
 
     // check if the solution violates any constraint
@@ -221,10 +221,10 @@ public class StandardGameTheoryProblem implements GameTheoryProblem, Serializabl
         int currentStrategyIndex = chosenStrategyIndices[leftPlayerIndex];
 
         boolean violated =
-            (prevStrategyIndex == leftPlayerStrategy && currentStrategyIndex == rightPlayerStrategy)
-                ||
-                (prevStrategyIndex == rightPlayerStrategy
-                    && currentStrategyIndex == leftPlayerStrategy);
+                (prevStrategyIndex == leftPlayerStrategy && currentStrategyIndex == rightPlayerStrategy)
+                        ||
+                        (prevStrategyIndex == rightPlayerStrategy
+                                && currentStrategyIndex == leftPlayerStrategy);
 
         if (violated) {
 
@@ -255,10 +255,10 @@ public class StandardGameTheoryProblem implements GameTheoryProblem, Serializabl
       if (payoffFunction.contains("P")) {
 
         chosenStrategyPayoff
-            = evaluatePayoffFunctionWithRelativeToOtherPlayers(chosenStrategy,
-            payoffFunction,
-            normalPlayers,
-            chosenStrategyIndices);
+                = evaluatePayoffFunctionWithRelativeToOtherPlayers(chosenStrategy,
+                payoffFunction,
+                normalPlayers,
+                chosenStrategyIndices);
       } else {
         chosenStrategyPayoff = normalPlayer.getPayoffValues().get(chosenStrategyIndices[i]);
       }
@@ -267,18 +267,13 @@ public class StandardGameTheoryProblem implements GameTheoryProblem, Serializabl
       payoffs[i] = chosenStrategyPayoff.doubleValue();
     }
 
-    BigDecimal fitnessValue
-        = evaluateFitnessValue(
-        payoffs,
-        fitnessFunction
-    );
+    BigDecimal fitnessValue = evaluateFitnessValue(payoffs, fitnessFunction);
 
     if (isMaximizing) {
       fitnessValue = fitnessValue.negate();
     }
 
     solution.setObjective(0, fitnessValue.doubleValue());
-
   }
 
   // SOLUTION = VARIABLE -> OBJECTIVE || CONSTRAINT

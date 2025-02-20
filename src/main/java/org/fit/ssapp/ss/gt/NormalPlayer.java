@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.fit.ssapp.util.StringExpressionEvaluator;
 
 /**
  * Represents a game player with various attributes. a @Setter annotation automatically generates
@@ -59,19 +60,27 @@ public class NormalPlayer implements Serializable {
    * @return The index of the dominant strategy, or -1 if no strategies exist.
    */
   public int getDominantStrategyIndex() {
-
     List<Double> payoffs = strategies.stream()
         .map(Strategy::getPayoff)
         .toList();
 
     double maxPayoffValue = payoffs.stream()
-        .max(Double::compareTo)
-        .orElse(0D);
+            .max(Double::compareTo)
+            .orElse(0D);
 
     // return index of the strategy having the max payOffValue
     return payoffs.indexOf(maxPayoffValue);
   }
 
+
+  public void evaluatePayoff(List<NormalPlayer> normalPlayers, int[] chosenStrategyIndices) {
+    if (payoffFunction != null && !payoffFunction.isBlank()) {
+      this.payoff = StringExpressionEvaluator.evaluatePayoffFunctionWithRelativeToOtherPlayers(this.getStrategyAt(chosenStrategyIndices[this.strategies.indexOf(this)]), payoffFunction, normalPlayers, chosenStrategyIndices);
+    } else {
+      // Default behavior: sum all properties of the strategy
+      this.payoff = StringExpressionEvaluator.calculateByDefault(this.getStrategyAt(chosenStrategyIndices[this.strategies.indexOf(this)]).getProperties(), null);
+    }
+  }
   /**
    * Generates a string representation of the strategies and their payoffs.
    *

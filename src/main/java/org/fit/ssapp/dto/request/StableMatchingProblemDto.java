@@ -94,4 +94,9 @@ public class StableMatchingProblemDto implements ProblemRequestDto {
             ", distributedCores='" + distributedCores + '\'' +
             '}';
   }
+
+  @Override
+  public String getAlgorithm() {
+    return algorithm;
+  }
 }
