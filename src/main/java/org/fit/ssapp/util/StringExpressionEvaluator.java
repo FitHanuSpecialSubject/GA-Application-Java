@@ -22,6 +22,7 @@ import org.fit.ssapp.ss.gt.Strategy;
 public class StringExpressionEvaluator {
 
   public static Pattern nonRelativePattern = Pattern.compile("p[0-9]+");
+  public static Pattern fitnessPattern = Pattern.compile("u[0-9]+");
 //  public static Pattern fitnessPattern = Pattern.compile("u[0-9]+");
 
   /**
@@ -49,6 +50,7 @@ public class StringExpressionEvaluator {
     String expression = payoffFunction;
 
     Pattern generalPattern = Pattern.compile("(P[0-9]+)?" + nonRelativePattern.pattern());
+
     Matcher generalMatcher = generalPattern.matcher(expression);
     while (generalMatcher.find()) {
       String placeholder = generalMatcher.group();
@@ -142,32 +144,20 @@ public class StringExpressionEvaluator {
       if (checkIfIsDefaultFunction(fitnessFunction)) {
         return calculateByDefault(payoffList, fitnessFunction);
       }
-
-      // Create an expression builder with the fitness function
-      ExpressionBuilder builder = new ExpressionBuilder(expression);
-
-      // Add variables to the expression builder
-      for (int i = 0; i < payoffs.length; i++) {
-        builder.variable("p" + (i + 1));
+      Matcher fitnessMatcher = fitnessPattern.matcher(expression);
+      while (fitnessMatcher.find()) {
+        String placeholder = fitnessMatcher.group();
+        // indices should account for offset from base 1 index of variables
+        int index = Integer.parseInt(placeholder.substring(1)) - 1;
+        double propertyValue = payoffs[index];
+        expression = expression.replaceAll(placeholder, formatDouble(propertyValue));
       }
 
-      // Build the expression
-      Expression expr = builder.build();
-
-      for (int i = 0; i < payoffs.length; i++) {
-        expr.setVariable("p" + (i + 1), payoffs[i]);
-      }
-
-      // Validate the expression
-      ValidationResult validationResult = expr.validate();
-      if (!validationResult.isValid()) {
-        throw new RuntimeException("Invalid expression: " + validationResult.getErrors().toString());
-      }
-
-      // Evaluate the expression
-      double val = expr.evaluate();
+      double val = evaluateExpression(expression);
       return new BigDecimal(val).setScale(10, RoundingMode.HALF_UP);
+
     }
+
   }
 
   /**
@@ -270,14 +260,7 @@ public class StringExpressionEvaluator {
     return arr[arr.length - 1] - arr[0];
   }
 
-  /*
-  * Để sử dụng calculateByDefault() do Function calculateByDefault() được để private
-  * */
-  public static BigDecimal calculateDefault(List<Double> values, String defaultFunction) {
-    return calculateByDefault(values, defaultFunction);
-  }
-
-  private static BigDecimal calculateByDefault(List<Double> values, String defaultFunction) {
+  public static BigDecimal calculateByDefault(List<Double> values, String defaultFunction) {
     DefaultFunction function = (!StringUtils.isEmptyOrNull(defaultFunction))
             ? DefaultFunction.valueOf(defaultFunction.toUpperCase()) : DefaultFunction.SUM;
     double val = switch (function) {

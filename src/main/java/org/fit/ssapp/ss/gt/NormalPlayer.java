@@ -78,7 +78,7 @@ public class NormalPlayer implements Serializable {
       this.payoff = StringExpressionEvaluator.evaluatePayoffFunctionWithRelativeToOtherPlayers(this.getStrategyAt(chosenStrategyIndices[this.strategies.indexOf(this)]), payoffFunction, normalPlayers, chosenStrategyIndices);
     } else {
       // Default behavior: sum all properties of the strategy
-      this.payoff = StringExpressionEvaluator.calculateDefault(this.getStrategyAt(chosenStrategyIndices[this.strategies.indexOf(this)]).getProperties(), null);
+      this.payoff = StringExpressionEvaluator.calculateByDefault(this.getStrategyAt(chosenStrategyIndices[this.strategies.indexOf(this)]).getProperties(), null);
     }
   }
   /**
