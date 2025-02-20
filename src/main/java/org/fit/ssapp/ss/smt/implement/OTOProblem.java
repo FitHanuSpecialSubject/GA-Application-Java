@@ -23,6 +23,22 @@ import org.moeaframework.core.Solution;
 import org.moeaframework.core.Variable;
 import org.moeaframework.core.variable.Permutation;
 
+
+/**
+ * Represents a One-to-One Stable Matching Problem.
+ * This class models a matching problem where each participant can be paired with
+ * at most one partner
+ * based on their preference lists. The goal is to find a stable
+ * matching while optimizing a fitness function.
+ * Many: Each participant can match with multiple partners
+ * One: Each participant can only have one pair
+ * Set 1: a, b, c, d
+ * Set 2: x, y, z
+ * Example matching for set 1 (One): a-x, b-y, c-z
+ * Example matching for set 2 (One): x-a, y-b, z-c
+ * Correct: a-x (x-a), b-y (y-b)
+ * Wrong: b-y (y-c), c-z (z-d)
+ */
 @Slf4j
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -30,42 +46,42 @@ import org.moeaframework.core.variable.Permutation;
 public class OTOProblem implements MatchingProblem {
 
   /**
-   * problem name
+   * problem name.
    */
   final String problemName;
 
   /**
-   * problem size (number of individuals in matching problem
+   * problem size (number of individuals in matching problem.
    */
   final int problemSize;
 
   /**
-   * number of set in matching problem
+   * number of set in matching problem.
    */
   final int setNum;
 
   /**
-   * Matching data
+   * Matching data.
    */
   final MatchingData matchingData;
 
   /**
-   * preference list
+   * preference list.
    */
   final PreferenceListWrapper preferenceLists;
 
   /**
-   * problem fitness function
+   * problem fitness function.
    */
   final String fitnessFunction;
 
   /**
-   * fitness evaluator
+   * fitness evaluator.
    */
   final FitnessEvaluator fitnessEvaluator;
 
   /**
-   * will not be used
+   * will not be used.
    */
   final int UNUSED_VAL = StableMatchingConst.UNUSED_VALUE;
 
@@ -114,6 +130,11 @@ public class OTOProblem implements MatchingProblem {
     solution.setObjective(0, -fitnessScore);
   }
 
+  /**
+   * check exists fitness function.
+   *
+   * @return true if exists
+   */
   public boolean hasFitnessFunc() {
     return StringUtils.isEmptyOrNull(this.fitnessFunction);
   }
@@ -142,13 +163,15 @@ public class OTOProblem implements MatchingProblem {
   }
 
   /**
-   * {@inheritDoc}
+   * stableMatching.
+   *
+   * @return Matches
    */
   @Override
   public Matches stableMatching(Variable var) {
     int[] order = ((Permutation) var).toArray();
     Queue<Integer> singleQueue = Arrays.stream(order).boxed()
-        .collect(Collectors.toCollection(LinkedList::new));
+            .collect(Collectors.toCollection(LinkedList::new));
     Matches matches = new Matches(getProblemSize());
 
     while (!singleQueue.isEmpty()) {
@@ -162,9 +185,9 @@ public class OTOProblem implements MatchingProblem {
         int b = aPreference.getPositionByRank(UNUSED_VAL, i);
 
         // If already matched to each other, skip
-          if (matches.isMatched(a, b)) {
-              break;
-          }
+        if (matches.isMatched(a, b)) {
+          break;
+        }
 
         if (!matches.isMatched(b)) {
           // Case 1: b is unmatched
@@ -175,7 +198,7 @@ public class OTOProblem implements MatchingProblem {
           // Find b's current partner(s)
           Set<Integer> bPartners = matches.getSetOf(b);
 
-          // If b prefers a over any current partner
+          // If b prefers an over any current partner
           for (int bPartner : bPartners) {
             if (bLikeAMore(a, b, bPartner)) {
               singleQueue.add(bPartner);
@@ -186,9 +209,9 @@ public class OTOProblem implements MatchingProblem {
             }
           }
 
-            if (foundMatch) {
-                break;
-            }
+          if (foundMatch) {
+            break;
+          }
         }
       }
     }

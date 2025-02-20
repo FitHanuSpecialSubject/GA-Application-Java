@@ -19,7 +19,7 @@ import org.fit.ssapp.util.PreferenceProviderUtils;
 import org.fit.ssapp.util.StringUtils;
 
 /**
- * Standard implementation of PreferenceBuilder that uses Exp4j lib
+ * Standard implementation of PreferenceBuilder that uses Exp4j lib.
  */
 @Data
 public class TwoSetPreferenceProvider implements PreferenceBuilder {
@@ -34,7 +34,10 @@ public class TwoSetPreferenceProvider implements PreferenceBuilder {
 
 
   /**
-   * initialize Exp4j mathematical Expression & variables for each set
+   * initialize Exp4j mathematical Expression & variables for each set.
+   *
+   * @param evaluationFunctions String[]
+   * @param matchingData        MatchingData
    */
   public TwoSetPreferenceProvider(MatchingData matchingData, String[] evaluationFunctions) {
     this.matchingData = matchingData;
@@ -43,45 +46,59 @@ public class TwoSetPreferenceProvider implements PreferenceBuilder {
     this.sizeOf1 = matchingData.getTotalIndividualOfSet(0);
     this.sizeOf2 = matchingData.getSize() - sizeOf1;
 
-      if (!StringUtils.isEmptyOrNull(evalFunctionForSet1)) {
-          if (expressionOfSet2 != null) {
-              return;
-          }
-          this.variablesOfSet1 = PreferenceProviderUtils.filterVariable(evalFunctionForSet1);
-//            this.expressionOfSet1 = new ExpressionBuilder(evalFunctionForSet1)
-//                    .variables(PreferenceProviderUtils.convertMapToSet(variablesOfSet1))
-//                    .build();
+    if (!StringUtils.isEmptyOrNull(evalFunctionForSet1)) {
+      if (expressionOfSet2 != null) {
+        return;
       }
-      this.expressionOfSet1 = null;
+      this.variablesOfSet1 = PreferenceProviderUtils.filterVariable(evalFunctionForSet1);
+      //            this.expressionOfSet1 = new ExpressionBuilder(evalFunctionForSet1)
+      //                    .variables(PreferenceProviderUtils.convertMapToSet(variablesOfSet1))
+      //                    .build();
+    }
+    this.expressionOfSet1 = null;
 
-      if (StringUtils.isEmptyOrNull(evalFunctionForSet2)) {
+    if (StringUtils.isEmptyOrNull(evalFunctionForSet2)) {
       this.expressionOfSet2 = null;
     } else {
-        if (expressionOfSet2 != null) {
-            return;
-        }
+      if (expressionOfSet2 != null) {
+        return;
+      }
       this.variablesOfSet2 = PreferenceProviderUtils.filterVariable(evalFunctionForSet2);
       this.expressionOfSet2 = new ExpressionBuilder(evalFunctionForSet2)
-          .variables(PreferenceProviderUtils.convertMapToSet(variablesOfSet2))
-          .build();
+              .variables(PreferenceProviderUtils.convertMapToSet(variablesOfSet2))
+              .build();
     }
 
   }
 
 
+  /**
+   * Retrieves variable values of set 1 for preference evaluation.
+   *
+   * @param indexOfEvaluator   The index of the evaluating individual.
+   * @param indexOfBeEvaluated The index of the individual being evaluated.
+   * @return Map
+   */
   public Map<String, Double> getVariableValuesForSet1(int indexOfEvaluator,
-      int indexOfBeEvaluated) {
+                                                      int indexOfBeEvaluated) {
     return getVariableValues(this.variablesOfSet1, indexOfEvaluator, indexOfBeEvaluated);
   }
 
+  /**
+   * Retrieves variable values of set 2 for preference evaluation.
+   *
+   * @param indexOfEvaluator   The index of the evaluating individual.
+   * @param indexOfBeEvaluated The index of the individual being evaluated.
+   * @return Map
+   */
   public Map<String, Double> getVariableValuesForSet2(int indexOfEvaluator,
-      int indexOfBeEvaluated) {
+                                                      int indexOfBeEvaluated) {
     return getVariableValues(this.variablesOfSet2, indexOfEvaluator, indexOfBeEvaluated);
   }
 
   private Map<String, Double> getVariableValues(Map<String, Set<Integer>> variables,
-      int idx1,
-      int idx2) {
+                                                int idx1,
+                                                int idx2) {
     Map<String, Double> variablesValues = new HashMap<>();
     for (Map.Entry<String, Set<Integer>> entry : variables.entrySet()) {
       String key = entry.getKey();
@@ -102,8 +119,8 @@ public class TwoSetPreferenceProvider implements PreferenceBuilder {
         case "R":
           for (Integer value : values) {
             double val = matchingData
-                .getRequirementOf(idx1, value - 1)
-                .getValueForFunction();
+                    .getRequirementOf(idx1, value - 1)
+                    .getValueForFunction();
             variablesValues.put(key + value, val);
           }
           break;
@@ -115,6 +132,12 @@ public class TwoSetPreferenceProvider implements PreferenceBuilder {
     return variablesValues;
   }
 
+  /**
+   * getPreferenceListByFunction.
+   *
+   * @param index int
+   * @return PreferenceList
+   */
   public PreferenceList getPreferenceListByFunction(int index) {
     int set = matchingData.getSetNoOf(index);
     TwoSetPreferenceList a;
@@ -146,6 +169,12 @@ public class TwoSetPreferenceProvider implements PreferenceBuilder {
     return a;
   }
 
+  /**
+   * getPreferenceListByDefault.
+   *
+   * @param index int
+   * @return PreferenceList
+   */
   public PreferenceList getPreferenceListByDefault(int index) {
     int set = matchingData.getSetNoOf(index);
     int numberOfProperties = matchingData.getPropertyNum();

@@ -19,6 +19,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+/**
+ *
+ */
 public class StableMatchingSolverTest {
 
   StableMatchingProblemDto stableMatchingProblemDto;
@@ -28,6 +31,9 @@ public class StableMatchingSolverTest {
   int numberOfProperties;
   private Validator validator;
 
+  /**
+   *
+   */
   @BeforeEach
   public void setUp() {
     numberOfIndividuals1 = 20;
@@ -43,6 +49,9 @@ public class StableMatchingSolverTest {
 
   }
 
+  /**
+   *
+   */
   @Test
   public void testEvaluateFunctions() {
     stableMatchingProblemDto.setEvaluateFunctions(new String[]{"default", "default"});
@@ -51,6 +60,9 @@ public class StableMatchingSolverTest {
     assert (violations.isEmpty());
   }
 
+  /**
+   *
+   */
   //    @Test
 //    public void testFitnessCalculation() {
 //        TwoSetFitnessEvaluator newEvaluator = new TwoSetFitnessEvaluator(sampleData.generateProblem().getMatchingData());
@@ -84,6 +96,9 @@ public class StableMatchingSolverTest {
     assertEquals(expected, result, 0.001);
   }
 
+  /**
+   *
+   */
   @Test
   public void testStableSolverMTM() {
     StableMatchingService solver = new StableMatchingService(null);
@@ -95,6 +110,9 @@ public class StableMatchingSolverTest {
     assertEquals(HttpStatus.OK, response.getStatusCode());
   }
 
+  /**
+   *
+   */
   @Test
   public void testStableSolverOTM() {
     StableMatchingOtmService stableMatchingOTMProblemDTO = new StableMatchingOtmService(null);
