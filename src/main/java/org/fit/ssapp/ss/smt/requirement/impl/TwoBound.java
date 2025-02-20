@@ -5,30 +5,27 @@ import static org.fit.ssapp.util.NumberUtils.formatDouble;
 import org.fit.ssapp.constants.StableMatchingConst;
 import org.fit.ssapp.ss.smt.requirement.Requirement;
 
+/**
+ * Represents a requirement with both lower and upper bounds.
+ * - The value is considered valid if it falls within the range `[lowerBound, upperBound]`.
+ * - If the value is outside the range, the requirement is not satisfied (`scaling = 0.0`).
+ */
 public record TwoBound(double lowerBound, double upperBound) implements Requirement {
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public int getType() {
     return StableMatchingConst.ReqTypes.TWO_BOUND;
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public double getValueForFunction() {
     return (lowerBound + upperBound) / 2;
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public double getDefaultScaling(double propertyValue) {
-    if (propertyValue < lowerBound || propertyValue > upperBound ||
+    if (propertyValue < lowerBound || propertyValue > upperBound
+            ||
             lowerBound == upperBound) {
       return 0.0;
     } else {
@@ -38,6 +35,9 @@ public record TwoBound(double lowerBound, double upperBound) implements Requirem
     }
   }
 
+  /**
+   * toString .
+   */
   public String toString() {
     return "[" + formatDouble(lowerBound) + ", " + formatDouble(upperBound) + "]";
   }

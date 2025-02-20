@@ -27,6 +27,25 @@ import org.moeaframework.core.Solution;
 import org.moeaframework.core.Variable;
 import org.moeaframework.core.variable.Permutation;
 
+/**
+ * Represents a One-to-Many Stable Matching Problem.
+ * This class models a matching problem where each participant
+ * must be paired in *triplets* rather than traditional OTO, OTM, MTM pairs.
+ * The problem can be OTOTO, OTMTM, OTMTO, ...
+ * The goal is to find a stable
+ * matching while optimizing a fitness function.
+ * Many: Each participant can match with multiple partners
+ * One: Each participant can only have one pair
+ * Set 1: a, b, c, d, e
+ * Set 2: x, y, z, o
+ * Set 2: 1, 2, 3, 4, 5
+ * Example matching for set 1 (One): a-x-1, b-y-2, c-z-3
+ * Example matching for set 2 (Many): x-a-1, x-d-4, x-d-5
+ * Example matching for set 3 (One): 1-x-a, 2-y-b, 3-z-c
+ * Correct: a-x-1, b-y-2
+ * Wrong: a-x-1, a-x-3 ('a' in Set 1, which is one,
+ * paired with x-1 and x-3 simultaneously will be wrong)
+ */
 @Slf4j
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -34,48 +53,48 @@ import org.moeaframework.core.variable.Permutation;
 public class TripletOTOProblem implements MatchingProblem {
 
   /**
-   * problem name
+   * problem name.
    */
   final String problemName;
 
   /**
-   * problem size (number of individuals in matching problem
+   * problem size (number of individuals in matching problem.
    */
   final int problemSize;
 
   /**
-   * number of set in matching problem
+   * number of set in matching problem.
    */
   final int setNum;
 
   /**
-   * Matching data
+   * Matching data.
    */
   final MatchingData matchingData;
 
   /**
-   * preference list
+   * preference list.
    */
   final PreferenceListWrapper preferenceLists;
 
   /**
-   * problem fitness function
+   * problem fitness function.
    */
   final String fitnessFunction;
 
   /**
-   * fitness evaluator
+   * fitness evaluator.
    */
   final FitnessEvaluator fitnessEvaluator;
 
   /**
-   * will not be used
+   * will not be used.
    */
   final int UNUSED_VAL = StableMatchingConst.UNUSED_VALUE;
 
 
   /**
-   * generate new solution
+   * generate new solution.
    *
    * @return Solution contains Variable(s)
    */
@@ -88,7 +107,7 @@ public class TripletOTOProblem implements MatchingProblem {
   }
 
   /**
-   * evaluate function for matching problem
+   * evaluate function for matching problem.
    *
    * @param solution Solution contains Variable(s)
    */
@@ -109,7 +128,7 @@ public class TripletOTOProblem implements MatchingProblem {
     double fitnessScore;
     if (this.hasFitnessFunc()) {
       fitnessScore = fitnessEvaluator
-          .withFitnessFunctionEvaluation(satisfactions, this.fitnessFunction);
+              .withFitnessFunctionEvaluation(satisfactions, this.fitnessFunction);
     } else {
       fitnessScore = fitnessEvaluator.defaultFitnessEvaluation(satisfactions);
     }
@@ -119,7 +138,7 @@ public class TripletOTOProblem implements MatchingProblem {
 
 
   /**
-   * check exists fitness function
+   * check exists fitness function.
    *
    * @return true if exists
    */
@@ -128,12 +147,19 @@ public class TripletOTOProblem implements MatchingProblem {
   }
 
 
+  /**
+   * getMatchesSatisfactions.
+   *
+   * @return double[]
+   */
   public double[] getMatchesSatisfactions(Matches matches) {
     return this.preferenceLists.getMatchesSatisfactions(matches, matchingData);
   }
 
   /**
-   * {@inheritDoc}
+   * stableMatching.
+   *
+   * @return Matches
    */
   @Override
   public Matches stableMatching(Variable var) {
@@ -150,9 +176,9 @@ public class TripletOTOProblem implements MatchingProblem {
     while (!unMatchedNode.isEmpty()) {
       int newNode = unMatchedNode.poll();
 
-        if (matchedNode.contains(newNode)) {
-            continue;
-        }
+      if (matchedNode.contains(newNode)) {
+        continue;
+      }
 
       int currentSet = matchingData.getSetNoOf(newNode);
       int[] otherSets = getOtherSets(currentSet);
@@ -164,11 +190,10 @@ public class TripletOTOProblem implements MatchingProblem {
       // integrate through each of opposite sets
       for (int targetSet : otherSets) {
         int preferNodeOfTargetSet = matchWithTargetSet(newNode, targetSet, nodePreference, matches,
-            unMatchedNode);
+                unMatchedNode);
 
         // add to leftover if current individual unavailable to match with any preferNode
         if (preferNodeOfTargetSet == -1) {
-//                    matches.addLeftOver(preferNodeOfTargetSet);
           break;
         }
         matchedGroup.add(preferNodeOfTargetSet);
@@ -193,14 +218,15 @@ public class TripletOTOProblem implements MatchingProblem {
   }
 
   /**
-   * find and match with a prefer node in the target set
+   * find and match with a prefer node in the target set.
    * return the prefer node of target set
+
    * @param nodePreferences is the preferList of current node
    */
   private int matchWithTargetSet(int newNode, int targetSet,
-      TripletPreferenceList nodePreferences,
-      Matches matches,
-      Queue<Integer> unmatchedNodes) {
+                                 TripletPreferenceList nodePreferences,
+                                 Matches matches,
+                                 Queue<Integer> unmatchedNodes) {
     // -1 is not find yet
     int result = -1;
 
@@ -234,26 +260,26 @@ public class TripletOTOProblem implements MatchingProblem {
 
 
   /**
-   * whether break the previous match of the preferNode when preferNode already matched
+   * whether break the previous match of the preferNode when preferNode already matched.
    * return boolean value when preferNode choose newNode or currentNode(old one)
    */
 
   private boolean breakPreviousMatch(int newNode, int preferNode,
-      Matches matches, Queue<Integer> unmatchedNodes) {
+                                     Matches matches, Queue<Integer> unmatchedNodes) {
     Integer[] individualMatches = matches.getSetOf(preferNode).toArray(new Integer[0]);
     // Iterate through existing matches
     for (int currentNode : individualMatches) {
       if (matchingData.getSetNoOf(currentNode) == matchingData.getSetNoOf(
-          newNode)) {
+              newNode)) {
         // Check if newNode is more preferred than currentNode
         if (preferenceLists.isPreferredOver(newNode, currentNode, preferNode)) {
           Collection<Integer> allMatched = matches.getMatchesAndTarget(preferNode);
 
           for (int matched : allMatched) {
             matches.disMatch(matched, allMatched);    // unmatched previous pairs
-              if (matched != preferNode) {
-                  unmatchedNodes.add(matched);
-              }
+            if (matched != preferNode) {
+              unmatchedNodes.add(matched);
+            }
           }
 
           return true;
@@ -266,28 +292,29 @@ public class TripletOTOProblem implements MatchingProblem {
 
   private int[] getOtherSets(int currentSet) {
     return IntStream.range(0, setNum)
-        .filter(set -> set != currentSet)
-        .toArray();
+            .filter(set -> set != currentSet)
+            .toArray();
   }
 
   /**
-   * calculate the padding for a set that stored in preferList of a  newNode
+   * calculate the padding for a set that stored in preferList of a  newNode.
+
    * @param targetSet         is the number of set that calculate padding to get
    * @param currentNewNodeSet is the current set can get with the current padding
    */
   private int calculatePadding(int targetSet, int currentNewNodeSet) {
     Map<Integer, Integer> setNums = matchingData.getSetNums();
-      if (currentNewNodeSet == setNum - 1) {
-          return 0;
-      }
-      if (currentNewNodeSet == 0) {
-          return setNums.get(currentNewNodeSet);
-      }
+    if (currentNewNodeSet == setNum - 1) {
+      return 0;
+    }
+    if (currentNewNodeSet == 0) {
+      return setNums.get(currentNewNodeSet);
+    }
 
     // if smaller than newNode set, return 0 to get all name of previous set before current's
-      if (targetSet < currentNewNodeSet) {
-          return 0;
-      }
+    if (targetSet < currentNewNodeSet) {
+      return 0;
+    }
 
     int paddingSize = 0;
     paddingSize += setNums.get(targetSet);
@@ -296,7 +323,7 @@ public class TripletOTOProblem implements MatchingProblem {
 
 
   /**
-   * calculate the position of the preferNode in the preferList of a newNode
+   * calculate the position of the preferNode in the preferList of a newNode.
    */
   private int calculatePosition(int targetSet, int currentNewNodeSet) {
     Map<Integer, Integer> setNums = matchingData.getSetNums();
@@ -320,7 +347,7 @@ public class TripletOTOProblem implements MatchingProblem {
   }
 
   /**
-   * MOEA Framework Problem implements
+   * MOEA Framework Problem implements.
    */
 
   @Override

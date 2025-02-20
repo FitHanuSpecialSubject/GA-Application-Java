@@ -19,6 +19,9 @@ import org.fit.ssapp.util.SampleDataGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+/**
+ *
+ */
 public class StableMatchingSolverTest {
 
   StableMatchingProblemDto stableMatchingProblemDto;
@@ -28,6 +31,9 @@ public class StableMatchingSolverTest {
   int numberOfProperties;
   private Validator validator;
 
+  /**
+   *
+   */
   @BeforeEach
   public void setUp() {
     ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
@@ -40,8 +46,7 @@ public class StableMatchingSolverTest {
             numberOfIndividuals2, numberOfProperties);
     stableMatchingProblemDto = sampleData.generateDto();
   }
-
-
+  
   @Test
   public void testEvaluateFunctions() {
     String[] evaluateFunctions = stableMatchingProblemDto.getEvaluateFunctions();
@@ -66,6 +71,15 @@ public class StableMatchingSolverTest {
     assertEquals(expectedResult, result1, 0.001);
   }
 
+
+  /**
+   *
+   */
+  //    @Test
+//    public void testFitnessCalculation() {
+//        TwoSetFitnessEvaluator newEvaluator = new TwoSetFitnessEvaluator(sampleData.generateProblem().getMatchingData());
+//        newEvaluator.withFitnessFunctionEvaluation(new double[]{}, sampleData.getFnf());
+//    }
   @Test
   public void testFitnessCalculation() {
     int testNumberOfIndividuals1 = 5;
@@ -93,7 +107,6 @@ public class StableMatchingSolverTest {
     assertEquals(expected, result, 0.001);
   }
 
-
   @Test
   public void testStableSolverMTM() {
     sampleData = new SampleDataGenerator(MatchingProblemType.MTM, numberOfIndividuals1,
@@ -101,6 +114,9 @@ public class StableMatchingSolverTest {
     assertDoesNotThrow(() -> sampleData.generateProblem());
   }
 
+  /**
+   *
+   */
   @Test
   public void testStableSolverOTM() {
     sampleData = new SampleDataGenerator(MatchingProblemType.OTM, numberOfIndividuals1,
