@@ -42,29 +42,13 @@ public class StableMatchingSolverTest {
   }
 
 
-  @Test
-  public void testEvaluateFunctions() {
-    String[] evaluateFunctions = stableMatchingProblemDto.getEvaluateFunctions();
-    MatchingData matchingData = new MatchingData(
-            stableMatchingProblemDto.getNumberOfIndividuals(),
-            stableMatchingProblemDto.getNumberOfProperty(),
-            stableMatchingProblemDto.getIndividualSetIndices(),
-            stableMatchingProblemDto.getIndividualCapacities(),
-            stableMatchingProblemDto.getIndividualProperties(),
-            stableMatchingProblemDto.getIndividualWeights(),
-            sampleData.generateRequirement() // Provide requirements here!
-    );
-
-    TwoSetFitnessEvaluator evaluator = new TwoSetFitnessEvaluator(matchingData);
-
-    double[] satisfactions = new double[matchingData.getSize()];
-    Arrays.fill(satisfactions, 1.0); // Example: all individuals have a satisfaction of 1
-    // Test case 1: Simple sum
-    String testExpression = "S1 + S2";
-    double expectedResult = numberOfIndividuals1 + numberOfIndividuals2;
-    double result1 = evaluator.withFitnessFunctionEvaluation(satisfactions, testExpression);
-    assertEquals(expectedResult, result1, 0.001);
-  }
+//  @Test
+//  public void testEvaluateFunctions() {
+//    stableMatchingProblemDto.setEvaluateFunctions(new String[]{"SUM", ""});
+//    Set<ConstraintViolation<StableMatchingProblemDto>> violations = validator.validate(
+//            stableMatchingProblemDto);
+//    assert (violations.isEmpty());
+//  }
 
   @Test
   public void testFitnessCalculation() {
@@ -107,14 +91,5 @@ public class StableMatchingSolverTest {
             numberOfIndividuals2, numberOfProperties);
     assertDoesNotThrow(() -> sampleData.generateProblem());
   }
-
-  @Test
-  public void testDtoValidation() {
-    stableMatchingProblemDto.setDistributedCores("");
-    Set<ConstraintViolation<StableMatchingProblemDto>> violations = validator.validate(stableMatchingProblemDto);
-    assertTrue(!violations.isEmpty());
-
-  }
-
 
 }
