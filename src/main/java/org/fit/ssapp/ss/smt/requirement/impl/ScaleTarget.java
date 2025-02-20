@@ -3,27 +3,24 @@ package org.fit.ssapp.ss.smt.requirement.impl;
 import org.fit.ssapp.constants.StableMatchingConst;
 import org.fit.ssapp.ss.smt.requirement.Requirement;
 
+/**
+ * Represents a requirement with a fixed target value.
+ * - This class is used to evaluate how close a given value is to the `targetValue`.
+ * - The scaling factor is calculated based on the distance from the target.
+ * - Values outside the range `[0,10]` are considered invalid (scaling = `0.0`).
+ */
 public record ScaleTarget(int targetValue) implements Requirement {
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public int getType() {
     return StableMatchingConst.ReqTypes.SCALE_TARGET;
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public double getValueForFunction() {
     return this.targetValue;
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public double getDefaultScaling(double propertyValue) {
     if (propertyValue < 0 || propertyValue > 10) {

@@ -8,21 +8,28 @@ import org.fit.ssapp.ss.smt.Matches;
 import org.fit.ssapp.ss.smt.MatchingData;
 
 /**
- * Wrapper class provides methods to interact with big list of preference list
+ * Wrapper class provides methods to interact with big list of preference list.
  */
 public class PreferenceListWrapper {
 
   /**
-   * preference lists
+   * preference lists.
    */
   private final List<PreferenceList> lists;
 
+
+  /**
+   * PreferenceListWrapper.
+   *
+   *
+   * @param lists List
+   */
   public PreferenceListWrapper(List<PreferenceList> lists) {
     this.lists = lists;
   }
 
   /**
-   * Get the weakest student
+   * Get the weakest student.
    *
    * @param set                the group (group 1, group 2, group 3, ...)
    * @param preferNode         the evaluator (the one grading)
@@ -33,13 +40,13 @@ public class PreferenceListWrapper {
    */
 
   public int getLeastScoreNode(int set,
-      int preferNode,
-      int proposeNode,
-      Set<Integer> setOfPreferNode,
-      int preferNodeCapacity) {
-      if (setOfPreferNode.isEmpty()) {
-          return -1;
-      }
+                               int preferNode,
+                               int proposeNode,
+                               Set<Integer> setOfPreferNode,
+                               int preferNodeCapacity) {
+    if (setOfPreferNode.isEmpty()) {
+      return -1;
+    }
 
     PreferenceList prefOfSelectorNode = this.lists.get(preferNode);
     // Lớp có một thằng
@@ -56,7 +63,7 @@ public class PreferenceListWrapper {
   }
 
   /**
-   * get preference list
+   * get preference list.
    *
    * @param idx position of individual
    * @return Preference list
@@ -65,18 +72,26 @@ public class PreferenceListWrapper {
     return lists.get(idx);
   }
 
-  // Stable Matching Algorithm Component: isPreferredOver
+  /**
+   * Stable Matching Algorithm Component: isPreferredOver.
+   *
+   * @param proposeNode           int
+   * @param preferNodeCurrentNode int
+   * @param preferNode            int
+   * @return boolean
+   */
   public boolean isPreferredOver(int proposeNode, int preferNodeCurrentNode, int preferNode) {
     PreferenceList preferenceOfSelectorNode = lists.get(preferNode);
     return preferenceOfSelectorNode.isScoreGreater(StableMatchingConst.UNUSED_VALUE,
-        proposeNode,
-        preferNodeCurrentNode);
+            proposeNode,
+            preferNodeCurrentNode);
   }
 
   /**
-   * Get the grade point of class, get all satisfaction based on matches
+   * Get the grade point of class, get all satisfaction based on matches.
    *
-   * @param matches matching result
+   * @param matches      matching result
+   * @param matchingData MatchingData
    * @return satisfactions
    */
   public double[] getMatchesSatisfactions(Matches matches, MatchingData matchingData) {
@@ -96,18 +111,15 @@ public class PreferenceListWrapper {
   }
 
   /**
-   * get last option of target
+   * get last option of target.
    *
+   * @param set    int
    * @param target position of individual
    * @return last option
    */
   public int getLastChoiceOf(int set, int target) {
     PreferenceList pref = lists.get(target);
     return pref.getPositionByRank(set, pref.size(set) - 1);
-  }
-
-  public double getPreferenceScore(int target, int option) {
-    return lists.get(target).getScore(option);
   }
 
 }

@@ -1,12 +1,12 @@
 package org.fit.ssapp.ss.smt.preference;
 
 /**
- * Builder for preference list
+ * Builder for preference list.
  */
 public interface PreferenceBuilder {
 
   /**
-   * calculate & get individual preference list by function
+   * calculate & get individual preference list by function.
    *
    * @param index individual position
    * @return PreferenceList
@@ -14,7 +14,7 @@ public interface PreferenceBuilder {
   PreferenceList getPreferenceListByFunction(int index);
 
   /**
-   * calculate & get individual preference list by default
+   * calculate & get individual preference list by default.
    *
    * @param index individual position
    * @return PreferenceList
@@ -22,7 +22,7 @@ public interface PreferenceBuilder {
   PreferenceList getPreferenceListByDefault(int index);
 
   /**
-   * Combine all Preference List to a big MF list for overall interacting
+   * Combine all Preference List to a big MF list for overall interacting.
    *
    * @return PreferenceListWrapper
    */

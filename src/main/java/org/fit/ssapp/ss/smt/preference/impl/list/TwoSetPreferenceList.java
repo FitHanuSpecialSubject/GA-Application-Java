@@ -20,6 +20,12 @@ public class TwoSetPreferenceList implements PreferenceList {
   private int current;
   private final int padding;
 
+  /**
+   * TwoSetPreferenceList.
+   *
+   * @param size    int
+   * @param padding int
+   */
   public TwoSetPreferenceList(int size, int padding) {
     scores = new double[size];
     positions = new int[size];
@@ -27,9 +33,6 @@ public class TwoSetPreferenceList implements PreferenceList {
     this.padding = padding;
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public int size(int set) {
     // ignore set param
@@ -37,9 +40,6 @@ public class TwoSetPreferenceList implements PreferenceList {
   }
 
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public int getNumberOfOtherSets() {
     return 0;
@@ -47,9 +47,10 @@ public class TwoSetPreferenceList implements PreferenceList {
 
 
   /**
+   * this method registers new competitor instance to the preference list.
+   *
    * @param score score of the respective competitor
-   *              <p>
-   *              this method registers new competitor instance to the preference list
+   *
    */
   public void add(double score) {
     this.scores[current] = score;
@@ -58,7 +59,12 @@ public class TwoSetPreferenceList implements PreferenceList {
   }
 
   /**
-   * {@inheritDoc}
+   * Finds the least preferred node among the given candidates.
+   *
+   * @param set The set identifier
+   * @param newNode The new node to be compared.
+   * @param currentNodes The set of currently matched nodes.
+   * @return The least preferred node.
    */
   public int getLeastNode(int set, int newNode, Set<Integer> currentNodes) {
     int leastNode = newNode - this.padding;
@@ -70,9 +76,6 @@ public class TwoSetPreferenceList implements PreferenceList {
     return leastNode + this.padding;
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public int getLeastNode(int set, int newNode, int oldNode) {
     if (isScoreGreater(set, newNode, oldNode)) {
@@ -82,9 +85,13 @@ public class TwoSetPreferenceList implements PreferenceList {
     }
   }
 
-
   /**
-   * {@inheritDoc}
+   * Determines if one node is preferred over another.
+   *
+   * @param set The set identifier
+   * @param node The first node.
+   * @param nodeToCompare The second node.
+   * @return `true` if `node` is preferred over `nodeToCompare`, `false` otherwise.
    */
   public boolean isScoreGreater(int set, int node, int nodeToCompare) {
     return this.scores[node - this.padding] > this.scores[nodeToCompare - this.padding];
@@ -95,7 +102,7 @@ public class TwoSetPreferenceList implements PreferenceList {
    *
    * @param rank position (rank best <-- 0, 1, 2, 3, ... --> worst) on the preference list
    * @return unique identifier of the competitor instance that holds the respective position on the
-   * list
+   * list.
    */
   public int getPositionByRank(int set, int rank) throws ArrayIndexOutOfBoundsException {
     try {
@@ -107,17 +114,25 @@ public class TwoSetPreferenceList implements PreferenceList {
   }
 
   /**
-   * {@inheritDoc}
+   * getLastOption.
+   *
+   * @param set int
    */
   public int getLastOption(int set) {
     return this.getPositionByRank(set, this.positions.length - 1);
   }
 
 
+  /**
+   *sort.
+   */
   public void sort() {
     sortDescendingByScores();
   }
 
+  /**
+   *sortDescendingByScores.
+   */
   public void sortDescendingByScores() {
     double[] cloneScores = scores.clone(); //copy to new array
     int size = cloneScores.length;
@@ -186,21 +201,23 @@ public class TwoSetPreferenceList implements PreferenceList {
     for (int i = 0; i < scores.length; i++) {
       int pos = positions[i];
       result
-          .append("[")
-          .append(pos)
-          .append(" -> ")
-          .append(formatDouble(scores[pos]))
-          .append("]");
-        if (i < scores.length - 1) {
-            result.append(", ");
-        }
+              .append("[")
+              .append(pos)
+              .append(" -> ")
+              .append(formatDouble(scores[pos]))
+              .append("]");
+      if (i < scores.length - 1) {
+        result.append(", ");
+      }
     }
     result.append("}");
     return result.toString();
   }
 
   /**
-   * {@inheritDoc}
+   * getScore.
+   *
+   * @param position int
    */
   public double getScore(int position) {
     try {

@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-  Logger logger = Logger.getLogger("GlobalExceptionHandler");
+  final Logger logger = Logger.getLogger("GlobalExceptionHandler");
 
   /**
    * Server busy exception handler.
@@ -30,7 +30,7 @@ public class GlobalExceptionHandler {
   public ResponseEntity<String> handleRejectedExecutionException(RejectedExecutionException ex) {
     logger.warning("Queue full!");
     return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
-        .body("Server is busy. Please try again later.");
+            .body("Server is busy. Please try again later.");
   }
 
   /**
@@ -41,12 +41,12 @@ public class GlobalExceptionHandler {
    */
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<Map<String, Object>> handleMethodArgumentNotValidException(
-      MethodArgumentNotValidException ex) {
+          MethodArgumentNotValidException ex) {
     logger.warning("Invalid request body!");
     Map<String, Object> errorMap = new HashMap<>();
     errorMap.put("errors", ex.getBindingResult().getAllErrors()
-        .stream().map(DefaultMessageSourceResolvable::getDefaultMessage)
-        .collect(Collectors.toList()));
+            .stream().map(DefaultMessageSourceResolvable::getDefaultMessage)
+            .collect(Collectors.toList()));
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMap);
   }
 
