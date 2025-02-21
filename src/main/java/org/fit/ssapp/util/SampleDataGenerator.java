@@ -250,7 +250,6 @@ public class SampleDataGenerator {
     return capacities;
   }
 
-
   private interface ObjectKeys {
 
     String PROPERTY = "property";

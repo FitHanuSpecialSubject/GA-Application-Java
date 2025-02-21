@@ -7,6 +7,10 @@ import lombok.Getter;
 import org.fit.ssapp.constants.StableMatchingConst;
 import org.fit.ssapp.ss.smt.requirement.Requirement;
 
+/**
+ * OneBound represents a single bound constraint for a given value.
+ * The expression variable indicates whether the constraint is increasing (++) or decreasing (--).
+ */
 @Getter
 public class OneBound implements Requirement {
 
@@ -16,13 +20,21 @@ public class OneBound implements Requirement {
   private final boolean INCREASING = true;
   private final boolean DECREASING = false;
 
+  /**
+   * OneBound.
+   *
+   * @param bound double
+   *
+   * @param expression boolean
+   *
+   */
   public OneBound(double bound, boolean expression) {
     this.bound = bound;
     this.expression = expression;
   }
 
   /**
-   * Expression (increasing/ decreasing) to String
+   * Expression (increasing/ decreasing) to String.
    *
    * @return String
    */
@@ -30,34 +42,25 @@ public class OneBound implements Requirement {
     return expression ? "++" : "--";
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public int getType() {
     return StableMatchingConst.ReqTypes.ONE_BOUND;
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public double getValueForFunction() {
     return this.bound;
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public double getDefaultScaling(double propertyValue) {
     if (Objects.equals(this.expression, INCREASING)) {
       if (propertyValue < bound) {
         return 0.0;
       } else {
-          if (bound == 0) {
-              return 2.0;
-          }
+        if (bound == 0) {
+          return 2.0;
+        }
         double distance = Math.abs(propertyValue - bound);
         return (bound + distance) / bound;
       }
@@ -65,15 +68,20 @@ public class OneBound implements Requirement {
       if (propertyValue > bound) {
         return 0.0;
       } else {
-          if (bound == 0) {
-              return 2.0;
-          }
+        if (bound == 0) {
+          return 2.0;
+        }
         double distance = Math.abs(propertyValue - bound);
         return (bound + distance) / bound;
       }
     }
   }
 
+  /**
+   * to String.
+   *
+   * @return String
+   */
   public String toString() {
     return "[" + formatDouble(bound) + ", " + expressionToString(expression) + "]";
   }

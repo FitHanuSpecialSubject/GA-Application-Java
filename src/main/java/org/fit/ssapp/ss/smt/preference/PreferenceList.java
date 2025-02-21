@@ -19,7 +19,7 @@ import java.util.Set;
 public interface PreferenceList {
 
   /**
-   * get size of given set no
+   * get size of given set no.
    *
    * @param set set no
    * @return size
@@ -27,8 +27,9 @@ public interface PreferenceList {
   int size(int set);
 
   /**
-   * get number of other sets in this preference list -- example: + One To One problem: 2 sets then
-   * each preference list contains only one list of other set's individuals -> return 1 + Matching 3
+   * get number of other sets in this preference list -- example: + One To One problem: 2 sets then,
+   * each preference list contains only one list of other set's individuals
+   * -> return 1 + Matching 3.
    * Set problem: 3 sets then each preference list contains two list -> return 2
    *
    * @return number of other sets
@@ -36,7 +37,7 @@ public interface PreferenceList {
   int getNumberOfOtherSets();
 
   /**
-   * get the least score node out of (currentNodes and newNode)
+   * get the least score node out of (currentNodes and newNode).
    *
    * @param set          set no
    * @param newNode      matching node
@@ -56,7 +57,7 @@ public interface PreferenceList {
   int getLeastNode(int set, int newNode, int oldNode);
 
   /**
-   * index of given rank in this preference list
+   * index of given rank in this preference list.
    *
    * @param set  set no
    * @param rank rank
@@ -65,7 +66,7 @@ public interface PreferenceList {
   int getPositionByRank(int set, int rank);
 
   /**
-   * get position with the lowest rank in a specific set of this preference list
+   * get position with the lowest rank in a specific set of this preference list.
    *
    * @param set set no
    * @return postion
@@ -73,7 +74,7 @@ public interface PreferenceList {
   int getLastOption(int set);
 
   /**
-   * is proposeNode score greater than preferNodeCurrentNode
+   * is proposeNode score greater than preferNodeCurrentNode.
    *
    * @param set                   set no
    * @param proposeNode           propose node
@@ -83,7 +84,7 @@ public interface PreferenceList {
   boolean isScoreGreater(int set, int proposeNode, int preferNodeCurrentNode);
 
   /**
-   * get score of given position
+   * get score of given position.
    *
    * @param position position
    * @return score
