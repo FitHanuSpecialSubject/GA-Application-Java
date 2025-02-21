@@ -37,20 +37,47 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
     for (int c = 0; c < fitnessFunction.length(); c++) {
       char ch = fitnessFunction.charAt(c);
       if (ch == 'S') {
-        if (Objects.equals(fitnessFunction.substring(c, c + 5), "SIGMA")) {
-          if (fitnessFunction.charAt(c + 5) != '{') {
-            System.err.println("Missing '{'");
-            System.err.println(fitnessFunction);
-            throw new RuntimeException("Missing '{' after Sigma function");
-          } else {
+//        if (Objects.equals(fitnessFunction.substring(c, c + 5), "SIGMA")) {
+//          if (fitnessFunction.charAt(c + 5) != '{') {
+//            System.err.println("Missing '{'");
+//            System.err.println(fitnessFunction);
+//            throw new RuntimeException("Missing '{' after Sigma function");
+//          } else {
+//            int expressionStartIndex = c + 6;
+//            int expressionLength = EvaluatorUtils
+//                .getSigmaFunctionExpressionLength(fitnessFunction, expressionStartIndex);
+//            String expression = fitnessFunction.substring(expressionStartIndex,
+//                expressionStartIndex + expressionLength);
+//            double val = this.sigmaCalculate(satisfactions, expression);
+//            tmpSB.append(convertToStringWithoutScientificNotation(val));
+//            c += expressionLength + 3;
+//          }
+//        }
+
+        /* Sửa lại đoạn này (Đoạn gốc đã được comment out để tiện cho việc review)
+        * Đang có vấn đề trong việc xử lý hàm SIGMA
+        * VD: Range [5, 10) out of bounds for length 7 (Trong StableMatchingSolverTest)
+        * Các phần xử lý cho *else* khác sẽ được tìm cách tốt để xử lý lỗi sau
+        * */
+        if (c + 5 <= fitnessFunction.length() && Objects.equals(fitnessFunction.substring(c, c + 5), "SIGMA")) {
+          if (c + 5 < fitnessFunction.length() && fitnessFunction.charAt(c + 5) != '{') {
+            // TODO: Error handling here
+          } else if (c + 6 < fitnessFunction.length()) {
+            // Thử xem có lấy được expressionStartIndex không
             int expressionStartIndex = c + 6;
-            int expressionLength = EvaluatorUtils
-                    .getSigmaFunctionExpressionLength(fitnessFunction, expressionStartIndex);
-            String expression = fitnessFunction.substring(expressionStartIndex,
-                    expressionStartIndex + expressionLength);
-            double val = this.sigmaCalculate(satisfactions, expression);
-            tmpSB.append(convertToStringWithoutScientificNotation(val));
-            c += expressionLength + 3;
+            int expressionLength = EvaluatorUtils.getSigmaFunctionExpressionLength(fitnessFunction, expressionStartIndex);
+
+            if (expressionStartIndex + expressionLength <= fitnessFunction.length()) {
+              // If này kiểm tra xem có sử dụng/lấy được Expression hay không
+              String expression = fitnessFunction.substring(expressionStartIndex, expressionStartIndex + expressionLength);
+              double val = this.sigmaCalculate(satisfactions, expression);
+              tmpSB.append(convertToStringWithoutScientificNotation(val));
+              c += expressionLength + 3;
+            } else {
+              // TODO: Error handling here
+            }
+          } else {
+            // TODO: Error handling here
           }
         }
         // Check for F(index) pattern
