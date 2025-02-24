@@ -8,7 +8,6 @@ import org.fit.ssapp.ss.smt.implement.MTMProblem;
 import org.fit.ssapp.ss.smt.implement.OTMProblem;
 import org.fit.ssapp.ss.smt.implement.OTOProblem;
 import org.fit.ssapp.ss.smt.implement.TripletOTOProblem;
-import org.fit.ssapp.ss.smt.implement.var.CustomVariation;
 import org.fit.ssapp.ss.smt.preference.PreferenceBuilder;
 import org.fit.ssapp.ss.smt.preference.PreferenceListWrapper;
 import org.fit.ssapp.ss.smt.preference.impl.provider.TripletPreferenceProvider;
@@ -16,40 +15,12 @@ import org.fit.ssapp.ss.smt.preference.impl.provider.TwoSetPreferenceProvider;
 import org.fit.ssapp.ss.smt.requirement.Requirement;
 import org.fit.ssapp.ss.smt.requirement.RequirementDecoder;
 import org.fit.ssapp.util.EvaluatorUtils;
-import org.moeaframework.core.Problem;
-import org.moeaframework.core.Variation;
-import org.moeaframework.core.spi.OperatorFactory;
-import org.moeaframework.core.spi.OperatorProvider;
-import org.moeaframework.util.TypedProperties;
-
-import java.util.Properties;
 
 /**
  * Mapper layer, xử lý các công việc sau đối với từng loại matching problem: 1. map problem data từ
  * dto vào StableMatchingProblem 2. tính toán các preference list và set vào StableMatchingProblem
  */
 public class StableMatchingProblemMapper {
-
-  static {
-    OperatorFactory.getInstance().addProvider(new OperatorProvider() {
-      public String getMutationHint(Problem problem) {
-        return "CustomVariation";
-      }
-
-      public String getVariationHint(Problem problem) {
-        return "CustomVariation";
-      }
-
-      public Variation getVariation(String name, TypedProperties properties, Problem problem) {
-        if (name.equalsIgnoreCase("CustomVariation")) {
-          double crossoverRate = properties.getDouble("CustomVariation.crossoverRate", 0.9);
-          double mutationRate = properties.getDouble("CustomVariation.mutationRate", 0.1);
-          return new CustomVariation(crossoverRate, mutationRate, problem.getNumberOfVariables());
-        }
-        return null;
-      }
-    });
-  }
 
   /**
    * Map from request to problem.
