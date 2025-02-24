@@ -1,10 +1,7 @@
 package org.fit.ssapp.service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.fit.ssapp.constants.StableMatchingConst;
@@ -15,13 +12,13 @@ import org.fit.ssapp.dto.response.Response;
 import org.fit.ssapp.ss.smt.Matches;
 import org.fit.ssapp.ss.smt.MatchingProblem;
 import org.fit.ssapp.ss.smt.implement.MTMProblem;
+import org.fit.ssapp.ss.smt.implement.var.CustomVariation;
 import org.fit.ssapp.ss.smt.result.MatchingSolution;
 import org.fit.ssapp.ss.smt.result.MatchingSolutionInsights;
 import org.moeaframework.Executor;
-import org.moeaframework.core.NondominatedPopulation;
-import org.moeaframework.core.Problem;
-import org.moeaframework.core.Solution;
-import org.moeaframework.core.TerminationCondition;
+import org.moeaframework.core.*;
+import org.moeaframework.core.spi.OperatorFactory;
+import org.moeaframework.core.spi.OperatorProvider;
 import org.moeaframework.core.termination.MaxFunctionEvaluations;
 import org.moeaframework.util.TypedProperties;
 import org.springframework.http.HttpStatus;
@@ -167,6 +164,8 @@ public class StableMatchingOtmService {
     properties.setInt("populationSize", populationSize);
     properties.setInt("maxTime", maxTime);
     TerminationCondition maxEval = new MaxFunctionEvaluations(generation * populationSize);
+
+
     try {
       if (distributedCores.equals("all")) {
         result = new Executor()
@@ -175,6 +174,10 @@ public class StableMatchingOtmService {
                 .withMaxEvaluations(generation * populationSize)
                 .withTerminationCondition(maxEval)
                 .withProperties(properties)
+                .withProperty("operator", "CustomVariation")
+                .withProperty("CustomVariation.crossoverRate", 0.9)
+                .withProperty("CustomVariation.mutationRate", 0.1)
+
                 .distributeOnAllCores()
                 .run();
       } else {
@@ -185,6 +188,10 @@ public class StableMatchingOtmService {
                 .withMaxEvaluations(generation * populationSize)
                 .withTerminationCondition(maxEval)
                 .withProperties(properties)
+                .withProperty("operator", "CustomVariation")
+                .withProperty("CustomVariation.crossoverRate", 0.9)
+                .withProperty("CustomVariation.mutationRate", 0.1)
+
                 .distributeOn(numberOfCores)
                 .run();
       }

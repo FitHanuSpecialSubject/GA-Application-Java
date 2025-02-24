@@ -76,7 +76,10 @@ public class StableMatchingProblemMapper {
             request.getEvaluateFunctions());
     PreferenceListWrapper preferenceLists = builder.toListWrapper();
     FitnessEvaluator fitnessEvaluator = new TwoSetFitnessEvaluator(data);
-    return new OTMProblem(request.getProblemName(),
+
+    return new OTMProblem(
+            request.getProblemName(),
+
             request.getNumberOfIndividuals(),
             request.getNumberOfSets(),
             data,

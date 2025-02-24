@@ -14,14 +14,14 @@ import org.fit.ssapp.dto.response.Response;
 import org.fit.ssapp.ss.smt.Matches;
 import org.fit.ssapp.ss.smt.MatchingProblem;
 import org.fit.ssapp.ss.smt.implement.TripletOTOProblem;
+import org.fit.ssapp.ss.smt.implement.var.CustomVariation;
 import org.fit.ssapp.ss.smt.result.MatchingSolution;
 import org.fit.ssapp.ss.smt.result.MatchingSolutionInsights;
 import org.fit.ssapp.util.ValidationUtils;
 import org.moeaframework.Executor;
-import org.moeaframework.core.NondominatedPopulation;
-import org.moeaframework.core.Problem;
-import org.moeaframework.core.Solution;
-import org.moeaframework.core.TerminationCondition;
+import org.moeaframework.core.*;
+import org.moeaframework.core.spi.OperatorFactory;
+import org.moeaframework.core.spi.OperatorProvider;
 import org.moeaframework.core.termination.MaxFunctionEvaluations;
 import org.moeaframework.util.TypedProperties;
 import org.springframework.http.HttpStatus;
@@ -168,26 +168,35 @@ public class TripletMatchingService {
     properties.setInt("populationSize", populationSize);
     properties.setInt("maxTime", maxTime);
     TerminationCondition maxEval = new MaxFunctionEvaluations(generation * populationSize);
+
+
     try {
       if (distributedCores.equals("all")) {
         result = new Executor()
-                .withProblem(problem)
-                .withAlgorithm(algorithm)
-                .withMaxEvaluations(generation * populationSize)
-                .withTerminationCondition(maxEval)
-                .withProperties(properties)
+            .withProblem(problem)
+            .withAlgorithm(algorithm)
+            .withMaxEvaluations(generation * populationSize)
+            .withTerminationCondition(maxEval)
+            .withProperties(properties)
+                .withProperty("operator", "CustomVariation")
+                .withProperty("CustomVariation.crossoverRate", 0.9)
+                .withProperty("CustomVariation.mutationRate", 0.1)
                 .distributeOnAllCores()
-                .run();
+            .run();
       } else {
         int numberOfCores = Integer.parseInt(distributedCores);
         result = new Executor()
-                .withProblem(problem)
-                .withAlgorithm(algorithm)
-                .withMaxEvaluations(generation * populationSize)
-                .withTerminationCondition(maxEval)
-                .withProperties(properties)
+            .withProblem(problem)
+            .withAlgorithm(algorithm)
+            .withMaxEvaluations(generation * populationSize)
+            .withTerminationCondition(maxEval)
+            .withProperties(properties)
+                .withProperty("operator", "CustomVariation")
+                .withProperty("CustomVariation.crossoverRate", 0.9)
+                .withProperty("CustomVariation.mutationRate", 0.1)
                 .distributeOn(numberOfCores)
-                .run();
+            .run();
+
       }
       //log.info("[Service] Stable Matching: Problem solved successfully!");
       return result;
