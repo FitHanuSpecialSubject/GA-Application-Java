@@ -89,15 +89,12 @@ public class MTMProblem implements MatchingProblem {
   @Override
   public Solution newSolution() {
     Solution solution = new Solution(problemSize, 1);
-    List<Integer> numbers = new ArrayList<>();
-    for (int i = 0; i < problemSize; i++) {
-      numbers.add(i);
-    }
-    Collections.shuffle(numbers);
 
-    for (int i = 0; i < problemSize; i++) {
-      CustomIntegerVariable var = new CustomIntegerVariable(0, problemSize);
-      var.setValue(numbers.get(i));
+    int[] queue = new Permutation(problemSize).toArray();
+
+    for (int i = 0; i < queue.length; i++) {
+      CustomIntegerVariable var = new CustomIntegerVariable(0, problemSize-1);
+      var.setValue(queue[i]);
       solution.setVariable(i, var);
     }
 
