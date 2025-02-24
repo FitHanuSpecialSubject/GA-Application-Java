@@ -14,6 +14,7 @@ import org.fit.ssapp.dto.response.Progress;
 import org.fit.ssapp.dto.response.Response;
 import org.fit.ssapp.ss.smt.Matches;
 import org.fit.ssapp.ss.smt.MatchingProblem;
+import org.fit.ssapp.ss.smt.PsoMatching;
 import org.fit.ssapp.ss.smt.implement.MTMProblem;
 import org.fit.ssapp.ss.smt.implement.var.CustomVariation;
 import org.fit.ssapp.ss.smt.result.MatchingSolution;
@@ -217,10 +218,36 @@ public class StableMatchingService implements ProblemService {
     properties.setInt("maxTime", maxTime);
     TerminationCondition maxEval = new MaxFunctionEvaluations(generation * populationSize);
 
+
+    if (algorithm.equals("OMOPSO") || algorithm.equals("SMPSO")) {
+
+      NondominatedPopulation solutionSpace = new Executor()
+          .withProblem(problem)
+          .withAlgorithm("NSGAIII")
+          .withMaxEvaluations(generation * populationSize)
+          .withTerminationCondition(maxEval)
+          .withProperties(properties)
+          .withProperty("operator", "CustomVariation")
+          .withProperty("CustomVariation.crossoverRate", 0.9)
+          .withProperty("CustomVariation.mutationRate", 0.1)
+          .distributeOnAllCores()
+          .run();
+
+      PsoMatching psoProblem = new PsoMatching(populationSize, 1);
+      psoProblem.setSolutionSpace(solutionSpace);
+      return new Executor()
+          .withAlgorithm(algorithm)
+          .withProblem(problem)
+          .withMaxEvaluations(generation * populationSize)
+          .withTerminationCondition(maxEval)
+          .withProperties(properties)
+          .distributeOnAllCores()
+          .run();
+    }
+
     try {
       if (distributedCores.equals("all")) {
         result = new Executor()
-
             .withProblem(problem)
             .withAlgorithm(algorithm)
             .withMaxEvaluations(generation * populationSize)
