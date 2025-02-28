@@ -130,7 +130,7 @@ public class EvaluatorUtils {
    */
   public static String getValidEvaluationFunction(String func) {
     func = func.trim();
-    if (func.equals(StableMatchingConst.DEFAULT_EVALUATE_FUNC)) {
+    if (func.equalsIgnoreCase(StableMatchingConst.DEFAULT_EVALUATE_FUNC)) {
       return "";
     }
     return func;
