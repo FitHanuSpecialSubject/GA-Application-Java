@@ -15,7 +15,7 @@ import org.fit.ssapp.dto.response.Response;
 import org.fit.ssapp.ss.smt.Matches;
 import org.fit.ssapp.ss.smt.MatchingProblem;
 import org.fit.ssapp.ss.smt.implement.MTMProblem;
-import org.fit.ssapp.ss.smt.implement.var.CustomVariation;
+//import org.fit.ssapp.ss.smt.implement.var.CustomVariation;
 import org.fit.ssapp.ss.smt.result.MatchingSolution;
 import org.fit.ssapp.ss.smt.result.MatchingSolutionInsights;
 import org.fit.ssapp.util.ComputerSpecsUtil;
@@ -54,26 +54,26 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class StableMatchingService implements ProblemService {
 
-  static {
-    OperatorFactory.getInstance().addProvider(new OperatorProvider() {
-      public String getMutationHint(Problem problem) {
-        return "CustomVariation";
-      }
-
-      public String getVariationHint(Problem problem) {
-        return "CustomVariation";
-      }
-
-      public Variation getVariation(String name, TypedProperties properties, Problem problem) {
-        if (name.equalsIgnoreCase("CustomVariation")) {
-          double crossoverRate = properties.getDouble("CustomVariation.crossoverRate", 0.9);
-          double mutationRate = properties.getDouble("CustomVariation.mutationRate", 0.1);
-          return new CustomVariation(crossoverRate, mutationRate, problem.getNumberOfVariables());
-        }
-        return null;
-      }
-    });
-  }
+//  static {
+//    OperatorFactory.getInstance().addProvider(new OperatorProvider() {
+//      public String getMutationHint(Problem problem) {
+//        return "CustomVariation";
+//      }
+//
+//      public String getVariationHint(Problem problem) {
+//        return "CustomVariation";
+//      }
+//
+//      public Variation getVariation(String name, TypedProperties properties, Problem problem) {
+//        if (name.equalsIgnoreCase("CustomVariation")) {
+//          double crossoverRate = properties.getDouble("CustomVariation.crossoverRate", 0.9);
+//          double mutationRate = properties.getDouble("CustomVariation.mutationRate", 0.1);
+//          return new CustomVariation(crossoverRate, mutationRate, problem.getNumberOfVariables());
+//        }
+//        return null;
+//      }
+//    });
+//  }
 
   private static final int RUN_COUNT_PER_ALGORITHM = 10;
   private final SimpMessagingTemplate simpMessagingTemplate;

@@ -2,11 +2,13 @@ package org.fit.ssapp.dto.mapper;
 
 import org.fit.ssapp.dto.request.StableMatchingProblemDto;
 import org.fit.ssapp.ss.smt.MatchingData;
+import org.fit.ssapp.ss.smt.MatchingProblem;
 import org.fit.ssapp.ss.smt.evaluator.FitnessEvaluator;
 import org.fit.ssapp.ss.smt.evaluator.impl.TwoSetFitnessEvaluator;
 import org.fit.ssapp.ss.smt.implement.MTMProblem;
 import org.fit.ssapp.ss.smt.implement.OTMProblem;
 import org.fit.ssapp.ss.smt.implement.OTOProblem;
+import org.fit.ssapp.ss.smt.implement.PsoCompatMtmProblem;
 import org.fit.ssapp.ss.smt.implement.TripletOTOProblem;
 import org.fit.ssapp.ss.smt.preference.PreferenceBuilder;
 import org.fit.ssapp.ss.smt.preference.PreferenceListWrapper;
@@ -148,4 +150,27 @@ public class StableMatchingProblemMapper {
   }
 
 
+  public static MatchingProblem toPsoCompat(StableMatchingProblemDto request) {
+    Requirement[][] requirements = RequirementDecoder.decode(request.getIndividualRequirements());
+    MatchingData data = new MatchingData(request.getNumberOfIndividuals(),
+        request.getNumberOfProperty(),
+        request.getIndividualSetIndices(),
+        request.getIndividualCapacities(),
+        request.getIndividualProperties(),
+        request.getIndividualWeights(),
+        requirements);
+    data.setExcludedPairs(request.getExcludedPairs());
+    PreferenceBuilder builder = new TwoSetPreferenceProvider(data,
+        request.getEvaluateFunctions());
+    PreferenceListWrapper preferenceLists = builder.toListWrapper();
+    FitnessEvaluator fitnessEvaluator = new TwoSetFitnessEvaluator(data);
+    String fitnessFunction = EvaluatorUtils.getValidFitnessFunction(request.getFitnessFunction());
+    return new PsoCompatMtmProblem(request.getProblemName(),
+        request.getNumberOfIndividuals(),
+        request.getNumberOfSets(),
+        data,
+        preferenceLists,
+        fitnessFunction,
+        fitnessEvaluator);
+  }
 }

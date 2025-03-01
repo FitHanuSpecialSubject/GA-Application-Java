@@ -14,7 +14,7 @@ import org.fit.ssapp.dto.response.Response;
 import org.fit.ssapp.ss.smt.Matches;
 import org.fit.ssapp.ss.smt.MatchingProblem;
 import org.fit.ssapp.ss.smt.implement.TripletOTOProblem;
-import org.fit.ssapp.ss.smt.implement.var.CustomVariation;
+//import org.fit.ssapp.ss.smt.implement.var.CustomVariation;
 import org.fit.ssapp.ss.smt.result.MatchingSolution;
 import org.fit.ssapp.ss.smt.result.MatchingSolutionInsights;
 import org.fit.ssapp.util.ValidationUtils;

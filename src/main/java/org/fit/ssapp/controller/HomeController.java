@@ -6,6 +6,7 @@ import org.fit.ssapp.dto.request.GameTheoryProblemDto;
 import org.fit.ssapp.dto.request.StableMatchingProblemDto;
 import org.fit.ssapp.dto.response.Response;
 import org.fit.ssapp.service.GameTheoryService;
+import org.fit.ssapp.service.PsoCompatSmtService;
 import org.fit.ssapp.service.StableMatchingOtmService;
 import org.fit.ssapp.service.StableMatchingService;
 import org.fit.ssapp.service.TripletMatchingService;
@@ -39,6 +40,9 @@ public class HomeController {
 
   @Autowired
   private TripletMatchingService tripletMatchingSolver;
+
+  @Autowired
+  private PsoCompatSmtService psoCompatSmtService;
 
 
   /**
@@ -187,5 +191,42 @@ public class HomeController {
             object,
             sessionCode));
   }
+
+
+  /**
+   * solveStableMatchingOTM
+   *
+   * @param object Matching Problem Request
+   *
+   * @return CompletableFuture
+   */
+  @Async("taskExecutor")
+  @PostMapping("/smt-pso-compat-solve")
+  public CompletableFuture<ResponseEntity<Response>> solvePsoCompatSmt(
+      @RequestBody @Valid StableMatchingProblemDto object) {
+    return CompletableFuture.completedFuture(psoCompatSmtService.solve(object));
+  }
+
+
+
+  /**
+   * get stable matching PsoCompatSmtResultInsight
+   *
+   * @param object Matching Problem Request.
+   *
+   * @param sessionCode session code runtime
+   *
+   * @return CompletableFuture
+   */
+  @Async("taskExecutor")
+  @PostMapping("/smt-pso-compat-insight/{sessionCode}")
+  public CompletableFuture<ResponseEntity<Response>> getPsoCompatSmtResultInsight(
+      @RequestBody StableMatchingProblemDto object,
+      @PathVariable String sessionCode) {
+    return CompletableFuture.completedFuture(psoCompatSmtService.getInsights(
+        object,
+        sessionCode));
+  }
+
 
 }

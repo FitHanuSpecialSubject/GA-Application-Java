@@ -1,7 +1,10 @@
 package org.fit.ssapp.service;
 
-import java.util.*;
-
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.fit.ssapp.constants.StableMatchingConst;
@@ -12,13 +15,14 @@ import org.fit.ssapp.dto.response.Response;
 import org.fit.ssapp.ss.smt.Matches;
 import org.fit.ssapp.ss.smt.MatchingProblem;
 import org.fit.ssapp.ss.smt.implement.MTMProblem;
-//import org.fit.ssapp.ss.smt.implement.var.CustomVariation;
 import org.fit.ssapp.ss.smt.result.MatchingSolution;
 import org.fit.ssapp.ss.smt.result.MatchingSolutionInsights;
+import org.fit.ssapp.util.ComputerSpecsUtil;
 import org.moeaframework.Executor;
-import org.moeaframework.core.*;
-import org.moeaframework.core.spi.OperatorFactory;
-import org.moeaframework.core.spi.OperatorProvider;
+import org.moeaframework.core.NondominatedPopulation;
+import org.moeaframework.core.Problem;
+import org.moeaframework.core.Solution;
+import org.moeaframework.core.TerminationCondition;
 import org.moeaframework.core.termination.MaxFunctionEvaluations;
 import org.moeaframework.util.TypedProperties;
 import org.springframework.http.HttpStatus;
@@ -26,103 +30,92 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
-/**
- * StableMatchingOtmService - Provides stable matching problem-solving services.
- * This service handles the execution of stable matching algorithms using different approaches.
- * It integrates with **MOEA Framework** for multi-objective optimization and allows:
- * - Solving a stable matching problem using various algorithms.
- * - Benchmarking multiple algorithms to compare performance.
- * - Real-time progress tracking and updates via WebSockets.
- * ## Main Features
- * - Solves stable matching problems based on provided configurations.
- * - Supports parallel execution using multiple computing cores.
- * - Collects performance insights for different algorithms.
- * - Handles WebSocket communication to send progress updates.
- */
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class StableMatchingOtmService {
+public class PsoCompatSmtService {
 
+  private static final int RUN_COUNT_PER_ALGORITHM = 10;
   private final SimpMessagingTemplate simpMessagingTemplate;
-
-  private static final Integer RUN_COUNT_PER_ALGORITHM = 10;
 
   /**
    * Solves a stable matching problem based on the given request.
    *
    * @param request request The stable matching problem configuration.
-   * @return ResponseEntity
    */
-
   public ResponseEntity<Response> solve(StableMatchingProblemDto request) {
 
     try {
       log.info("Validating StableMatchingProblemDto Request ...");
-      MatchingProblem problem = StableMatchingProblemMapper.toOTM(request);
+
+      MatchingProblem problem = StableMatchingProblemMapper.toPsoCompat(request);
       log.info("Start solving: {}, problem name: {}, problem size: {}",
-              problem.getMatchingTypeName(),
-              problem.getName(),
-              problem.getMatchingData().getSize());
+          problem.getMatchingTypeName(),
+          problem.getName(),
+          problem.getMatchingData().getSize());
       long startTime = System.currentTimeMillis();
 
       NondominatedPopulation results = solveProblem(problem,
-              request.getAlgorithm(),
-              request.getPopulationSize(),
-              request.getGeneration(),
-              request.getMaxTime(),
-              request.getDistributedCores());
+          request.getAlgorithm(),
+          request.getPopulationSize(),
+          request.getGeneration(),
+          request.getMaxTime(),
+          request.getDistributedCores());
 
       if (Objects.isNull(results)) {
         return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Response
-                        .builder()
-                        .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                        .message("Error solving OTM stable matching problem.")
-                        .data(null)
-                        .build());
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(Response
+                .builder()
+                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .message("Error solving stable matching problem.")
+                .data(null)
+                .build());
       }
-
+      //            Testing tester = new Testing((Matches) results.get(0).getAttribute("matches"),
+      //            problem.getMatchingData().getSize(), problem.getMatchingData().getCapacities());
+      //            System.out.println("[Testing] Solution has duplicate: " + tester.hasDuplicate())
       long endTime = System.currentTimeMillis();
 
       double runtime = ((double) (endTime - startTime) / 1000);
       runtime = (runtime * 1000.0);
       log.info("Runtime: {} Millisecond(s).", runtime);
+      //problem.printIndividuals();
+      //System.out.println(problem.printPreferenceLists());
       String algorithm = request.getAlgorithm();
 
       MatchingSolution matchingSolution = formatSolution(algorithm, results, runtime);
       matchingSolution.setSetSatisfactions(problem.getMatchesSatisfactions((Matches) results
-              .get(0)
-              .getAttribute(StableMatchingConst.MATCHES_KEY)));
+          .get(0)
+          .getAttribute(StableMatchingConst.MATCHES_KEY)));
 
       return ResponseEntity.ok(Response
-              .builder()
-              .status(200)
-              .message(
-                      "[Service] Stable Matching: Solve stable matching problem successfully!")
-              .data(matchingSolution)
-              .build());
+          .builder()
+          .status(200)
+          .message(
+              "[Service] Stable Matching: Solve stable matching problem successfully!")
+          .data(matchingSolution)
+          .build());
     } catch (Exception e) {
       log.error("[Service] Stable Matching: Error solving stable matching problem: {}",
-              e.getMessage(),
-              e);
-
+          e.getMessage(),
+          e);
+      // Handle exceptions and return an error response
       return ResponseEntity
-              .status(HttpStatus.INTERNAL_SERVER_ERROR)
-              .body(Response
-                      .builder()
-                      .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                      .message(
-                              "[Service] Stable Matching: Error solving stable matching problem.")
-                      .data(null)
-                      .build());
+          .status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body(Response
+              .builder()
+              .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+              .message(
+                  "[Service] Stable Matching: Error solving stable matching problem.")
+              .data(null)
+              .build());
     }
   }
 
   private MatchingSolution formatSolution(String algorithm,
-                                          NondominatedPopulation result,
-                                          double Runtime) {
+      NondominatedPopulation result,
+      double Runtime) {
     Solution solution = result.get(0);
     MatchingSolution matchingSolution = new MatchingSolution();
     double fitnessValue = solution.getObjective(0);
@@ -132,6 +125,7 @@ public class StableMatchingOtmService {
     matchingSolution.setMatches(matches);
     matchingSolution.setAlgorithm(algorithm);
     matchingSolution.setRuntime(Runtime);
+    matchingSolution.setComputerSpecs(ComputerSpecsUtil.getComputerSpecs());
 
     return matchingSolution;
   }
@@ -148,11 +142,11 @@ public class StableMatchingOtmService {
    * @return A `NondominatedPopulation` containing the solutions.
    */
   private NondominatedPopulation solveProblem(Problem problem,
-                                              String algorithm,
-                                              int populationSize,
-                                              int generation,
-                                              int maxTime,
-                                              String distributedCores) {
+      String algorithm,
+      int populationSize,
+      int generation,
+      int maxTime,
+      String distributedCores) {
     NondominatedPopulation result;
     if (algorithm == null) {
       algorithm = "PESA2";
@@ -165,37 +159,29 @@ public class StableMatchingOtmService {
     properties.setInt("maxTime", maxTime);
     TerminationCondition maxEval = new MaxFunctionEvaluations(generation * populationSize);
 
-
     try {
       if (distributedCores.equals("all")) {
         result = new Executor()
-                .withProblem(problem)
-                .withAlgorithm(algorithm)
-                .withMaxEvaluations(generation * populationSize)
-                .withTerminationCondition(maxEval)
-                .withProperties(properties)
-                .withProperty("operator", "CustomVariation")
-                .withProperty("CustomVariation.crossoverRate", 0.9)
-                .withProperty("CustomVariation.mutationRate", 0.1)
 
-                .distributeOnAllCores()
-                .run();
+            .withProblem(problem)
+            .withAlgorithm(algorithm)
+            .withMaxEvaluations(generation * populationSize)
+            .withTerminationCondition(maxEval)
+            .withProperties(properties)
+            .distributeOnAllCores()
+            .run();
       } else {
         int numberOfCores = Integer.parseInt(distributedCores);
         result = new Executor()
-                .withProblem(problem)
-                .withAlgorithm(algorithm)
-                .withMaxEvaluations(generation * populationSize)
-                .withTerminationCondition(maxEval)
-                .withProperties(properties)
-                .withProperty("operator", "CustomVariation")
-                .withProperty("CustomVariation.crossoverRate", 0.9)
-                .withProperty("CustomVariation.mutationRate", 0.1)
-
-                .distributeOn(numberOfCores)
-                .run();
+            .withProblem(problem)
+            .withAlgorithm(algorithm)
+            .withMaxEvaluations(generation * populationSize)
+            .withTerminationCondition(maxEval)
+            .withProperties(properties)
+            .distributeOn(numberOfCores)
+            .run();
       }
-      //log.info("[Service] Stable Matching: Problem solved successfully!");
+      log.info("Problem {} solved successfully!", problem.getName());
       return result;
     } catch (Exception e) {
       log.error("Error solving {}, {}", problem.getName(), e.getMessage(), e);
@@ -206,16 +192,15 @@ public class StableMatchingOtmService {
   /**
    * getInsights.
    *
-   * @param request     StableMatchingProblemDto
-   * @param sessionCode String
-   * @return ResponseEntity
+   * @param request StableMatchingProblemDto
+   * @param sessionCode string
    */
   public ResponseEntity<Response> getInsights(StableMatchingProblemDto request,
-                                              String sessionCode) {
+      String sessionCode) {
     String[] algorithms = StableMatchingConst.ALLOWED_INSIGHT_ALGORITHMS;
     simpMessagingTemplate.convertAndSendToUser(sessionCode,
-            "/progress",
-            createProgressMessage("Initializing the problem..."));
+        "/progress",
+        createProgressMessage("Initializing the problem..."));
     MTMProblem problem = StableMatchingProblemMapper.toMTM(request);
 
     log.info("Start benchmarking {} session code {}", problem.getName(), sessionCode);
@@ -224,12 +209,12 @@ public class StableMatchingOtmService {
 
     int runCount = 1;
     int maxRunCount = algorithms.length * RUN_COUNT_PER_ALGORITHM;
-    // solve the problem with different algorithms
-    // and then evaluate the performance of the algorithms
+    // solve the problem with different algorithms and then evaluate the performance
+    // of the algorithms
     //        log.info("Start benchmarking the algorithms...");
     simpMessagingTemplate.convertAndSendToUser(sessionCode,
-            "/progress",
-            createProgressMessage("Start benchmarking the algorithms..."));
+        "/progress",
+        createProgressMessage("Start benchmarking the algorithms..."));
 
     for (String algorithm : algorithms) {
       for (int i = 0; i < RUN_COUNT_PER_ALGORITHM; i++) {
@@ -237,11 +222,11 @@ public class StableMatchingOtmService {
         long start = System.currentTimeMillis();
 
         NondominatedPopulation results = solveProblem(problem,
-                algorithm,
-                request.getPopulationSize(),
-                request.getGeneration(),
-                request.getMaxTime(),
-                request.getDistributedCores());
+            algorithm,
+            request.getGeneration(),
+            request.getPopulationSize(),
+            request.getMaxTime(),
+            request.getDistributedCores());
 
         long end = System.currentTimeMillis();
         assert results != null;
@@ -250,8 +235,8 @@ public class StableMatchingOtmService {
 
         // send the progress to the client
         String message =
-                "Algorithm " + algorithm + " finished iteration: #" + (i + 1) + "/"
-                        + RUN_COUNT_PER_ALGORITHM;
+            "Algorithm " + algorithm + " finished iteration: #" + (i + 1) + "/"
+                + RUN_COUNT_PER_ALGORITHM;
         Progress progress = createProgress(message, runtime, runCount, maxRunCount);
         System.out.println(progress);
         simpMessagingTemplate.convertAndSendToUser(sessionCode, "/progress", progress);
@@ -265,15 +250,15 @@ public class StableMatchingOtmService {
     }
     log.info("Benchmark finished! {} session code {}", problem.getName(), sessionCode);
     simpMessagingTemplate.convertAndSendToUser(sessionCode,
-            "/progress",
-            createProgressMessage("Benchmarking finished!"));
+        "/progress",
+        createProgressMessage("Benchmarking finished!"));
 
     return ResponseEntity.ok(Response
-            .builder()
-            .status(200)
-            .message("Get problem result insights successfully!")
-            .data(matchingSolutionInsights)
-            .build());
+        .builder()
+        .status(200)
+        .message("Get problem result insights successfully!")
+        .data(matchingSolutionInsights)
+        .build());
   }
 
   private MatchingSolutionInsights initMatchingSolutionInsights(String[] algorithms) {
@@ -283,6 +268,7 @@ public class StableMatchingOtmService {
 
     matchingSolutionInsights.setFitnessValues(fitnessValueMap);
     matchingSolutionInsights.setRuntimes(runtimeMap);
+    matchingSolutionInsights.setComputerSpecs(ComputerSpecsUtil.getComputerSpecs());
 
     for (String algorithm : algorithms) {
       fitnessValueMap.put(algorithm, new ArrayList<>());
@@ -294,34 +280,33 @@ public class StableMatchingOtmService {
 
   private Progress createProgressMessage(String message) {
     return Progress
-            .builder()
-            .inProgress(
-                    false)
-            // this object is just to send a message to the client, not to show the progress
-            .message(message)
-            .build();
+        .builder()
+        .inProgress(
+            false)
+        // this object is just to send a message to the client, not to show the progress
+        .message(message)
+        .build();
   }
 
   private Progress createProgress(String message,
-                                  Double runtime,
-                                  Integer runCount,
-                                  int maxRunCount) {
+      Double runtime,
+      Integer runCount,
+      int maxRunCount) {
     int percent = runCount * 100 / maxRunCount;
     int minuteLeft = (int) Math.ceil(
-            ((maxRunCount - runCount) * runtime) / 60); // runtime is in seconds
+        ((maxRunCount - runCount) * runtime) / 60); // runtime is in seconds
     return Progress
-            .builder()
-            .inProgress(true) // this object is just to send to the client to show the progress
-            .message(message)
-            .runtime(runtime)
-            .minuteLeft(minuteLeft)
-            .percentage(percent)
-            .build();
+        .builder()
+        .inProgress(true) // this object is just to send to the client to show the progress
+        .message(message)
+        .runtime(runtime)
+        .minuteLeft(minuteLeft)
+        .percentage(percent)
+        .build();
   }
 
   private double getFitnessValue(NondominatedPopulation result) {
     Solution solution = result.get(0);
     return solution.getObjective(0);
   }
-
 }
