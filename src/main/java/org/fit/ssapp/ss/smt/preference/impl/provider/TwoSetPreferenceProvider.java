@@ -5,7 +5,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
+import lombok.experimental.FieldDefaults;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 import org.fit.ssapp.ss.smt.MatchingData;
@@ -22,6 +27,9 @@ import org.fit.ssapp.util.StringUtils;
  * Standard implementation of PreferenceBuilder that uses Exp4j lib.
  */
 @Data
+@Getter
+@FieldDefaults(level = AccessLevel.PRIVATE)
+@AllArgsConstructor
 public class TwoSetPreferenceProvider implements PreferenceBuilder {
 
   private final MatchingData matchingData;
