@@ -54,26 +54,26 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class StableMatchingService implements ProblemService {
 
-  static {
-    OperatorFactory.getInstance().addProvider(new OperatorProvider() {
-      public String getMutationHint(Problem problem) {
-        return "CustomVariation";
-      }
+  // static {
+  //   OperatorFactory.getInstance().addProvider(new OperatorProvider() {
+  //     public String getMutationHint(Problem problem) {
+  //       return "CustomVariation";
+  //     }
 
-      public String getVariationHint(Problem problem) {
-        return "CustomVariation";
-      }
+  //     public String getVariationHint(Problem problem) {
+  //       return "CustomVariation";
+  //     }
 
-      public Variation getVariation(String name, TypedProperties properties, Problem problem) {
-        if (name.equalsIgnoreCase("CustomVariation")) {
-          double crossoverRate = properties.getDouble("CustomVariation.crossoverRate", 0.9);
-          double mutationRate = properties.getDouble("CustomVariation.mutationRate", 0.1);
-          return new CustomVariation(crossoverRate, mutationRate, problem.getNumberOfVariables());
-        }
-        return null;
-      }
-    });
-  }
+  //     public Variation getVariation(String name, TypedProperties properties, Problem problem) {
+  //       if (name.equalsIgnoreCase("CustomVariation")) {
+  //         double crossoverRate = properties.getDouble("CustomVariation.crossoverRate", 0.9);
+  //         double mutationRate = properties.getDouble("CustomVariation.mutationRate", 0.1);
+  //         return new CustomVariation(crossoverRate, mutationRate, problem.getNumberOfVariables());
+  //       }
+  //       return null;
+  //     }
+  //   });
+  // }
 
   private static final int RUN_COUNT_PER_ALGORITHM = 10;
   private final SimpMessagingTemplate simpMessagingTemplate;
@@ -226,9 +226,6 @@ public class StableMatchingService implements ProblemService {
             .withMaxEvaluations(generation * populationSize)
             .withTerminationCondition(maxEval)
             .withProperties(properties)
-            .withProperty("operator", "CustomVariation")
-            .withProperty("CustomVariation.crossoverRate", 0.9)
-            .withProperty("CustomVariation.mutationRate", 0.1)
             .distributeOnAllCores()
             .run();
       } else {
@@ -239,9 +236,6 @@ public class StableMatchingService implements ProblemService {
             .withMaxEvaluations(generation * populationSize)
             .withTerminationCondition(maxEval)
             .withProperties(properties)
-            .withProperty("operator", "CustomVariation")
-            .withProperty("CustomVariation.crossoverRate", 0.9)
-            .withProperty("CustomVariation.mutationRate", 0.1)
             .distributeOn(numberOfCores)
             .run();
       }
