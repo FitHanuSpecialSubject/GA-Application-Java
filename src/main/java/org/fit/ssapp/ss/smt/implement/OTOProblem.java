@@ -1,6 +1,10 @@
 package org.fit.ssapp.ss.smt.implement;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.Objects;
+import java.util.Queue;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -12,7 +16,6 @@ import org.fit.ssapp.ss.smt.Matches;
 import org.fit.ssapp.ss.smt.MatchingData;
 import org.fit.ssapp.ss.smt.MatchingProblem;
 import org.fit.ssapp.ss.smt.evaluator.FitnessEvaluator;
-import org.fit.ssapp.ss.smt.implement.var.CustomIntegerVariable;
 import org.fit.ssapp.ss.smt.preference.PreferenceList;
 import org.fit.ssapp.ss.smt.preference.PreferenceListWrapper;
 import org.fit.ssapp.util.StringUtils;
@@ -89,7 +92,7 @@ public class OTOProblem implements MatchingProblem {
 
   @Override
   public int getNumberOfVariables() {
-    return problemSize;
+    return 1;
   }
 
   @Override
@@ -104,12 +107,7 @@ public class OTOProblem implements MatchingProblem {
 
   @Override
   public void evaluate(Solution solution) {
-    int[] decodeVar = new int[problemSize];
-    for (int i = 0; i < problemSize; i++) {
-      CustomIntegerVariable var = (CustomIntegerVariable) solution.getVariable(i);
-      decodeVar[i] = (int) Math.round(var.getValue());
-    }
-    Matches result = this.stableMatching(decodeVar);
+    Matches result = this.stableMatching(solution.getVariable(0));
     // Check Exclude Pairs
     int[][] excludedPairs = this.matchingData.getExcludedPairs();
     if (Objects.nonNull(excludedPairs)) {
@@ -143,16 +141,9 @@ public class OTOProblem implements MatchingProblem {
 
   @Override
   public Solution newSolution() {
-    Solution solution = new Solution(problemSize, 1);
-
-    int[] queue = new Permutation(problemSize).toArray();
-
-    for (int i = 0; i < queue.length; i++) {
-      CustomIntegerVariable var = new CustomIntegerVariable(0, problemSize-1);
-      var.setValue(queue[i]);
-      solution.setVariable(i, var);
-    }
-
+    Solution solution = new Solution(1, 1);
+    Permutation permutationVar = new Permutation(problemSize);
+    solution.setVariable(0, permutationVar);
     return solution;
   }
 
@@ -178,20 +169,9 @@ public class OTOProblem implements MatchingProblem {
    */
   @Override
   public Matches stableMatching(Variable var) {
-    return null ;
-  }
-
-  /**
-   * stableMatching.
-   *
-   * @return Matches
-   */
-  public Matches stableMatching(int[] decodeVar) {
-    Queue<Integer> singleQueue = new LinkedList<>();
-    for (int val : decodeVar) {
-      singleQueue.add(val);
-    }
-
+    int[] order = ((Permutation) var).toArray();
+    Queue<Integer> singleQueue = Arrays.stream(order).boxed()
+            .collect(Collectors.toCollection(LinkedList::new));
     Matches matches = new Matches(getProblemSize());
 
     while (!singleQueue.isEmpty()) {

@@ -1,6 +1,14 @@
 package org.fit.ssapp.ss.smt.implement;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Queue;
+import java.util.Set;
 import java.util.stream.IntStream;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -12,7 +20,6 @@ import org.fit.ssapp.ss.smt.Matches;
 import org.fit.ssapp.ss.smt.MatchingData;
 import org.fit.ssapp.ss.smt.MatchingProblem;
 import org.fit.ssapp.ss.smt.evaluator.FitnessEvaluator;
-import org.fit.ssapp.ss.smt.implement.var.CustomIntegerVariable;
 import org.fit.ssapp.ss.smt.preference.PreferenceListWrapper;
 import org.fit.ssapp.ss.smt.preference.impl.list.TripletPreferenceList;
 import org.fit.ssapp.util.StringUtils;
@@ -93,16 +100,9 @@ public class TripletOTOProblem implements MatchingProblem {
    */
   @Override
   public Solution newSolution() {
-    Solution solution = new Solution(problemSize, 1);
-
-    int[] queue = new Permutation(problemSize).toArray();
-
-    for (int i = 0; i < queue.length; i++) {
-      CustomIntegerVariable var = new CustomIntegerVariable(0, problemSize-1);
-      var.setValue(queue[i]);
-      solution.setVariable(i, var);
-    }
-
+    Solution solution = new Solution(1, 1);
+    Permutation permutationVar = new Permutation(problemSize);
+    solution.setVariable(0, permutationVar);
     return solution;
   }
 
@@ -113,12 +113,7 @@ public class TripletOTOProblem implements MatchingProblem {
    */
   @Override
   public void evaluate(Solution solution) {
-    int[] decodeVar = new int[problemSize];
-    for (int i = 0; i < problemSize; i++) {
-      CustomIntegerVariable var = (CustomIntegerVariable) solution.getVariable(i);
-      decodeVar[i] = (int) Math.round(var.getValue());
-    }
-    Matches result = this.stableMatching(decodeVar);
+    Matches result = this.stableMatching(solution.getVariable(0));
     // Check Exclude Pairs
     int[][] excludedPairs = this.matchingData.getExcludedPairs();
     if (Objects.nonNull(excludedPairs)) {
@@ -168,19 +163,12 @@ public class TripletOTOProblem implements MatchingProblem {
    */
   @Override
   public Matches stableMatching(Variable var) {
-    return null ;
-  }
-
-  /**
-   * stableMatching.
-   *
-   * @return Matches
-   */
-  public Matches stableMatching(int[] decodeVar) {
     Matches matches = new Matches(matchingData.getSize());
     Set<Integer> matchedNode = new HashSet<>();
-
+    Permutation castVar = (Permutation) var;
+    int[] decodeVar = castVar.toArray();
     Queue<Integer> unMatchedNode = new LinkedList<>();
+
     for (int val : decodeVar) {
       unMatchedNode.add(val);
     }
@@ -379,7 +367,7 @@ public class TripletOTOProblem implements MatchingProblem {
 
   @Override
   public int getNumberOfVariables() {
-    return problemSize;
+    return 1;
   }
 
   @Override
