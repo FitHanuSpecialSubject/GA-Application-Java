@@ -15,20 +15,14 @@ import org.fit.ssapp.dto.response.Response;
 import org.fit.ssapp.ss.smt.Matches;
 import org.fit.ssapp.ss.smt.MatchingProblem;
 import org.fit.ssapp.ss.smt.implement.MTMProblem;
-//import org.fit.ssapp.ss.smt.implement.var.CustomVariation;
 import org.fit.ssapp.ss.smt.result.MatchingSolution;
 import org.fit.ssapp.ss.smt.result.MatchingSolutionInsights;
 import org.fit.ssapp.util.ComputerSpecsUtil;
 import org.moeaframework.Executor;
 import org.moeaframework.core.NondominatedPopulation;
 import org.moeaframework.core.Problem;
-import org.moeaframework.core.Problem;
 import org.moeaframework.core.Solution;
 import org.moeaframework.core.TerminationCondition;
-import org.moeaframework.core.Variation;
-import org.moeaframework.core.Variation;
-import org.moeaframework.core.spi.OperatorFactory;
-import org.moeaframework.core.spi.OperatorProvider;
 import org.moeaframework.core.termination.MaxFunctionEvaluations;
 import org.moeaframework.util.TypedProperties;
 import org.springframework.http.HttpStatus;
@@ -54,26 +48,26 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class StableMatchingService implements ProblemService {
 
-//  static {
-//    OperatorFactory.getInstance().addProvider(new OperatorProvider() {
-//      public String getMutationHint(Problem problem) {
-//        return "CustomVariation";
-//      }
-//
-//      public String getVariationHint(Problem problem) {
-//        return "CustomVariation";
-//      }
-//
-//      public Variation getVariation(String name, TypedProperties properties, Problem problem) {
-//        if (name.equalsIgnoreCase("CustomVariation")) {
-//          double crossoverRate = properties.getDouble("CustomVariation.crossoverRate", 0.9);
-//          double mutationRate = properties.getDouble("CustomVariation.mutationRate", 0.1);
-//          return new CustomVariation(crossoverRate, mutationRate, problem.getNumberOfVariables());
-//        }
-//        return null;
-//      }
-//    });
-//  }
+  // static {
+  //   OperatorFactory.getInstance().addProvider(new OperatorProvider() {
+  //     public String getMutationHint(Problem problem) {
+  //       return "CustomVariation";
+  //     }
+
+  //     public String getVariationHint(Problem problem) {
+  //       return "CustomVariation";
+  //     }
+
+  //     public Variation getVariation(String name, TypedProperties properties, Problem problem) {
+  //       if (name.equalsIgnoreCase("CustomVariation")) {
+  //         double crossoverRate = properties.getDouble("CustomVariation.crossoverRate", 0.9);
+  //         double mutationRate = properties.getDouble("CustomVariation.mutationRate", 0.1);
+  //         return new CustomVariation(crossoverRate, mutationRate, problem.getNumberOfVariables());
+  //       }
+  //       return null;
+  //     }
+  //   });
+  // }
 
   private static final int RUN_COUNT_PER_ALGORITHM = 10;
   private final SimpMessagingTemplate simpMessagingTemplate;
@@ -226,9 +220,6 @@ public class StableMatchingService implements ProblemService {
             .withMaxEvaluations(generation * populationSize)
             .withTerminationCondition(maxEval)
             .withProperties(properties)
-            .withProperty("operator", "CustomVariation")
-            .withProperty("CustomVariation.crossoverRate", 0.9)
-            .withProperty("CustomVariation.mutationRate", 0.1)
             .distributeOnAllCores()
             .run();
       } else {
@@ -239,9 +230,6 @@ public class StableMatchingService implements ProblemService {
             .withMaxEvaluations(generation * populationSize)
             .withTerminationCondition(maxEval)
             .withProperties(properties)
-            .withProperty("operator", "CustomVariation")
-            .withProperty("CustomVariation.crossoverRate", 0.9)
-            .withProperty("CustomVariation.mutationRate", 0.1)
             .distributeOn(numberOfCores)
             .run();
       }
