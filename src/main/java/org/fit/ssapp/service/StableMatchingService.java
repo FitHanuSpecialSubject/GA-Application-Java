@@ -226,9 +226,6 @@ public class StableMatchingService implements ProblemService {
             .withMaxEvaluations(generation * populationSize)
             .withTerminationCondition(maxEval)
             .withProperties(properties)
-            .withProperty("operator", "CustomVariation")
-            .withProperty("CustomVariation.crossoverRate", 0.9)
-            .withProperty("CustomVariation.mutationRate", 0.1)
             .distributeOnAllCores()
             .run();
       } else {
@@ -239,9 +236,6 @@ public class StableMatchingService implements ProblemService {
             .withMaxEvaluations(generation * populationSize)
             .withTerminationCondition(maxEval)
             .withProperties(properties)
-            .withProperty("operator", "CustomVariation")
-            .withProperty("CustomVariation.crossoverRate", 0.9)
-            .withProperty("CustomVariation.mutationRate", 0.1)
             .distributeOn(numberOfCores)
             .run();
       }
