@@ -72,16 +72,11 @@ public class PsoCompatSmtService {
                 .data(null)
                 .build());
       }
-      //            Testing tester = new Testing((Matches) results.get(0).getAttribute("matches"),
-      //            problem.getMatchingData().getSize(), problem.getMatchingData().getCapacities());
-      //            System.out.println("[Testing] Solution has duplicate: " + tester.hasDuplicate())
       long endTime = System.currentTimeMillis();
 
       double runtime = ((double) (endTime - startTime) / 1000);
       runtime = (runtime * 1000.0);
       log.info("Runtime: {} Millisecond(s).", runtime);
-      //problem.printIndividuals();
-      //System.out.println(problem.printPreferenceLists());
       String algorithm = request.getAlgorithm();
 
       MatchingSolution matchingSolution = formatSolution(algorithm, results, runtime);
@@ -149,7 +144,7 @@ public class PsoCompatSmtService {
       String distributedCores) {
     NondominatedPopulation result;
     if (algorithm == null) {
-      algorithm = "PESA2";
+      algorithm = "OMOPSO";
     }
     if (distributedCores == null) {
       distributedCores = "all";
