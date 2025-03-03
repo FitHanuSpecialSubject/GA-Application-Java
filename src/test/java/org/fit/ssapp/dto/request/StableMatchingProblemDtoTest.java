@@ -1,30 +1,37 @@
 package org.fit.ssapp.dto.request;
 
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Validation;
-import jakarta.validation.Validator;
-import jakarta.validation.ValidatorFactory;
-import java.util.Set;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.fit.ssapp.config.ValidationConfig;
+import org.fit.ssapp.controller.HomeController;
+import org.fit.ssapp.service.GameTheoryService;
+import org.fit.ssapp.service.PsoCompatSmtService;
+import org.fit.ssapp.service.StableMatchingOtmService;
+import org.fit.ssapp.service.StableMatchingService;
+import org.fit.ssapp.service.TripletMatchingService;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.util.Assert;
 
 /**
  * Test class for StableMatchingProblemDto.
  */
+@WebMvcTest(HomeController.class)
+@EnableConfigurationProperties(value = ValidationConfig.class)
+@TestPropertySource("classpath:application.yml")
 public class StableMatchingProblemDtoTest {
-
-  private Validator validator;
-
-  @BeforeEach
-  void setUp() {
-    ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-    validator = factory.getValidator();
-  }
-
   @Test
-  void testValidDTO() {
+  void validDTO() {
     StableMatchingProblemDto dto = new StableMatchingProblemDto();
     dto.setProblemName("Stable Matching Problem");
     dto.setNumberOfSets(2);
@@ -48,8 +55,8 @@ public class StableMatchingProblemDtoTest {
             {7.0, 8.0, 9.0}
     });
     dto.setEvaluateFunctions(new String[]{
-            "10*(P1*W1) + 5*(P1*W2) + (P6*W6) + (P7*W7)",
-            "(sqrt(P8*W8)) + 2*(P9*W9) + (e)*W10) + 5*(P11*W11)"
+            "default",
+            "default"
     });
     dto.setFitnessFunction("default");
     dto.setExcludedPairs(new int[][]{
@@ -62,13 +69,20 @@ public class StableMatchingProblemDtoTest {
     dto.setAlgorithm("Genetic Algorithm");
     dto.setDistributedCores("4");
 
-    Set<ConstraintViolation<StableMatchingProblemDto>> violations = validator.validate(dto);
-    violations.forEach(violation -> System.out.println(violation.getMessage()));
-    assertTrue(violations.isEmpty(), "There should be no constraint violations");
+    try {
+    _mock
+        .perform(post("/api/stable-matching-solver")
+                 .contentType(MediaType.APPLICATION_JSON)
+                 .content(objectMapper.writeValueAsString(dto)))
+        .andDo(print())
+        .andExpect(status().isOk());
+    } catch (Exception e) {
+        Assert.isTrue(false, e.getMessage());
+    }
   }
 
   @Test
-  void testInvalidDTO() {
+  void invalidDTO() {
     StableMatchingProblemDto invalidDto = new StableMatchingProblemDto();
     invalidDto.setProblemName("");
     invalidDto.setNumberOfSets(1); // Less than 2 sets
@@ -102,7 +116,36 @@ public class StableMatchingProblemDtoTest {
     invalidDto.setAlgorithm("Genetic Algorithm");
     invalidDto.setDistributedCores("4");
 
-    Set<ConstraintViolation<StableMatchingProblemDto>> violations = validator.validate(invalidDto);
-    assertTrue(violations.size() > 0, "There should be constraint violations");
+    try {
+    _mock
+        .perform(post("/api/stable-matching-solver")
+                 .contentType(MediaType.APPLICATION_JSON)
+                 .content(objectMapper.writeValueAsString(invalidDto)))
+        .andDo(print())
+        .andExpect(status().isBadRequest());
+    } catch (Exception e) {
+        Assert.isTrue(false, e.getMessage());
+    }
   }
+
+  @Autowired
+  private ObjectMapper objectMapper;
+
+  @Autowired
+  private MockMvc _mock;
+
+  @MockBean
+  private GameTheoryService gameTheoryService;
+
+  @MockBean
+  private StableMatchingService stableMatchingSolver;
+
+  @MockBean
+  private StableMatchingOtmService otmProblemSolver;
+
+  @MockBean
+  private TripletMatchingService tripletMatchingSolver;
+
+  @MockBean
+  private PsoCompatSmtService psoCompatSmtService;
 }
