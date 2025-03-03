@@ -82,16 +82,12 @@ class SmokeTest {
     dto.setAlgorithm(algoritm);
     dto.setDistributedCores("4");
 
-    try {
     _mock
         .perform(post("/api/stable-matching-solver")
                  .contentType(MediaType.APPLICATION_JSON)
                  .content(objectMapper.writeValueAsString(dto)))
         .andDo(print())
         .andExpect(status().isOk());
-    } catch (Exception e) {
-        Assert.isTrue(false, e.getMessage());
-    }
   }
 
   @ParameterizedTest
@@ -134,16 +130,12 @@ class SmokeTest {
     dto.setAlgorithm(algoritm);
     dto.setDistributedCores("4");
 
-    try {
     _mock
         .perform(post("/api/game-theory-solver")
                  .contentType(MediaType.APPLICATION_JSON)
                  .content(objectMapper.writeValueAsString(dto)))
         .andDo(print())
         .andExpect(status().isOk());
-    } catch (Exception e) {
-        Assert.isTrue(false, e.getMessage());
-    }
   }
 
   private static String[] stableMatchingAlgorithms() {
