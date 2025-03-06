@@ -11,6 +11,7 @@ import org.fit.ssapp.service.StableMatchingOtmService;
 import org.fit.ssapp.service.StableMatchingService;
 import org.fit.ssapp.service.TripletMatchingService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -113,7 +114,7 @@ public class HomeController {
    * @return CompletableFuture
    */
   @Async("taskExecutor")
-  @PostMapping("/game-theory-solver")
+  @PostMapping(value = "/game-theory-solver", produces = MediaType.APPLICATION_JSON_VALUE)
   public CompletableFuture<ResponseEntity<Response>> solveGameTheory(
       @RequestBody GameTheoryProblemDto gameTheoryProblem) {
     return CompletableFuture.completedFuture(gameTheoryService.solveGameTheory(gameTheoryProblem));
