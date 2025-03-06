@@ -14,16 +14,14 @@ import org.fit.ssapp.util.StringExpressionEvaluator;
  * Represents a Strategy with a name, properties, and a payoff value. Implements Serializable for
  * object persistence.
  */
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Strategy implements Serializable {
 
   private String name;
-  @Getter
   private List<Double> properties = new ArrayList<>();
-  @Setter
-  @Getter
   private double payoff;
 
   public double evaluateStringExpression(String expression, List<NormalPlayer> normalPlayers, int[] chosenStrategyIndices) {
