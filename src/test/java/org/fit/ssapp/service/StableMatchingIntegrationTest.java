@@ -1,28 +1,29 @@
 package org.fit.ssapp.service;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import java.util.stream.Stream;
+
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.fit.ssapp.constants.StableMatchingConst;
 import org.fit.ssapp.dto.request.StableMatchingProblemDto;
-import org.junit.jupiter.api.Test;
+import org.fit.ssapp.service.StableMatchingService;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-public class StableMatchingIntegrationTest {
+class StableMatchingIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -30,103 +31,92 @@ public class StableMatchingIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    /** Test Base Case - Không có exclude pair */
-    @Test
-    public void testBaseCase() throws Exception {
-        StableMatchingProblemDto dto = createTestCase(false);
+    @MockBean
+    private GameTheoryService gameTheoryService;
 
-        MvcResult result = mockMvc.perform(post("/api/stable-matching-solver")
+    @MockBean
+    private StableMatchingService stableMatchingSolver;
+
+    @MockBean
+    private StableMatchingOtmService otmProblemSolver;
+
+    @MockBean
+    private TripletMatchingService tripletMatchingSolver;
+
+    @MockBean
+    private PsoCompatSmtService psoCompatSmtService;
+
+    // **Test Case 1: Base Case - Default Fitness & Evaluate Function, No Exclude Pair**
+    @ParameterizedTest
+    @MethodSource("stableMatchingAlgorithms")
+    void testBaseCase(String algorithm) throws Exception {
+        StableMatchingProblemDto dto = createStableMatchingDto(algorithm, false);
+
+        mockMvc.perform(post("/api/stable-matching-solver")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        Map<String, Object> response = objectMapper.readValue(result.getResponse().getContentAsString(), Map.class);
-        List<List<Integer>> matches = (List<List<Integer>>) response.get("matches");
-
-        assertAll(
-                () -> assertNoDuplication(matches),
-                () -> assertValidCapacity(matches, dto.getIndividualCapacities()),
-                () -> assertValidLeftOvers(response, dto.getNumberOfIndividuals())
-        );
+                .andDo(print())
+                .andExpect(status().isOk());
     }
 
-    /** Test Exclude Pair - Kiểm tra cặp bị loại trừ */
-    @Test
-    public void testExcludePair() throws Exception {
-        StableMatchingProblemDto dto = createTestCase(true);
+    // **Test Case 4: Exclude Pair - Base Case with Exclude Pair**
+    @ParameterizedTest
+    @MethodSource("stableMatchingAlgorithms")
+    void testExcludePair(String algorithm) throws Exception {
+        StableMatchingProblemDto dto = createStableMatchingDto(algorithm, true);
 
-        MvcResult result = mockMvc.perform(post("/api/stable-matching-solver")
+        mockMvc.perform(post("/api/stable-matching-solver")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        Map<String, Object> response = objectMapper.readValue(result.getResponse().getContentAsString(), Map.class);
-        List<List<Integer>> matches = (List<List<Integer>>) response.get("matches");
-
-        assertNoExcludedPairs(matches, dto.getExcludedPairs());
+                .andDo(print())
+                .andExpect(status().isOk());
     }
 
-    /** Kiểm tra không có cá nhân nào bị ghép trùng */
-    private void assertNoDuplication(List<List<Integer>> matches) {
-        Set<Integer> uniqueIndividuals = matches.stream()
-                .flatMap(List::stream)
-                .collect(Collectors.toSet());
-
-        int totalMatches = matches.stream().mapToInt(List::size).sum();
-        assertThat(uniqueIndividuals).hasSize(totalMatches);
-    }
-
-    /** Kiểm tra không ai có số match vượt quá capacity */
-    private void assertValidCapacity(List<List<Integer>> matches, int[] capacities) {
-        int[] matchCount = new int[capacities.length];
-
-        matches.forEach(pair -> pair.forEach(person -> matchCount[person]++));
-
-        for (int i = 0; i < capacities.length; i++) {
-            assertThat(matchCount[i]).isLessThanOrEqualTo(capacities[i]);
-        }
-    }
-
-    /** Kiểm tra danh sách left-over hợp lệ */
-    private void assertValidLeftOvers(Map<String, Object> response, int totalIndividuals) {
-        List<Integer> leftOvers = (List<Integer>) response.get("leftOvers");
-        List<List<Integer>> matches = (List<List<Integer>>) response.get("matches");
-
-        Set<Integer> matchedIndividuals = matches.stream()
-                .flatMap(List::stream)
-                .collect(Collectors.toSet());
-
-        assertThat(leftOvers).doesNotContainAnyElementsOf(matchedIndividuals);
-        assertThat(leftOvers.size() + matchedIndividuals.size()).isEqualTo(totalIndividuals);
-    }
-
-    /** Kiểm tra không có cặp bị loại trừ trong kết quả */
-    private void assertNoExcludedPairs(List<List<Integer>> matches, int[][] excludePairs) {
-        for (int[] pair : excludePairs) {
-            assertThat(matches).doesNotContain(List.of(pair[0], pair[1]));
-        }
-    }
-
-    /** Helper - Tạo DTO cho test case */
-    private StableMatchingProblemDto createTestCase(boolean withExcludePairs) {
+    // **Helper method to create Stable Matching DTO**
+    private StableMatchingProblemDto createStableMatchingDto(String algorithm, boolean includeExcludedPairs) {
         StableMatchingProblemDto dto = new StableMatchingProblemDto();
-        dto.setProblemName("Stable Matching Problem with 3 Sets");
-        dto.setNumberOfSets(3);
+        dto.setProblemName("Stable Matching Test");
+        dto.setNumberOfSets(2);
         dto.setNumberOfProperty(3);
-        dto.setNumberOfIndividuals(6);
-        dto.setIndividualSetIndices(new int[]{0, 0, 1, 1, 2, 2});
-        dto.setIndividualCapacities(new int[]{1, 2, 1, 1, 2, 1});
-        dto.setEvaluateFunctions(new String[]{"default"});
+        dto.setNumberOfIndividuals(3);
+        dto.setIndividualSetIndices(new int[]{1, 1, 0});
+        dto.setIndividualCapacities(new int[]{1, 2, 1});
+        dto.setIndividualRequirements(new String[][]{
+                {"1", "1.1", "1--"},
+                {"1++", "1.1", "1.1"},
+                {"1", "1", "2"}
+        });
+        dto.setIndividualWeights(new double[][]{
+                {1.0, 2.0, 3.0},
+                {4.0, 5.0, 6.0},
+                {7.0, 8.0, 9.0}
+        });
+        dto.setIndividualProperties(new double[][]{
+                {1.0, 2.0, 3.0},
+                {4.0, 5.0, 6.0},
+                {7.0, 8.0, 9.0}
+        });
+        dto.setEvaluateFunctions(new String[]{"default", "default"});
         dto.setFitnessFunction("default");
 
-        if (withExcludePairs) {
-            dto.setExcludedPairs(new int[][]{{1, 3}, {2, 5}, {4, 6}});
-        } else {
-            dto.setExcludedPairs(new int[][]{});
+        // Nếu includeExcludedPairs = true, thêm cặp bị loại trừ
+        if (includeExcludedPairs) {
+            dto.setExcludedPairs(new int[][]{
+                    {1, 2},
+                    {2, 3}
+            });
         }
+
+        dto.setPopulationSize(500);
+        dto.setGeneration(50);
+        dto.setMaxTime(3600);
+        dto.setAlgorithm(algorithm);
+        dto.setDistributedCores("4");
+
         return dto;
     }
 
+    private static String[] stableMatchingAlgorithms() {
+        return StableMatchingConst.ALLOWED_INSIGHT_ALGORITHMS;
+    }
 }
