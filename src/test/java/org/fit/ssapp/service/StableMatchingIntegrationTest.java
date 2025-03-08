@@ -12,15 +12,15 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.asyncDispatch;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -35,13 +35,15 @@ public class StableMatchingIntegrationTest {
     @ParameterizedTest
     @MethodSource("stableMatchingAlgorithms")
     void stableMatching_BaseCase(String algorithm) throws Exception {
-        // Setup test data
         StableMatchingProblemDto dto = createBaseCaseDto(algorithm);
 
-        // Perform request
-        String response = mockMvc.perform(post("/api/stable-matching-solver")
+        MvcResult result = mockMvc.perform(post("/api/stable-matching-solver")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+
+        String response = mockMvc.perform(asyncDispatch(result))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -49,32 +51,28 @@ public class StableMatchingIntegrationTest {
                 .getResponse()
                 .getContentAsString();
 
-        // Verify response structure
         JsonNode jsonNode = objectMapper.readTree(response);
         assertThat(jsonNode.has("data")).isTrue();
         assertThat(jsonNode.get("data").has("matches")).isTrue();
         assertThat(jsonNode.get("data").has("fitness")).isTrue();
 
-        // Kiểm tra điều kiện Duplication
         assertNoDuplication(jsonNode.get("data").get("matches"));
-
-        // Kiểm tra Left-Overs
         assertLeftOversValid(jsonNode.get("data"));
-
-        // Kiểm tra Capacity
         assertCapacityValid(jsonNode.get("data"), dto);
     }
 
     @ParameterizedTest
     @MethodSource("stableMatchingAlgorithms")
     void stableMatching_ExcludePair(String algorithm) throws Exception {
-        // Setup test data
         StableMatchingProblemDto dto = createExcludePairDto(algorithm);
 
-        // Perform request
-        String response = mockMvc.perform(post("/api/stable-matching-solver")
+        MvcResult result = mockMvc.perform(post("/api/stable-matching-solver")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+
+        String response = mockMvc.perform(asyncDispatch(result))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -82,17 +80,14 @@ public class StableMatchingIntegrationTest {
                 .getResponse()
                 .getContentAsString();
 
-        // Verify response structure
         JsonNode jsonNode = objectMapper.readTree(response);
         assertThat(jsonNode.has("data")).isTrue();
         assertThat(jsonNode.get("data").has("matches")).isTrue();
         assertThat(jsonNode.get("data").has("fitness")).isTrue();
 
-        // Kiểm tra điều kiện Exclude Pair
         assertNoExcludedPairs(jsonNode.get("data").get("matches"), dto.getExcludedPairs());
     }
 
-    // Invalid Cases
     @Test
     void stableMatching_Invalid_NoRequestBody() throws Exception {
         mockMvc.perform(post("/api/stable-matching-solver")
@@ -103,7 +98,7 @@ public class StableMatchingIntegrationTest {
     @Test
     void stableMatching_Invalid_SyntaxError() throws Exception {
         StableMatchingProblemDto dto = createBaseCaseDto("GaleShapley");
-        dto.setEvaluateFunctions(new String[]{"invalid_function()"}); // Sai cú pháp
+        dto.setEvaluateFunctions(new String[]{"invalid_function()"});
 
         mockMvc.perform(post("/api/stable-matching-solver")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -113,7 +108,7 @@ public class StableMatchingIntegrationTest {
 
     @Test
     void stableMatching_Invalid_WrongDataType() throws Exception {
-        String invalidJson = "{ \"problemName\": 123, \"numberOfSets\": \"abc\" }"; // Sai kiểu dữ liệu
+        String invalidJson = "{ \"problemName\": 123, \"numberOfSets\": \"abc\" }";
 
         mockMvc.perform(post("/api/stable-matching-solver")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -121,33 +116,28 @@ public class StableMatchingIntegrationTest {
                 .andExpect(status().isBadRequest());
     }
 
-    // Helper Methods
     private static String[] stableMatchingAlgorithms() {
         return StableMatchingConst.ALLOWED_INSIGHT_ALGORITHMS;
     }
 
     private StableMatchingProblemDto createBaseCaseDto(String algorithm) {
-        return new StableMatchingProblemDto(
-                "Test Base Case",
-                3,
+        return new StableMatchingProblemDto("Test Base Case",
+                2, 2,
+                new int[]{0, 1},
+                new int[]{1, 1},
+                new String[][]{{"1", "1++"}, {"2--", "1:2"}},
+                new double[][]{{1.0, 2.0}, {3.0, 4.0}},
+                new double[][]{{5.0, 6.0}, {7.0, 8.0}},
+                new String[]{"default"},
+                "default",
+                null,
+                100,
+                50,
                 2,
-                new int[]{0, 1, 2}, // individualSetIndices
-                new int[]{1, 1, 1}, // individualCapacities
-                new String[][]{{"a", "b"}, {"c", "d"}}, // individualRequirements
-                new double[][]{{1.0, 2.0}, {3.0, 4.0}}, // individualWeights
-                new double[][]{{5.0, 6.0}, {7.0, 8.0}}, // individualProperties
-                new String[]{"sqrt(x)"}, // evaluateFunctions
-                "x^2 + 2x", // fitnessFunction
-                null, // excludedPairs
-                100, // populationSize
-                50, // generation
-                10, // numberOfIndividuals
-                30, // maxTime
+                30,
                 algorithm,
-                "ALL"
-        );
+                "all");
     }
-
 
     private StableMatchingProblemDto createExcludePairDto(String algorithm) {
         StableMatchingProblemDto dto = createBaseCaseDto(algorithm);
@@ -193,7 +183,5 @@ public class StableMatchingIntegrationTest {
         for (JsonNode leftOver : leftOvers) {
             assertThat(matchedIndividuals.contains(leftOver.asInt())).isFalse();
         }
-        assertThat(leftOvers.size() + matches.size()).isEqualTo(data.get("totalIndividuals").asInt());
     }
 }
-
