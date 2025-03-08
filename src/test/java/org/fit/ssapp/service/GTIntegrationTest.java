@@ -1,22 +1,28 @@
 package org.fit.ssapp.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.fit.ssapp.constants.GameTheoryConst;
 import org.fit.ssapp.dto.request.GameTheoryProblemDto;
-import org.fit.ssapp.dto.response.Response;
 import org.fit.ssapp.ss.gt.Conflict;
 import org.fit.ssapp.ss.gt.NormalPlayer;
 import org.fit.ssapp.ss.gt.Strategy;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.asyncDispatch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -31,41 +37,143 @@ public class GTIntegrationTest {
   @Autowired
   private ObjectMapper objectMapper;
 
-  @Test
-  void baseCaseTest() throws Exception{
+  /**
+   * Test case for base case.
+   *
+   * @param algorithm allowed algorithm for gt system
+   *
+   */
+  @ParameterizedTest
+  @MethodSource("gameTheoryAlgorithms")
+  void baseCaseTest(String algorithm) throws Exception{
 
-    GameTheoryProblemDto dto = setUpBaseCase();
+    GameTheoryProblemDto dto = setUpBaseCase(algorithm);
 
-    this.mockMvc
-            .perform(post("/api/game-theory-solver")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(dto)))
-            .andDo(print())
-            .andExpect(status().isOk());
+    MvcResult result = performPostRequest(dto);
+
+    String response = getAsyncResponse(result);
+
+    JsonNode jsonNode = objectMapper.readTree(response);
+    assertThat(jsonNode.has("data")).isTrue();
+    JsonNode dataNode = jsonNode.get("data");
+
+    assertThat(dataNode.has("fitnessValue")).isTrue();
+    assertThat(dataNode.has("players")).isTrue();
+    JsonNode playersNode = dataNode.get("players");
+    assertThat(playersNode.isArray()).isTrue();
+    assertThat(playersNode.size()).isEqualTo(3);
+
+    for (JsonNode playerNode : playersNode) {
+      assertThat(playerNode.has("strategyName")).isTrue();
+      assertThat(playerNode.get("strategyName").isTextual()).isTrue();
+    }
+
   }
 
-  @Test
-  void baseCaseTestWithConflict() throws Exception{
+  /**
+   * Test case for base case with conflict strategy.
+   *
+   * @param algorithm allowed algorithm for gt system
+   *
+   */
+  @ParameterizedTest
+  @MethodSource("gameTheoryAlgorithms")
+  void baseCaseTestWithConflict(String algorithm) throws Exception{
 
-    GameTheoryProblemDto dto = setUpBaseCase();
+    GameTheoryProblemDto dto = setUpBaseCase(algorithm);
 
     List<Conflict> conflicts = Arrays.asList(
-            createConflict(2,3,0,1),
-            createConflict(1,2,2,2)
+            createConflict(1,2,0,1),
+            createConflict(2,1,1,0)
 
     );
     dto.setConflictSet(conflicts);
 
-    this.mockMvc
+    MvcResult result = performPostRequest(dto);
+
+    String response = getAsyncResponse(result);
+
+    JsonNode jsonNode = objectMapper.readTree(response);
+    assertThat(jsonNode.has("data")).isTrue();
+    JsonNode dataNode = jsonNode.get("data");
+
+    assertThat(dataNode.has("players")).isTrue();
+    JsonNode playersNode = dataNode.get("players");
+    assertThat(playersNode.isArray()).isTrue();
+
+    JsonNode player1Node = playersNode.get(0);
+    assertThat(player1Node.get("strategyName").asText()).isNotEqualTo("Strategy 0");
+    JsonNode player2Node = playersNode.get(1);
+    assertThat(player2Node.get("strategyName").asText()).isNotEqualTo("Strategy 1");
+  }
+
+  /**
+   * Test case for base case with empty request .
+   *
+   */
+  @Test
+  void testEmptyRequestBody() throws Exception{
+
+    MvcResult result = mockMvc
+            .perform(post("/api/game-theory-solver")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{}")) // Empty JSON body
+            .andDo(print())
+            .andExpect(status().isBadRequest()) // Kiểm tra status code 400
+            .andReturn();
+
+    String response = getAsyncResponse(result);
+
+  }
+
+  /**
+   * Test case for base case with invalid fitness function .
+   *
+   */
+  @ParameterizedTest
+  @MethodSource("gameTheoryAlgorithms")
+  void testInvalidFitnessFunc() throws Exception{
+
+    GameTheoryProblemDto dto = setUpBaseCase("NSGAII");
+    dto.setFitnessFunction("Wrong fitness function");
+
+    MvcResult result = performPostRequest(dto);
+
+    String response = getAsyncResponse(result);
+
+    JsonNode jsonNode = objectMapper.readTree(response);
+    assertThat(jsonNode.has("data")).isTrue();
+    JsonNode dataNode = jsonNode.get("data");
+
+    assertThat(jsonNode.has("message")).isTrue();
+    String errorMessage = jsonNode.get("message").asText();
+    assertThat(errorMessage).contains("Unknown function or variable");
+  }
+
+  private MvcResult performPostRequest(GameTheoryProblemDto dto) throws Exception {
+    return mockMvc
             .perform(post("/api/game-theory-solver")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(dto)))
-            .andDo(print())
-            .andExpect(status().isOk());
+            .andExpect(request().asyncStarted())
+            .andReturn();
   }
 
+  private String getAsyncResponse(MvcResult result) throws Exception {
+    return mockMvc.perform(asyncDispatch(result))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+  }
 
-  private GameTheoryProblemDto setUpBaseCase(){
+  /**
+   * Set up input data for base case .
+   *
+   * @return GameTheoryProblemDto
+   */
+  private GameTheoryProblemDto setUpBaseCase(String algorithm){
     GameTheoryProblemDto dto = new GameTheoryProblemDto();
     dto.setConflictSet(new ArrayList<>(0));
     dto.setFitnessFunction("DEFAULT");
@@ -106,7 +214,7 @@ public class GTIntegrationTest {
 
     dto.setNormalPlayers(players);
 
-    dto.setAlgorithm("NSGAII");
+    dto.setAlgorithm(algorithm);
     dto.setMaximizing(false);
     dto.setDistributedCores("all");
     dto.setMaxTime(5000);
@@ -114,6 +222,12 @@ public class GTIntegrationTest {
     dto.setPopulationSize(1000);
     return dto;
   }
+
+  /**
+   * Set up strategy for player .
+   *
+   * @return Strategy
+   */
   private Strategy createStrategy(double... properties) {
     Strategy strategy = new Strategy();
     for (double prop : properties) {
@@ -122,6 +236,11 @@ public class GTIntegrationTest {
     return strategy;
   }
 
+  /**
+   * Set up conflict between players .
+   *
+   * @return Conflict
+   */
   private Conflict createConflict(int leftPlayer, int rightPlayer,
                                   int leftStrategy, int rightStrategy) {
     Conflict conflict = new Conflict();
@@ -130,6 +249,13 @@ public class GTIntegrationTest {
     conflict.setLeftPlayerStrategy(leftStrategy);
     conflict.setRightPlayerStrategy(rightStrategy);
     return conflict;
+  }
+
+  /**
+   * algorithms allowing
+   */
+  private static String[] gameTheoryAlgorithms() {
+    return GameTheoryConst.ALLOWED_INSIGHT_ALGORITHMS;
   }
 
 }
