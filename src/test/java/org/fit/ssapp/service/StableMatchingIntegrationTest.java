@@ -144,9 +144,10 @@ public class StableMatchingIntegrationTest {
                 10, // numberOfIndividuals
                 30, // maxTime
                 algorithm,
-                "AUTO"
+                "ALL"
         );
     }
+
 
     private StableMatchingProblemDto createExcludePairDto(String algorithm) {
         StableMatchingProblemDto dto = createBaseCaseDto(algorithm);
