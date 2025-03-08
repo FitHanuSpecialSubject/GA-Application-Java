@@ -56,7 +56,7 @@ public class StableMatchingIntegrationTest {
         assertThat(jsonNode.get("data").has("matches")).isTrue();
         assertThat(jsonNode.get("data").has("fitness")).isTrue();
 
-        assertNoDuplication(jsonNode.get("data").get("matches"));
+        assertNoDuplication(jsonNode.get("data").get("matches").get("matches"));
         assertLeftOversValid(jsonNode.get("data"));
         assertCapacityValid(jsonNode.get("data"), dto);
     }
