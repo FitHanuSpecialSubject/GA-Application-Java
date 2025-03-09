@@ -160,8 +160,26 @@ public class StableMatchingIntegrationTest {
 
     private void assertNoExcludedPairs(JsonNode matches, int[][] excludedPairs) {
         if (excludedPairs == null) return;
+        Map<Integer, int[]> matchesSplitted = new TreeMap<>();
+        int i = 0;
+        for (JsonNode list: matches) {
+            int[] indices = Arrays
+                .stream(getIndices(list))
+                .filter(x -> ! x.isEmpty())
+                .mapToInt(Integer::parseInt).toArray();
+            matchesSplitted.put(i, indices);
+            i++;
+        }
         for (int[] pair : excludedPairs) {
-            assertThat(matches.toString().contains(Arrays.toString(pair))).isFalse();
+            int left = pair[0];
+            int right = pair[1];
+
+            assertThat(left)
+                .isNotIn(matchesSplitted.get(right))
+                .withFailMessage("Excluded pair matched");
+            assertThat(right)
+                .isNotIn(matchesSplitted.get(left))
+                .withFailMessage("Excluded pair matched");
         }
     }
 
@@ -182,18 +200,22 @@ public class StableMatchingIntegrationTest {
                 }
             }
         }
-        for (int i = 0; i < dto.getIndividualCapacities().length; i++) {
-            assertThat(matchCount.getOrDefault(i, 0)).isLessThanOrEqualTo(dto.getIndividualCapacities()[i]);
-        }
+
+        count.forEach((index, value) ->
+            assertThat(value)
+                .isLessThanOrEqualTo(capacities[Integer.parseInt(index)])
+                .withFailMessage("Capacity exceeded")
+        );
     }
 
     private void assertLeftOversValid(JsonNode data) {
-        JsonNode leftOvers = data.get("leftOvers");
-        JsonNode matches = data.get("matches");
-        Set<Integer> matchedIndividuals = new HashSet<>();
+        String[] leftOvers = getIndices(data.get("matches").get("leftOvers"));
+        JsonNode matches = data.get("matches").get("matches");
         for (JsonNode match : matches) {
-            matchedIndividuals.add(match.get(0).asInt());
-            matchedIndividuals.add(match.get(1).asInt());
+            String[] indices = getIndices(match);
+            Arrays.stream(leftOvers).forEach(index ->
+                assertThat(index).isNotIn(indices).withFailMessage("Leftover is matched")
+                );
         }
     }
 
