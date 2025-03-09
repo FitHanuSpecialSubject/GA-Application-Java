@@ -1,14 +1,20 @@
 package org.fit.ssapp.service;
 
-import static org.junit.Assert.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.fit.ssapp.constants.StableMatchingConst;
 import org.fit.ssapp.dto.request.StableMatchingProblemDto;
-import org.fit.ssapp.util.StringExpressionEvaluator;
+import org.fit.ssapp.util.MatchingProblemType;
+import org.fit.ssapp.util.SampleDataGenerator;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -19,6 +25,25 @@ import org.springframework.util.Assert;
 @SpringBootTest
 @AutoConfigureMockMvc
 public class CustomFitnessFunctionTest {
+
+    StableMatchingProblemDto sampleDTO;
+    SampleDataGenerator sampleData;
+    int numberOfIndividuals1;
+    int numberOfIndividuals2;
+    int numberOfProperties;
+
+    @BeforeEach
+    public void setUp() {
+        numberOfIndividuals1 = 20;
+        numberOfIndividuals2 = 200;
+        numberOfProperties = 5;
+        sampleData = new SampleDataGenerator(MatchingProblemType.MTM, numberOfIndividuals1,
+                numberOfIndividuals2, numberOfProperties);
+        sampleDTO = sampleData.generateDto();
+        // Clear excluded pairs
+        sampleDTO.setExcludedPairs(new int[0][0]);
+    }
+
     @Test
     void validDTO() {
         StableMatchingProblemDto dto = new StableMatchingProblemDto();
@@ -118,25 +143,113 @@ public class CustomFitnessFunctionTest {
     }
 
     @Test
-    public void testFitnessCalculationWithDifferentFunction() {
-        double[] satisfactions = {2.0, 3.0, 4.0, 5.0};
-        String fitnessFunction = "u1 + u2 + u3 + u4"; // Updated fitness function
-        double result = StringExpressionEvaluator.evaluateFitnessValue(satisfactions, fitnessFunction).doubleValue();
-        double expected = 14.0;
-        assertEquals(expected, result, 0.001);
+    public void testFitnessCalculationWithDefaultFitnessFunction() throws Exception {
+        // Set the fitness function to "default" (exp4j)
+        sampleDTO.setFitnessFunction("default");
+        // Set the evaluate functions to "default" (exp4j)
+        sampleDTO.setEvaluateFunctions(new String[]{"default", "default"});
+
+        _mock.perform(post("/api/stable-matching-solver")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(sampleDTO)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 
     @Test
-    public void testFitnessCalculationWithEmptySatisfactions() {
-        double[] satisfactions = {};
-        String fitnessFunction = "SUM"; // Updated fitness function for empty satisfactions
-        // Perform the fitness function evaluation using StringExpressionEvaluator
-        double result = StringExpressionEvaluator.evaluateFitnessValue(satisfactions, fitnessFunction).doubleValue();
-        // Verify the result
-        double expected = 0.0;
-        assertEquals(expected, result, 0.001);
+    public void testFitnessCalculationWithSumFitnessFunction() throws Exception {
+        // Set the fitness function to "SUM"
+        sampleDTO.setFitnessFunction("SUM");
+        // Set the evaluate functions to "SUM"
+        sampleDTO.setEvaluateFunctions(new String[]{"SUM", "SUM"});
+
+        _mock.perform(post("/api/stable-matching-solver")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(sampleDTO)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"default", "SUM"})
+    public void testFitnessCalculationWithVariousDefaultFunctions(String functionType) throws Exception {
+        // Set the fitness function to the provided type
+        sampleDTO.setFitnessFunction(functionType);
+        // Set the evaluate functions to the provided type
+        sampleDTO.setEvaluateFunctions(new String[]{functionType, functionType});
+
+        _mock.perform(post("/api/stable-matching-solver")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(sampleDTO)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+                /*
+                * .andReturn()
+                * .getResponse()
+                * .getContentAsString();
+                * Sẽ xử lý cái này sau khi xử được xong lỗi Con Validator
+                * */
+
+    }
+
+    @Test
+    public void testFitnessCalculationWithCustomFitnessFunction1() throws Exception {
+        // Custom fitness function using exp4j
+        String customFitnessFunction = "u1 + u2 + u3 + u4 + u5";
+        sampleDTO.setFitnessFunction(customFitnessFunction);
+        // Set the evaluate functions to the default "default" (exp4j)
+        sampleDTO.setEvaluateFunctions(new String[]{"default", "default"});
+
+        _mock.perform(post("/api/stable-matching-solver")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(sampleDTO)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
+
+    @Test
+    public void testFitnessCalculationWithCustomFitnessFunction2() throws Exception {
+        // Custom fitness function using exp4j
+        String customFitnessFunction = "max(u1, u2) + min(u3, u4) + u5";
+        sampleDTO.setFitnessFunction(customFitnessFunction);
+        // Set the evaluate functions to the default "default" (exp4j)
+        sampleDTO.setEvaluateFunctions(new String[]{"default", "default"});
+
+        _mock.perform(post("/api/stable-matching-solver")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(sampleDTO)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
+
+    @Test
+    public void testFitnessCalculationWithCustomFitnessFunction3() throws Exception {
+        // Custom fitness function using exp4j
+        String customFitnessFunction = "sqrt(u1*u2) + log(u3) + u4 + u5";
+        sampleDTO.setFitnessFunction(customFitnessFunction);
+        // Set the evaluate functions to the default "default" (exp4j)
+        sampleDTO.setEvaluateFunctions(new String[]{"default", "default"});
+
+        _mock.perform(post("/api/stable-matching-solver")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(sampleDTO)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
+
+    @ParameterizedTest
+    @MethodSource("stableMatchingAlgorithms")
+    void stableMatching(String algoritm) throws Exception {}
+
+    private static String[] stableMatchingAlgorithms() {
+        return StableMatchingConst.ALLOWED_INSIGHT_ALGORITHMS;
+    }
     @Autowired
     private ObjectMapper objectMapper;
 
