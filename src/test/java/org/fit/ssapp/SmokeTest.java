@@ -26,6 +26,7 @@ import org.fit.ssapp.service.StableMatchingService;
 import org.fit.ssapp.service.TripletMatchingService;
 import org.fit.ssapp.ss.gt.NormalPlayer;
 import org.fit.ssapp.ss.gt.Strategy;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -51,13 +52,14 @@ class SmokeTest {
   @Test
   void healthCheck() throws Exception {
     this._mock
-        .perform(get("/"))
-        .andExpect(status().isOk())
-        .andExpect(content().contentType("text/html;charset=UTF-8"));
+      .perform(get("/"))
+      .andExpect(status().isOk())
+      .andExpect(content().contentType("text/html;charset=UTF-8"));
   }
 
   /**
-   * Basic test with various GA algorithms allowed for this domain
+   * Basic test with various GA algorithms allowed for this domain. The test also check the response
+   * structure
    * {@link org.fit.ssapp.constants.StableMatchingConst}
    * @param algorithm
    * @throws Exception
@@ -65,54 +67,24 @@ class SmokeTest {
   @ParameterizedTest
   @MethodSource("stableMatchingAlgorithms")
   void stableMatching(final String algorithm) throws Exception {
-    final StableMatchingProblemDto dto = new StableMatchingProblemDto();
-    dto.setProblemName("Stable Matching Problem");
-    dto.setNumberOfSets(2);
-    dto.setNumberOfProperty(3);
-    dto.setNumberOfIndividuals(3);
-    dto.setIndividualSetIndices(new int[]{1, 1, 0});
-    dto.setIndividualCapacities(new int[]{1, 2, 1});
-    dto.setIndividualRequirements(new String[][]{
-        {"1", "1.1", "1--"},
-        {"1++", "1.1", "1.1"},
-        {"1", "1", "2"}
-    });
-    dto.setIndividualWeights(new double[][]{
-        {1.0, 2.0, 3.0},
-        {4.0, 5.0, 6.0},
-        {7.0, 8.0, 9.0}
-    });
-    dto.setIndividualProperties(new double[][]{
-        {1.0, 2.0, 3.0},
-        {4.0, 5.0, 6.0},
-        {7.0, 8.0, 9.0}
-    });
-    dto.setEvaluateFunctions(new String[]{
-        "default",
-        "default"
-    });
-    dto.setFitnessFunction("default");
-    dto.setPopulationSize(500);
-    dto.setGeneration(50);
-    dto.setMaxTime(3600);
-    dto.setAlgorithm(algorithm);
-    dto.setDistributedCores("all");
+    final StableMatchingProblemDto dto =
+        getStableMatchingProblemDto(algorithm);
 
     // Perform request
-    final MvcResult resuslt = _mock
-        .perform(post("/api/stable-matching-solver")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(dto)))
-        .andExpect(request().asyncStarted())
-            .andReturn();
+    final MvcResult result = _mock
+      .perform(post("/api/stable-matching-solver")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(dto)))
+      .andExpect(request().asyncStarted())
+      .andReturn();
 
-    final String response = _mock.perform(asyncDispatch(resuslt))
-            .andDo(print())
-        .andExpect(status().isOk())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andReturn()
-        .getResponse()
-        .getContentAsString();
+    final String response = _mock.perform(asyncDispatch(result))
+      .andDo(print())
+      .andExpect(status().isOk())
+      .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+      .andReturn()
+      .getResponse()
+      .getContentAsString();
 
     // Verify response structure
     final JsonNode jsonNode = objectMapper.readTree(response);
@@ -123,16 +95,101 @@ class SmokeTest {
     assertThat(data.has("setSatisfactions")).isTrue();
   }
 
+  private static @NotNull StableMatchingProblemDto getStableMatchingProblemDto(String algorithm)
+  {
+    final StableMatchingProblemDto dto = new StableMatchingProblemDto();
+    dto.setProblemName("Stable Matching Problem");
+    dto.setNumberOfSets(2);
+    dto.setNumberOfProperty(3);
+    dto.setNumberOfIndividuals(3);
+    dto.setIndividualSetIndices(new int[]{1, 1, 0});
+    dto.setIndividualCapacities(new int[]{1, 2, 1});
+    dto.setIndividualRequirements(new String[][]{
+      {"1", "1.1", "1--"},
+      {"1++", "1.1", "1.1"},
+      {"1", "1", "2"}
+    });
+    dto.setIndividualWeights(new double[][]{
+      {1.0, 2.0, 3.0},
+      {4.0, 5.0, 6.0},
+      {7.0, 8.0, 9.0}
+    });
+    dto.setIndividualProperties(new double[][]{
+      {1.0, 2.0, 3.0},
+      {4.0, 5.0, 6.0},
+      {7.0, 8.0, 9.0}
+    });
+    dto.setEvaluateFunctions(new String[]{
+      "default",
+      "default"
+    });
+    dto.setFitnessFunction("default");
+    dto.setPopulationSize(500);
+    dto.setGeneration(50);
+    dto.setMaxTime(3600);
+    dto.setAlgorithm(algorithm);
+    dto.setDistributedCores("all");
+    return dto;
+  }
+
   /**
-   * Basic test with various GA algorithms allowed for this domain
+   * Basic test with various GA algorithms allowed for this domain. The test also check the response
+   * structure
    * {@link org.fit.ssapp.constants.GameTheoryConst}
    * @param algorithm
    * @throws Exception
    */
   @ParameterizedTest
   @MethodSource("gameTheoryAlgorithms")
-  void gameTheory(final String algoritm) throws Exception {
-    final List<Double> stratProps = new ArrayList(4);
+  void gameTheory(final String algorithm) throws Exception {
+    final GameTheoryProblemDto dto = getGameTheoryProblemDto(algorithm);
+
+    final MvcResult result = _mock
+      .perform(post("/api/game-theory-solver")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(dto)))
+      .andExpect(request().asyncStarted())
+      .andReturn();
+
+    final String response = _mock
+      .perform(asyncDispatch(result))
+      .andDo(print())
+      .andExpect(status().isOk())
+      .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+      .andReturn()
+      .getResponse()
+      .getContentAsString();
+
+    // Verify response structure
+    final JsonNode jsonNode = objectMapper.readTree(response);
+    assertThat(jsonNode.has("data")).isTrue();
+    final JsonNode data = jsonNode.get("data");
+    assertThat(data.has("players")).isTrue();
+    assertThat(data.has("fitnessValue")).isTrue();
+  }
+
+  private static @NotNull GameTheoryProblemDto getGameTheoryProblemDto(String algoritm)
+  {
+    final List<NormalPlayer> players = getNormalPlayers();
+
+    final GameTheoryProblemDto dto = new GameTheoryProblemDto();
+    dto.setSpecialPlayer(null);
+    dto.setNormalPlayers(players);
+    dto.setConflictSet(new ArrayList<>());
+    dto.setFitnessFunction("default");
+    dto.setDefaultPayoffFunction("default");
+    dto.setAlgorithm(algoritm);
+    dto.setMaximizing(true);
+    dto.setDistributedCores("all");
+    dto.setMaxTime(5000);
+    dto.setGeneration(10);
+    dto.setPopulationSize(100);
+    return dto;
+  }
+
+  private static @NotNull List<NormalPlayer> getNormalPlayers()
+  {
+    final List<Double> stratProps = new ArrayList<Double>(4);
     stratProps.add(1.0d);
     stratProps.add(2.0d);
     stratProps.add(4.0d);
@@ -143,7 +200,7 @@ class SmokeTest {
     strat.setPayoff(payoff);
     strat.setProperties(stratProps);
 
-    final List<Strategy> strats = new ArrayList(3);
+    final List<Strategy> strats = new ArrayList<Strategy>(3);
     strats.add(strat);
     strats.add(strat);
     strats.add(strat);
@@ -156,73 +213,34 @@ class SmokeTest {
     players.add(player);
     players.add(player);
     players.add(player);
-
-    final GameTheoryProblemDto dto = new GameTheoryProblemDto();
-    dto.setSpecialPlayer(null);
-    dto.setNormalPlayers(players);
-    dto.setConflictSet(new ArrayList<>());
-    dto.setFitnessFunction("default");
-    dto.setDefaultPayoffFunction("default");
-    dto.setAlgorithm("SMPSO");
-    dto.setMaximizing(true);
-    dto.setDistributedCores("all");
-    dto.setMaxTime(5000);
-    dto.setGeneration(10);
-    dto.setPopulationSize(100);
-
-    final MvcResult result = _mock
-        .perform(post("/api/game-theory-solver")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(dto)))
-        .andExpect(request().asyncStarted())
-        .andReturn();
-
-    final String response = _mock
-        .perform(asyncDispatch(result))
-        .andDo(print())
-        .andExpect(status().isOk())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andReturn()
-        .getResponse()
-        .getContentAsString();
-
-    // Verify response structure
-    final JsonNode jsonNode = objectMapper.readTree(response);
-    assertThat(jsonNode.has("data")).isTrue();
-    final JsonNode data = jsonNode.get("data");
-    assertThat(data.has("players")).isTrue();
-    assertThat(data.has("fitnessValue")).isTrue();
+    return players;
   }
 
   /**
    * Run with empty payload
-   * @param algorithm - various GA algorithms allowed for this domain {@link org.fit.ssapp.constants.GameTheoryConst}
    * @throws Exception
    */
-  @ParameterizedTest
-  @MethodSource("gameTheoryAlgorithms")
-  void gameTheoryInvalid(final String algorithm) throws Exception {
+  @Test
+  void gameTheoryInvalid() throws Exception {
     _mock.perform(post("/api/game-theory-solver")
-            .contentType(MediaType.APPLICATION_JSON))
-        .andDo(print())
-        .andExpect(status().isBadRequest())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+          .contentType(MediaType.APPLICATION_JSON))
+      .andDo(print())
+      .andExpect(status().isBadRequest())
+      .andExpect(content().contentType(MediaType.APPLICATION_JSON));
   }
 
   /**
    * Run with empty payload
-   * @param algorithm - various GA algorithms allowed for this domain {@link org.fit.ssapp.constants.GameTheoryConst}
    * @throws Exception
    */
-  @ParameterizedTest
-  @MethodSource("gameTheoryAlgorithms")
-  void stableMatchingInvalid(final String algorithm) throws Exception {
+  @Test
+  void stableMatchingInvalid() throws Exception {
     _mock
-        .perform(post("/api/stable-matching-solver")
-            .contentType(MediaType.APPLICATION_JSON))
-        .andDo(print())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andExpect(status().isBadRequest());
+      .perform(post("/api/stable-matching-solver")
+          .contentType(MediaType.APPLICATION_JSON))
+      .andDo(print())
+      .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+      .andExpect(status().isBadRequest());
   }
   private static String[] stableMatchingAlgorithms() {
     return StableMatchingConst.ALLOWED_INSIGHT_ALGORITHMS;
