@@ -101,10 +101,7 @@ public class GTIntegrationTest {
     JsonNode playersNode = dataNode.get("players");
     assertThat(playersNode.isArray()).isTrue();
 
-    JsonNode player1Node = playersNode.get(0);
-    assertThat(player1Node.get("strategyName").asText()).isNotEqualTo("Strategy 0");
-    JsonNode player2Node = playersNode.get(1);
-    assertThat(player2Node.get("strategyName").asText()).isNotEqualTo("Strategy 1");
+    validateConflict(playersNode, conflicts);
   }
 
   /**
@@ -119,7 +116,7 @@ public class GTIntegrationTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{}")) // Empty JSON body
             .andDo(print())
-            .andExpect(status().isBadRequest()) // Kiểm tra status code 400
+            .andExpect(status().isBadRequest())
             .andReturn();
 
     String response = getAsyncResponse(result);
@@ -130,8 +127,7 @@ public class GTIntegrationTest {
    * Test case for base case with invalid fitness function .
    *
    */
-  @ParameterizedTest
-  @MethodSource("gameTheoryAlgorithms")
+  @Test
   void testInvalidFitnessFunc() throws Exception{
 
     GameTheoryProblemDto dto = setUpBaseCase("NSGAII");
@@ -249,6 +245,20 @@ public class GTIntegrationTest {
     conflict.setLeftPlayerStrategy(leftStrategy);
     conflict.setRightPlayerStrategy(rightStrategy);
     return conflict;
+  }
+
+  void validateConflict(JsonNode playersNode, List<Conflict> conflicts){
+    for (Conflict conflict : conflicts) {
+      JsonNode player1Node = playersNode.get(conflict.getLeftPlayer() - 1);
+      JsonNode player2Node = playersNode.get(conflict.getRightPlayer() -1 );
+
+      assertThat(
+              !(player1Node.get("strategyName").asText().equals("Strategy " + conflict.getLeftPlayerStrategy())
+              && player2Node.get("strategyName").asText().equals("Strategy " + conflict.getRightPlayerStrategy()))
+      ).isTrue();
+    }
+
+
   }
 
   /**
