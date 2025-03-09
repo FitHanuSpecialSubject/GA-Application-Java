@@ -151,11 +151,10 @@ public class StableMatchingIntegrationTest {
     }
 
     private void assertNoDuplication(JsonNode matches) {
-        Set<String> seenPairs = new HashSet<>();
         for (JsonNode match : matches) {
-            String pair = match.toString();
-            assertThat(seenPairs.contains(pair)).isFalse();
-            seenPairs.add(pair);
+            String[] indices = getIndices(match);
+            Set<String> set = new TreeSet<>(Arrays.asList(indices));
+            assertThat(set.size()).isEqualTo(indices.length).withFailMessage("Match have duplicated indices");
         }
     }
 
@@ -188,5 +187,12 @@ public class StableMatchingIntegrationTest {
         for (JsonNode leftOver : leftOvers) {
             assertThat(matchedIndividuals.contains(leftOver.asInt())).isFalse();
         }
+    }
+
+    private String[] getIndices(JsonNode match) {
+        return match.toString()
+            .replaceAll("\\[", "")
+            .replaceAll("]", "")
+            .split(",");
     }
 }
