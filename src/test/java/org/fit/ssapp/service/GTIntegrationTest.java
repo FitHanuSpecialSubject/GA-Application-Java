@@ -250,12 +250,12 @@ public class GTIntegrationTest {
   void validateConflict(JsonNode playersNode, List<Conflict> conflicts){
     for (Conflict conflict : conflicts) {
       JsonNode player1Node = playersNode.get(conflict.getLeftPlayer() - 1);
-      JsonNode player2Node = playersNode.get(conflict.getRightPlayer() -1 );
+      JsonNode player2Node = playersNode.get(conflict.getRightPlayer() - 1);
 
       assertThat(
-              !(player1Node.get("strategyName").asText().equals("Strategy " + conflict.getLeftPlayerStrategy())
-              && player2Node.get("strategyName").asText().equals("Strategy " + conflict.getRightPlayerStrategy()))
-      ).isTrue();
+          player1Node.get("strategyName").asText().equals("Strategy " + conflict.getLeftPlayerStrategy())
+              && player2Node.get("strategyName").asText().equals("Strategy " + conflict.getRightPlayerStrategy())
+      ).isFalse();
     }
 
 
