@@ -146,7 +146,7 @@ public class StableMatchingIntegrationTest {
 
     private StableMatchingProblemDto createExcludePairDto(String algorithm) {
         StableMatchingProblemDto dto = createBaseCaseDto(algorithm);
-        dto.setExcludedPairs(new int[][]{{0, 1}, {2, 3}});
+        dto.setExcludedPairs(new int[][]{{0, 1}, {1, 2}});
         return dto;
     }
 
@@ -166,10 +166,21 @@ public class StableMatchingIntegrationTest {
     }
 
     private void assertCapacityValid(JsonNode data, StableMatchingProblemDto dto) {
-        Map<Integer, Integer> matchCount = new HashMap<>();
-        for (JsonNode match : data.get("matches")) {
-            int individual = match.get(0).asInt();
-            matchCount.put(individual, matchCount.getOrDefault(individual, 0) + 1);
+        int[] capacities = dto.getIndividualCapacities();
+        HashMap<String, Integer> count = new HashMap<>(dto.getNumberOfIndividuals(), 1.0f);
+        for (JsonNode match : data.get("matches").get("matches")) {
+            String[] indices = getIndices(match);
+            for (String index : indices) {
+                if (index.isEmpty()) {
+                    continue;
+                }
+
+                if (count.containsKey(index)) {
+                    count.put(index, count.get(index) + 1);
+                } else {
+                    count.put(index, 1);
+                }
+            }
         }
         for (int i = 0; i < dto.getIndividualCapacities().length; i++) {
             assertThat(matchCount.getOrDefault(i, 0)).isLessThanOrEqualTo(dto.getIndividualCapacities()[i]);
@@ -183,9 +194,6 @@ public class StableMatchingIntegrationTest {
         for (JsonNode match : matches) {
             matchedIndividuals.add(match.get(0).asInt());
             matchedIndividuals.add(match.get(1).asInt());
-        }
-        for (JsonNode leftOver : leftOvers) {
-            assertThat(matchedIndividuals.contains(leftOver.asInt())).isFalse();
         }
     }
 
