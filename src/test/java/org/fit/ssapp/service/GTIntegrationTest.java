@@ -83,8 +83,8 @@ public class GTIntegrationTest {
     GameTheoryProblemDto dto = setUpBaseCase(algorithm);
 
     List<Conflict> conflicts = Arrays.asList(
-            createConflict(1,2,0,1),
-            createConflict(2,1,1,0)
+            createConflict(0,1,0,1),
+            createConflict(1,2,1,0)
 
     );
     dto.setConflictSet(conflicts);
@@ -249,8 +249,8 @@ public class GTIntegrationTest {
 
   void validateConflict(JsonNode playersNode, List<Conflict> conflicts){
     for (Conflict conflict : conflicts) {
-      JsonNode player1Node = playersNode.get(conflict.getLeftPlayer() - 1);
-      JsonNode player2Node = playersNode.get(conflict.getRightPlayer() - 1);
+      JsonNode player1Node = playersNode.get(conflict.getLeftPlayer());
+      JsonNode player2Node = playersNode.get(conflict.getRightPlayer());
 
       assertThat(
           player1Node.get("strategyName").asText().equals("Strategy " + conflict.getLeftPlayerStrategy())
