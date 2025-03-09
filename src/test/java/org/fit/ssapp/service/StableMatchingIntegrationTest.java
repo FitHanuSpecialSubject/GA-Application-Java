@@ -2,6 +2,7 @@ package org.fit.ssapp.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sun.source.tree.Tree;
 import org.fit.ssapp.constants.StableMatchingConst;
 import org.fit.ssapp.dto.request.StableMatchingProblemDto;
 import org.junit.jupiter.api.Test;
@@ -41,7 +42,7 @@ public class StableMatchingIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(request().asyncStarted())
-                .andReturn();
+            .andReturn();
 
         String response = mockMvc.perform(asyncDispatch(result))
                 .andDo(print())
@@ -54,7 +55,7 @@ public class StableMatchingIntegrationTest {
         JsonNode jsonNode = objectMapper.readTree(response);
         assertThat(jsonNode.has("data")).isTrue();
         assertThat(jsonNode.get("data").has("matches")).isTrue();
-        assertThat(jsonNode.get("data").has("fitness")).isTrue();
+        assertThat(jsonNode.get("data").has("fitnessValue")).isTrue();
 
         assertNoDuplication(jsonNode.get("data").get("matches").get("matches"));
         assertLeftOversValid(jsonNode.get("data"));
@@ -69,8 +70,8 @@ public class StableMatchingIntegrationTest {
         MvcResult result = mockMvc.perform(post("/api/stable-matching-solver")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(request().asyncStarted())
-                .andReturn();
+            .andExpect(request().asyncStarted())
+        .andReturn();
 
         String response = mockMvc.perform(asyncDispatch(result))
                 .andDo(print())
@@ -83,9 +84,9 @@ public class StableMatchingIntegrationTest {
         JsonNode jsonNode = objectMapper.readTree(response);
         assertThat(jsonNode.has("data")).isTrue();
         assertThat(jsonNode.get("data").has("matches")).isTrue();
-        assertThat(jsonNode.get("data").has("fitness")).isTrue();
+        assertThat(jsonNode.get("data").has("fitnessValue")).isTrue();
 
-        assertNoExcludedPairs(jsonNode.get("data").get("matches"), dto.getExcludedPairs());
+        assertNoExcludedPairs(jsonNode.get("data").get("matches").get("matches"), dto.getExcludedPairs());
     }
 
     @Test
@@ -121,22 +122,26 @@ public class StableMatchingIntegrationTest {
     }
 
     private StableMatchingProblemDto createBaseCaseDto(String algorithm) {
-        return new StableMatchingProblemDto("Test Base Case",
-                2, 2,
-                new int[]{0, 1},
-                new int[]{1, 1},
-                new String[][]{{"1", "1++"}, {"2--", "1:2"}},
-                new double[][]{{1.0, 2.0}, {3.0, 4.0}},
-                new double[][]{{5.0, 6.0}, {7.0, 8.0}},
-                new String[]{"default"},
-                "default",
-                null,
-                100,
-                50,
-                2,
-                30,
-                algorithm,
-                "all");
+
+        return StableMatchingProblemDto.builder()
+            .problemName("Test Base Case")
+            .numberOfSets(2)
+            .numberOfProperty(2)
+            .individualSetIndices(new int[]{0, 1, 1})
+            .individualCapacities(new int[]{1, 1, 2})
+            .individualRequirements(new String[][]{{"1", "1++"}, {"2--", "1:2" }, {"2--", "1:2"}})
+            .individualWeights(new double[][]{{1.0, 2.0}, {3.0, 4.0 }, {3.0, 4.0}})
+            .individualProperties(new double[][]{{5.0, 6.0}, {7.0, 8.0 }, {7.0, 8.0}})
+            .evaluateFunctions(new String[]{"default", "default"} )
+            .fitnessFunction("default")
+            .excludedPairs( null)
+            .populationSize(100)
+            .generation(50)
+            .numberOfIndividuals(3)
+            .maxTime(5000)
+            .algorithm(algorithm)
+            .distributedCores("all")
+            .build();
     }
 
     private StableMatchingProblemDto createExcludePairDto(String algorithm) {
