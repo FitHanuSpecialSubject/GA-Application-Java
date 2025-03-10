@@ -103,7 +103,7 @@ public class GameTheoryCustomFitnessTest extends BaseGameTheoryTest {
     void testInvalidDataTypes() throws Exception {
         String invalidJson = "{" +
             "\"fitnessFunction\": \"DEFAULT\"," +
-            "\"defaultPayoffFunction\": \"(p1+p2+p3)/3-(p4+p5)/2\"," + 
+            "\"defaultPayoffFunction\": \"(P2p1+P4p2+P3p3)/3-(P2p4+P1p5)/2\"," + 
             "\"algorithm\": \"NSGAII\"," +
             "\"maxTime\": \"sixty\"," +
             "\"generation\": \"hundred\"," +
@@ -157,7 +157,7 @@ public class GameTheoryCustomFitnessTest extends BaseGameTheoryTest {
     private GameTheoryProblemDto setUpTestCase() {
         GameTheoryProblemDto dto = new GameTheoryProblemDto();
         dto.setFitnessFunction("DEFAULT");
-        dto.setDefaultPayoffFunction("(p1+p2+p3)/3-(p4+p5)/2"); 
+        dto.setDefaultPayoffFunction("(P5p1+P4p2+P4p3)/3-(P2p4+P1p5)/2"); 
 
         List<NormalPlayer> players = Arrays.asList(
             createNormalPlayer("Player 1", new double[][]{{10.0, 5.0, 8.0, 4.0, 2.0}, {3.0, 7.0, 6.0, 1.0, 5.0}}),
