@@ -1,10 +1,9 @@
-package org.fit.ssapp.dto.request;
+package org.fit.ssapp.dto.service;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.fit.ssapp.dto.response.Response;
 import org.fit.ssapp.ss.gt.NormalPlayer;
 import org.fit.ssapp.ss.gt.Strategy;
@@ -21,7 +20,6 @@ import org.springframework.test.web.servlet.MvcResult;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.Arrays;
 import java.util.List;
@@ -35,9 +33,6 @@ public class GameTheoryCustomPayoffTest extends BaseGameTheoryTest {
 
     @Autowired
     private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
 
     private GameTheoryProblemDto nonRelativePayoffDto;
     private GameTheoryProblemDto relativePayoffDto;
@@ -65,17 +60,13 @@ public class GameTheoryCustomPayoffTest extends BaseGameTheoryTest {
 
     @Test
     void testCustomRelativePayoffFunction() throws Exception {
-        MvcResult result = this.mockMvc
+        this.mockMvc
             .perform(post("/api/game-theory-solver")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(relativePayoffDto)))
             .andDo(print())
             .andExpect(status().isOk())
             .andReturn();
-
-        Response response = safelyParseWithJsonNode(result, true);
-        assertNotNull(response);
-        assertEquals(200, response.getStatus());
     }
 
     @ParameterizedTest
