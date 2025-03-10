@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.util.Arrays;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.fit.ssapp.constants.MessageConst.ErrMessage;
@@ -22,6 +23,7 @@ import org.fit.ssapp.dto.validator.*;
 @ValidEvaluateFunctionCount
 @ValidIndividualArrayPropertyCount
 @ValidStableMatching
+@Builder
 public class StableMatchingProblemDto implements ProblemRequestDto {
 
   @Size(max = 255, message = ErrMessage.PROBLEM_NAME)
