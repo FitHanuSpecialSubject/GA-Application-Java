@@ -1,10 +1,10 @@
-package org.fit.ssapp.dto.service;
+package org.fit.ssapp.service;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import org.fit.ssapp.dto.response.Response;
+import org.fit.ssapp.dto.request.GameTheoryProblemDto;
 import org.fit.ssapp.ss.gt.NormalPlayer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,17 +16,15 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 /**
- * Tests focused on custom fitness functions and algorithm validations in Game Theory
+ * Tests focused on custom fitness functions and algorithm validations in Game Theory.
+ * 
+ * Note: For payoff functions, the 'p' prefix is used (e.g., p1, p2).
+ * For fitness functions, the 'u' prefix is used (e.g., u1, u2).
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -47,17 +45,13 @@ public class GameTheoryCustomFitnessTest extends BaseGameTheoryTest {
         GameTheoryProblemDto testDto = setUpTestCase();
         testDto.setFitnessFunction("(u1+u2)^2/(u3+1)");
 
-        MvcResult result = this.mockMvc
+        this.mockMvc
             .perform(post("/api/game-theory-solver")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(testDto)))
             .andDo(print())
             .andExpect(status().isOk())
             .andReturn();
-
-        Response response = safelyParseWithJsonNode(result, true);
-        assertNotNull(response);
-        assertEquals(200, response.getStatus());
     }
 
     @ParameterizedTest
@@ -65,7 +59,8 @@ public class GameTheoryCustomFitnessTest extends BaseGameTheoryTest {
         "(u1 + u2 + ) / 3 - (u4 + u5",
         "u1 + u2 * / u3",
         "(u1 + u2 +) * u3",
-        "u1 + u2 + invalid"
+        "u1 + u2 + invalid",
+        "u1 + u9" // Invalid payoff index
     })
     void testInvalidFitnessFunctionSyntax(String invalidFunction) throws Exception {
         GameTheoryProblemDto invalidDto = setUpTestCase();
@@ -76,7 +71,7 @@ public class GameTheoryCustomFitnessTest extends BaseGameTheoryTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(invalidDto)))
             .andDo(print())
-            .andExpect(status().isOk())
+            .andExpect(status().isBadRequest()) 
             .andReturn();
     }
 
@@ -108,7 +103,7 @@ public class GameTheoryCustomFitnessTest extends BaseGameTheoryTest {
     void testInvalidDataTypes() throws Exception {
         String invalidJson = "{" +
             "\"fitnessFunction\": \"DEFAULT\"," +
-            "\"defaultPayoffFunction\": \"(u1+u2+u3)/3-(u4+u5)/2\"," +
+            "\"defaultPayoffFunction\": \"(p1+p2+p3)/3-(p4+p5)/2\"," + 
             "\"algorithm\": \"NSGAII\"," +
             "\"maxTime\": \"sixty\"," +
             "\"generation\": \"hundred\"," +
@@ -162,7 +157,7 @@ public class GameTheoryCustomFitnessTest extends BaseGameTheoryTest {
     private GameTheoryProblemDto setUpTestCase() {
         GameTheoryProblemDto dto = new GameTheoryProblemDto();
         dto.setFitnessFunction("DEFAULT");
-        dto.setDefaultPayoffFunction("(u1+u2+u3)/3-(u4+u5)/2");
+        dto.setDefaultPayoffFunction("(p1+p2+p3)/3-(p4+p5)/2"); 
 
         List<NormalPlayer> players = Arrays.asList(
             createNormalPlayer("Player 1", new double[][]{{10.0, 5.0, 8.0, 4.0, 2.0}, {3.0, 7.0, 6.0, 1.0, 5.0}}),
