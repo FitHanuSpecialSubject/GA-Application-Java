@@ -26,7 +26,6 @@ import org.fit.ssapp.service.StableMatchingService;
 import org.fit.ssapp.service.TripletMatchingService;
 import org.fit.ssapp.ss.gt.NormalPlayer;
 import org.fit.ssapp.ss.gt.Strategy;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -95,7 +94,7 @@ class SmokeTest {
     assertThat(data.has("setSatisfactions")).isTrue();
   }
 
-  private static @NotNull StableMatchingProblemDto getStableMatchingProblemDto(String algorithm)
+  private static StableMatchingProblemDto getStableMatchingProblemDto(String algorithm)
   {
     final StableMatchingProblemDto dto = new StableMatchingProblemDto();
     dto.setProblemName("Stable Matching Problem");
@@ -168,7 +167,7 @@ class SmokeTest {
     assertThat(data.has("fitnessValue")).isTrue();
   }
 
-  private static @NotNull GameTheoryProblemDto getGameTheoryProblemDto(String algoritm)
+  private static GameTheoryProblemDto getGameTheoryProblemDto(String algoritm)
   {
     final List<NormalPlayer> players = getNormalPlayers();
 
@@ -187,7 +186,7 @@ class SmokeTest {
     return dto;
   }
 
-  private static @NotNull List<NormalPlayer> getNormalPlayers()
+  private static List<NormalPlayer> getNormalPlayers()
   {
     final List<Double> stratProps = new ArrayList<Double>(4);
     stratProps.add(1.0d);
