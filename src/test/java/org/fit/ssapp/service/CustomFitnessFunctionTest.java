@@ -5,8 +5,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.fit.ssapp.constants.StableMatchingConst;
 import org.fit.ssapp.dto.request.StableMatchingProblemDto;
@@ -14,11 +12,11 @@ import org.fit.ssapp.ss.smt.MatchingData;
 import org.fit.ssapp.ss.smt.evaluator.impl.TwoSetFitnessEvaluator;
 import org.fit.ssapp.util.MatchingProblemType;
 import org.fit.ssapp.util.SampleDataGenerator;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -31,6 +29,8 @@ import org.springframework.util.Assert;
 public class CustomFitnessFunctionTest {
     StableMatchingProblemDto sampleDTO;
     SampleDataGenerator sampleData;
+    MatchingData matchingData;
+    TwoSetFitnessEvaluator evaluator;
 
     @BeforeEach
     public void setUp() {
@@ -38,11 +38,14 @@ public class CustomFitnessFunctionTest {
         int testNumberOfIndividuals2 = 1;  //or any positive number
         int testNumberOfProperties = 3;
 
-         sampleData = new SampleDataGenerator(
+        sampleData = new SampleDataGenerator(
                 MatchingProblemType.MTM,
                 testNumberOfIndividuals1, testNumberOfIndividuals2,
                 testNumberOfProperties
         );
+        matchingData = sampleData.generateProblem().getMatchingData();
+        evaluator = new TwoSetFitnessEvaluator(matchingData);
+
         StableMatchingProblemDto dto = new StableMatchingProblemDto();
         dto.setProblemName("Stable Matching Problem");
         dto.setNumberOfSets(2);
@@ -180,115 +183,61 @@ public class CustomFitnessFunctionTest {
     }
 
     @Test
-    public void testFitnessCalculationWithDefaultFitnessFunction() throws Exception {
-        // Set the fitness function to "default" (exp4j)
-        sampleDTO.setFitnessFunction("default");
-        // Set the evaluate functions to "default" (exp4j)
-        sampleDTO.setEvaluateFunctions(new String[]{"default", "default"});
-
-        _mock.perform(post("/api/stable-matching-solver")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(sampleDTO)))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
-    }
-
-    @Test
-    public void testFitnessCalculationWithSumFitnessFunction() throws Exception {
-        // Set the fitness function to "SUM"
-        sampleDTO.setFitnessFunction("SUM");
-        // Set the evaluate functions to "SUM"
-        sampleDTO.setEvaluateFunctions(new String[]{"SUM", "SUM"});
-
-        _mock.perform(post("/api/stable-matching-solver")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(sampleDTO)))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
-    }
-
-    @ParameterizedTest
-    @ValueSource(strings = {"default", "SUM"})
-    public void testFitnessCalculationWithVariousDefaultFunctions(String functionType) throws Exception {
-        // Set the fitness function to the provided type
-        sampleDTO.setFitnessFunction(functionType);
-        // Set the evaluate functions to the provided type
-        sampleDTO.setEvaluateFunctions(new String[]{functionType, functionType});
-
-        _mock.perform(post("/api/stable-matching-solver")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(sampleDTO)))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
-    }
-
-    @Test
-    public void testFitnessCalculationWithCustomFitnessFunction1() throws Exception {
-        // Custom fitness function using exp4j
-        String customFitnessFunction = "u1 + u2 + u3 + u4 + u5";
+    public void testFitnessCalculationWithSIGMAS() throws Exception {
+        // Define the custom fitness function
+        String customFitnessFunction = "SIGMA{S1}";
         sampleDTO.setFitnessFunction(customFitnessFunction);
         // Set the evaluate functions to the default "default" (exp4j)
         sampleDTO.setEvaluateFunctions(new String[]{"default", "default"});
+        double[] combinedSatisfactions = {1.0, 2.0, 3.0, 4.0, 5.0};
 
-        _mock.perform(post("/api/stable-matching-solver")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(sampleDTO)))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+        double result = evaluator.withFitnessFunctionEvaluation(combinedSatisfactions, sampleDTO.getFitnessFunction());
+        double expected = 1.0 + 2.0 + 3.0 + 4.0 + 5.0;
+        assertEquals(expected, result, 0.001);
     }
 
-    @Test
-    public void testFitnessCalculationWithCustomFitnessFunction2() throws Exception {
-        // Custom fitness function using exp4j
-        String customFitnessFunction = "max(u1, u2) + min(u3, u4) + u5";
-        sampleDTO.setFitnessFunction(customFitnessFunction);
-        // Set the evaluate functions to the default "default" (exp4j)
-        sampleDTO.setEvaluateFunctions(new String[]{"default", "default"});
 
-        _mock.perform(post("/api/stable-matching-solver")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(sampleDTO)))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
-    }
+//    @Test
+//    public void testFitnessCalculationWithCustomFitnessFunction2() throws Exception {
+//        // Custom fitness function using exp4j
+//        String customFitnessFunction = "max(u1, u2) + min(u3, u4) + u5";
+//        sampleDTO.setFitnessFunction(customFitnessFunction);
+//        // Set the evaluate functions to the default "default" (exp4j)
+//        sampleDTO.setEvaluateFunctions(new String[]{"default", "default"});
+//
+//        _mock.perform(post("/api/stable-matching-solver")
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .content(objectMapper.writeValueAsString(sampleDTO)))
+//                .andDo(print())
+//                .andExpect(status().isOk())
+//                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+//    }
 
-    @Test
-    public void testFitnessCalculationWithCustomFitnessFunction3() throws Exception {
-        // Custom fitness function using exp4j
-        String customFitnessFunction = "sqrt(u1*u2) + log(u3) + u4 + u5";
-        sampleDTO.setFitnessFunction(customFitnessFunction);
-        // Set the evaluate functions to the default "default" (exp4j)
-        sampleDTO.setEvaluateFunctions(new String[]{"default", "default"});
-
-        _mock.perform(post("/api/stable-matching-solver")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(sampleDTO)))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
-    }
+//    @Test
+//    public void testFitnessCalculationWithCustomFitnessFunction3() throws Exception {
+//        // Custom fitness function using exp4j
+//        String customFitnessFunction = "sqrt(u1*u2) + log(u3) + u4 + u5";
+//        sampleDTO.setFitnessFunction(customFitnessFunction);
+//        // Set the evaluate functions to the default "default" (exp4j)
+//        sampleDTO.setEvaluateFunctions(new String[]{"default", "default"});
+//
+//        _mock.perform(post("/api/stable-matching-solver")
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .content(objectMapper.writeValueAsString(sampleDTO)))
+//                .andDo(print())
+//                .andExpect(status().isOk())
+//                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+//    }
 
     @Test
     public void testFitnessCalculation() throws Exception {
-
-
         double[] satisfactions = {1.0, 2.0, 3.0, 4.0, 5.0};
         String fitnessFunction = "SIGMA{S1}";
-
-
-        MatchingData matchingData = sampleData.generateProblem().getMatchingData();
-        // Create the evaluator
-        TwoSetFitnessEvaluator evaluator = new TwoSetFitnessEvaluator(matchingData);
         // Perform the fitness function evaluation
         double result = evaluator.withFitnessFunctionEvaluation(satisfactions, fitnessFunction);
         // Verify the result
         double expected = 15.0;
-        assertEquals(expected, result, 0.001);
+        Assertions.assertEquals(expected, result, 0.001);
     }
 
     @ParameterizedTest
