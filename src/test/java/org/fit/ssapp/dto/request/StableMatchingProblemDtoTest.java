@@ -27,7 +27,7 @@ import org.springframework.util.Assert;
 @AutoConfigureMockMvc
 public class StableMatchingProblemDtoTest {
   @Test
-  void validDTO() {
+  void validDTO() throws Exception {
     StableMatchingProblemDto dto = new StableMatchingProblemDto();
     dto.setProblemName("Stable Matching Problem");
     dto.setNumberOfSets(2);
@@ -51,8 +51,8 @@ public class StableMatchingProblemDtoTest {
             {7.0, 8.0, 9.0}
     });
     dto.setEvaluateFunctions(new String[]{
-            "default",
-            "default"
+            "10*(P1*W1) + 5*(P1*W2)",
+            "sqrt(P1*W1) + 2*(P3*W3) + e"
     });
     dto.setFitnessFunction("default");
     dto.setExcludedPairs(new int[][]{
@@ -65,20 +65,16 @@ public class StableMatchingProblemDtoTest {
     dto.setAlgorithm("Genetic Algorithm");
     dto.setDistributedCores("4");
 
-    try {
     _mock
         .perform(post("/api/stable-matching-solver")
                  .contentType(MediaType.APPLICATION_JSON)
                  .content(objectMapper.writeValueAsString(dto)))
         .andDo(print())
         .andExpect(status().isOk());
-    } catch (Exception e) {
-        Assert.isTrue(false, e.getMessage());
-    }
   }
 
   @Test
-  void invalidDTO() {
+  void invalidDTO() throws Exception {
     StableMatchingProblemDto invalidDto = new StableMatchingProblemDto();
     invalidDto.setProblemName("");
     invalidDto.setNumberOfSets(1); // Less than 2 sets
@@ -112,16 +108,12 @@ public class StableMatchingProblemDtoTest {
     invalidDto.setAlgorithm("Genetic Algorithm");
     invalidDto.setDistributedCores("4");
 
-    try {
     _mock
         .perform(post("/api/stable-matching-solver")
                  .contentType(MediaType.APPLICATION_JSON)
                  .content(objectMapper.writeValueAsString(invalidDto)))
         .andDo(print())
         .andExpect(status().isBadRequest());
-    } catch (Exception e) {
-        Assert.isTrue(false, e.getMessage());
-    }
   }
 
   @Autowired
