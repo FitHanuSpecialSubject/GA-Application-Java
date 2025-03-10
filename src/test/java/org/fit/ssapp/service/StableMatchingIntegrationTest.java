@@ -128,8 +128,8 @@ public class StableMatchingIntegrationTest {
         .numberOfSets(2)
         .numberOfProperty(2)
         .individualSetIndices(new int[]{0, 1, 1})
-        .individualCapacities(new int[]{1, 1, 2})
-        .individualRequirements(new String[][]{{"1", "1++"}, {"2--", "1:2" }, {"2--", "1:2"}})
+        .individualCapacities(new int[]{1, 1, 1})
+        .individualRequirements(new String[][]{{"2:3", "1--"}, {"2++", "1:2" }, {"2++", "1--"}})
         .individualWeights(new double[][]{{1.0, 2.0}, {3.0, 4.0 }, {3.0, 4.0}})
         .individualProperties(new double[][]{{5.0, 6.0}, {7.0, 8.0 }, {7.0, 8.0}})
         .evaluateFunctions(new String[]{"default", "default"} )
@@ -146,14 +146,17 @@ public class StableMatchingIntegrationTest {
 
   private StableMatchingProblemDto createExcludePairDto(String algorithm) {
     StableMatchingProblemDto dto = createBaseCaseDto(algorithm);
-    dto.setExcludedPairs(new int[][]{{0, 1}, {1, 2}});
+    dto.setExcludedPairs(new int[][]{{0, 2}, {1, 2}});
     return dto;
   }
 
   private void assertNoDuplication(JsonNode matches) {
     for (JsonNode match : matches) {
-      String[] indices = getIndices(match);
-      Set<String> set = new TreeSet<>(Arrays.asList(indices));
+      int[] indices = getIndices(match);
+      Set<Integer> set = new TreeSet<>();
+      for (int index : indices) {
+          set.add(index);
+      }
       assertThat(set.size()).isEqualTo(indices.length).withFailMessage("Match have duplicated indices");
     }
   }
@@ -163,10 +166,7 @@ public class StableMatchingIntegrationTest {
     Map<Integer, int[]> matchesSplitted = new TreeMap<>();
     int i = 0;
     for (JsonNode list: matches) {
-      int[] indices = Arrays
-          .stream(getIndices(list))
-          .filter(x -> ! x.isEmpty())
-          .mapToInt(Integer::parseInt).toArray();
+      int[] indices = getIndices(list);
       matchesSplitted.put(i, indices);
       i++;
     }
@@ -185,14 +185,10 @@ public class StableMatchingIntegrationTest {
 
   private void assertCapacityValid(JsonNode data, StableMatchingProblemDto dto) {
     int[] capacities = dto.getIndividualCapacities();
-    HashMap<String, Integer> count = new HashMap<>(dto.getNumberOfIndividuals(), 1.0f);
+    HashMap<Integer, Integer> count = new HashMap<>(dto.getNumberOfIndividuals(), 1.0f);
     for (JsonNode match : data.get("matches").get("matches")) {
-      String[] indices = getIndices(match);
-      for (String index : indices) {
-        if (index.isEmpty()) {
-          continue;
-        }
-
+      int[] indices = getIndices(match);
+      for (int index : indices) {
         if (count.containsKey(index)) {
           count.put(index, count.get(index) + 1);
         } else {
@@ -203,26 +199,31 @@ public class StableMatchingIntegrationTest {
 
     count.forEach((index, value) ->
         assertThat(value)
-            .isLessThanOrEqualTo(capacities[Integer.parseInt(index)])
+            .isLessThanOrEqualTo(capacities[index])
             .withFailMessage("Capacity exceeded")
     );
   }
 
   private void assertLeftOversValid(JsonNode data) {
-    String[] leftOvers = getIndices(data.get("matches").get("leftOvers"));
+    int[] leftOvers = getIndices(data.get("matches").get("leftOvers"));
     JsonNode matches = data.get("matches").get("matches");
     for (JsonNode match : matches) {
-      String[] indices = getIndices(match);
+      int[] indices = getIndices(match);
       Arrays.stream(leftOvers).forEach(index ->
           assertThat(index).isNotIn(indices).withFailMessage("Leftover is matched")
       );
     }
   }
 
-  private String[] getIndices(JsonNode match) {
-    return match.toString()
+  private int[] getIndices(JsonNode match) {
+    String[] strs =  match.toString()
         .replaceAll("\\[", "")
         .replaceAll("]", "")
         .split(",");
+
+    return Arrays.stream(strs)
+        .filter(str -> ! str.isEmpty())
+        .mapToInt(Integer::parseInt)
+        .toArray();
   }
 }
