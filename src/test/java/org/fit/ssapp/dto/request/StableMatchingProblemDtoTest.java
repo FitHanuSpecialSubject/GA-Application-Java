@@ -69,7 +69,6 @@ public class StableMatchingProblemDtoTest {
         .perform(post("/api/stable-matching-solver")
                  .contentType(MediaType.APPLICATION_JSON)
                  .content(objectMapper.writeValueAsString(dto)))
-        .andDo(print())
         .andExpect(status().isOk());
   }
 
@@ -112,7 +111,6 @@ public class StableMatchingProblemDtoTest {
         .perform(post("/api/stable-matching-solver")
                  .contentType(MediaType.APPLICATION_JSON)
                  .content(objectMapper.writeValueAsString(invalidDto)))
-        .andDo(print())
         .andExpect(status().isBadRequest());
   }
 
@@ -121,19 +119,4 @@ public class StableMatchingProblemDtoTest {
 
   @Autowired
   private MockMvc _mock;
-
-  @MockBean
-  private GameTheoryService gameTheoryService;
-
-  @MockBean
-  private StableMatchingService stableMatchingSolver;
-
-  @MockBean
-  private StableMatchingOtmService otmProblemSolver;
-
-  @MockBean
-  private TripletMatchingService tripletMatchingSolver;
-
-  @MockBean
-  private PsoCompatSmtService psoCompatSmtService;
 }
