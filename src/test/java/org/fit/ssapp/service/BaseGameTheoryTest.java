@@ -1,4 +1,4 @@
-package org.fit.ssapp.dto.request;
+package org.fit.ssapp.dto.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -18,7 +18,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * Base class for Game Theory tests with common helper methods
