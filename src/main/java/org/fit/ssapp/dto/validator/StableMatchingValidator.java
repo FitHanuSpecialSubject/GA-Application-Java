@@ -8,15 +8,10 @@ import org.fit.ssapp.dto.request.StableMatchingProblemDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-@Component
 public class StableMatchingValidator implements ConstraintValidator<ValidStableMatching, StableMatchingProblemDto> {
 
-    private final ValidationConfig validationConfig;
-
     @Autowired
-    public StableMatchingValidator(ValidationConfig validationConfig) {
-        this.validationConfig = validationConfig;
-    }
+    private ValidationConfig validationConfig;
 
     @Override
     public boolean isValid(StableMatchingProblemDto dto, ConstraintValidatorContext context) {
@@ -73,6 +68,3 @@ public class StableMatchingValidator implements ConstraintValidator<ValidStableM
         return isValid;
     }
 }
-
-
-

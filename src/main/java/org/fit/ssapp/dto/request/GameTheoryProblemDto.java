@@ -2,21 +2,24 @@ package org.fit.ssapp.dto.request;
 
 import java.util.ArrayList;
 import java.util.List;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+
 import org.fit.ssapp.ss.gt.Conflict;
 import org.fit.ssapp.ss.gt.NormalPlayer;
 import org.fit.ssapp.ss.gt.SpecialPlayer;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 /**
  * dto class for GT problem request.
  */
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class GameTheoryProblemDto implements ProblemRequestDto {
-
   private SpecialPlayer specialPlayer;
   private List<NormalPlayer> normalPlayers;
   private List<Conflict> conflictSet = new ArrayList<>();
