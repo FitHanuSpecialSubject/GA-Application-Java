@@ -1,13 +1,17 @@
 package org.fit.ssapp.service;
 
+import static org.junit.Assert.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.fit.ssapp.constants.StableMatchingConst;
 import org.fit.ssapp.dto.request.StableMatchingProblemDto;
+import org.fit.ssapp.ss.smt.MatchingData;
+import org.fit.ssapp.ss.smt.evaluator.impl.TwoSetFitnessEvaluator;
 import org.fit.ssapp.util.MatchingProblemType;
 import org.fit.ssapp.util.SampleDataGenerator;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,21 +29,54 @@ import org.springframework.util.Assert;
 @SpringBootTest
 @AutoConfigureMockMvc
 public class CustomFitnessFunctionTest {
-
     StableMatchingProblemDto sampleDTO;
     SampleDataGenerator sampleData;
-    int numberOfIndividuals1;
-    int numberOfIndividuals2;
-    int numberOfProperties;
 
     @BeforeEach
     public void setUp() {
-        numberOfIndividuals1 = 20;
-        numberOfIndividuals2 = 200;
-        numberOfProperties = 5;
-        sampleData = new SampleDataGenerator(MatchingProblemType.MTM, numberOfIndividuals1,
-                numberOfIndividuals2, numberOfProperties);
-        sampleDTO = sampleData.generateDto();
+        int testNumberOfIndividuals1 = 5;
+        int testNumberOfIndividuals2 = 1;  //or any positive number
+        int testNumberOfProperties = 3;
+
+         sampleData = new SampleDataGenerator(
+                MatchingProblemType.MTM,
+                testNumberOfIndividuals1, testNumberOfIndividuals2,
+                testNumberOfProperties
+        );
+        StableMatchingProblemDto dto = new StableMatchingProblemDto();
+        dto.setProblemName("Stable Matching Problem");
+        dto.setNumberOfSets(2);
+        dto.setNumberOfProperty(3);
+        dto.setNumberOfIndividuals(3);
+        dto.setIndividualSetIndices(new int[]{1, 1, 0});
+        dto.setIndividualCapacities(new int[]{1, 2, 1});
+        dto.setIndividualRequirements(new String[][]{
+                {"1", "1.1", "1--"},
+                {"1++", "1.1", "1.1"},
+                {"1", "1", "2"}
+        });
+        dto.setIndividualWeights(new double[][]{
+                {1.0, 2.0, 3.0},
+                {4.0, 5.0, 6.0},
+                {7.0, 8.0, 9.0}
+        });
+        dto.setIndividualProperties(new double[][]{
+                {1.0, 2.0, 3.0},
+                {4.0, 5.0, 6.0},
+                {7.0, 8.0, 9.0}
+        });
+        dto.setEvaluateFunctions(new String[]{
+                "default",
+                "default"
+        });
+        dto.setFitnessFunction("default");
+        dto.setPopulationSize(500);
+        dto.setGeneration(50);
+        dto.setMaxTime(3600);
+        dto.setAlgorithm("NSGAII");
+        dto.setDistributedCores("4");
+
+        sampleDTO = dto;
         // Clear excluded pairs
         sampleDTO.setExcludedPairs(new int[0][0]);
     }
@@ -186,13 +223,6 @@ public class CustomFitnessFunctionTest {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON));
-                /*
-                * .andReturn()
-                * .getResponse()
-                * .getContentAsString();
-                * Sẽ xử lý cái này sau khi xử được xong lỗi Con Validator
-                * */
-
     }
 
     @Test
@@ -241,6 +271,24 @@ public class CustomFitnessFunctionTest {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
+
+    @Test
+    public void testFitnessCalculation() throws Exception {
+
+
+        double[] satisfactions = {1.0, 2.0, 3.0, 4.0, 5.0};
+        String fitnessFunction = "SIGMA{S1}";
+
+
+        MatchingData matchingData = sampleData.generateProblem().getMatchingData();
+        // Create the evaluator
+        TwoSetFitnessEvaluator evaluator = new TwoSetFitnessEvaluator(matchingData);
+        // Perform the fitness function evaluation
+        double result = evaluator.withFitnessFunctionEvaluation(satisfactions, fitnessFunction);
+        // Verify the result
+        double expected = 15.0;
+        assertEquals(expected, result, 0.001);
     }
 
     @ParameterizedTest
