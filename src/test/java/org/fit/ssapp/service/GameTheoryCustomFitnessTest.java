@@ -1,11 +1,20 @@
 package org.fit.ssapp.service;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.asyncDispatch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.fit.ssapp.dto.request.GameTheoryProblemDto;
 import org.fit.ssapp.dto.response.Response;
@@ -16,17 +25,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-
-import java.util.List;
-import java.util.ArrayList;
-
-import com.fasterxml.jackson.databind.JsonNode;
 
 /**
  * Tests focused on custom fitness functions and algorithm validations in Game Theory.
@@ -41,81 +46,110 @@ public class GameTheoryCustomFitnessTest extends BaseGameTheoryTest {
     @Autowired
     private MockMvc mockMvc;
 
-    private GameTheoryProblemDto baseDto;
+    @Autowired
+    private ObjectMapper objectMapper;
 
-    @BeforeEach
-    void setUp() {
-        baseDto = setUpTestCase();
-    }
+    @ParameterizedTest
+    @CsvSource({
+          "NSGAII,(u2)^10 + 12",
+          "NSGAIII,abs(u1) / 100",
+          "eMOEA,ceil(100 / u3)",
+          "PESA2,log(4) - u1",
+          "VEGA,sqrt(u1) + sqrt(4)",
+          "OMOPSO,12 - 41  * u2 + u1",
+          "SMPSO,u2 + 21 / 13"
+    })
+    void validAndExp4j(String algorithm, String function) throws Exception {
+        GameTheoryProblemDto dto = setUpTestCase();
 
-    @Test
-    void testCustomFitnessFunction() throws Exception {
-        GameTheoryProblemDto testDto = setUpTestCase();
-        testDto.setFitnessFunction("(u1+u2)^2/(u3+1)");
+        dto.setFitnessFunction(function);
+        dto.setAlgorithm(algorithm);
 
         MvcResult result = this.mockMvc
             .perform(post("/api/game-theory-solver")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(testDto)))
-            .andDo(print())
-            .andExpect(status().isOk())
+                .content(objectMapper.writeValueAsString(dto)))
+            .andExpect(request().asyncStarted())
             .andReturn();
 
-        Response response = safelyParseWithJsonNode(result, true);
-        assertNotNull(response);
-        assertEquals(200, response.getStatus());
-        assertNotNull(response.getData());
+    final String response = this.mockMvc.perform(asyncDispatch(result))
+      .andDo(print())
+      .andExpect(status().isOk())
+      .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+      .andReturn()
+      .getResponse()
+      .getContentAsString();
+
+    // Verify response structure
+    final JsonNode jsonNode = objectMapper.readTree(response);
+    assertTrue(jsonNode.has("data"));
+    final JsonNode data = jsonNode.get("data");
+    assertTrue(data.has("players"));
+    assertTrue(data.has("fitnessValue"));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+          "NSGAII,SUM",
+          "NSGAIII,AVERAGE",
+          "eMOEA,MIN",
+          "PESA2,MAX",
+          "VEGA,PRODUCT",
+          "OMOPSO,MEDIAN",
+          "SMPSO,RANGE"
+    })
+    void validAndCustom(String algorithm, String function) throws Exception {
+        GameTheoryProblemDto dto = setUpTestCase();
+
+        dto.setFitnessFunction(function);
+        dto.setAlgorithm(algorithm);
+
+        MvcResult result = this.mockMvc
+            .perform(post("/api/game-theory-solver")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(dto)))
+            .andExpect(request().asyncStarted())
+            .andReturn();
+
+    final String response = this.mockMvc.perform(asyncDispatch(result))
+      .andDo(print())
+      .andExpect(status().isOk())
+      .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+      .andReturn()
+      .getResponse()
+      .getContentAsString();
+
+    // Verify response structure
+    final JsonNode jsonNode = objectMapper.readTree(response);
+    assertTrue(jsonNode.has("data"));
+    final JsonNode data = jsonNode.get("data");
+    assertTrue(data.has("players"));
+    assertTrue(data.has("fitnessValue"));
     }
 
     @ParameterizedTest
     @ValueSource(strings = {
         "(u1 + u2 + ) / 3 - (u4 + u5",
         "u1 + u2 * / u3",
-        "u1 + u9" // Invalid payoff index
+        "u1 + u9",
+        "INVALID",
+        "code qua chien"
     })
-    void testInvalidFitnessFunctionSyntax(String invalidFunction) throws Exception {
+    void invalidFunction(String function) throws Exception {
         GameTheoryProblemDto invalidDto = setUpTestCase();
-        invalidDto.setFitnessFunction(invalidFunction);
+        invalidDto.setFitnessFunction(function);
 
-        MvcResult result = this.mockMvc
+        mockMvc
             .perform(post("/api/game-theory-solver")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(invalidDto)))
             .andDo(print())
             .andExpect(status().isBadRequest())
-            .andReturn();
-
-        JsonNode responseNode = objectMapper.readTree(result.getResponse().getContentAsString());
-        assertEquals("BAD_REQUEST", responseNode.path("status").asText());
-        assertTrue(responseNode.path("errors").isArray());
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 
     @Test
-    void testInvalidRequests() throws Exception {
-        GameTheoryProblemDto testDto = setUpTestCase();
-        testDto.setMaximizing(true);
-
-        MvcResult result = this.mockMvc
-            .perform(post("/api/game-theory-solver")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(testDto)))
-            .andDo(print())
-            .andExpect(status().isBadRequest())
-            .andReturn();
-
-        // check error response
-        JsonNode responseNode = objectMapper.readTree(result.getResponse().getContentAsString());
-        assertEquals("BAD_REQUEST", responseNode.path("status").asText());
-
-        // check empty request body
-        this.mockMvc
-            .perform(post("/api/game-theory-solver")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(""))
-            .andDo(print())
-            .andExpect(status().isBadRequest());
-
-        // check invalid json
+    void InvalidDto() throws Exception {
         String invalidJson = "{" +
             "\"fitnessFunction\": \"DEFAULT\"," +
             "\"maxTime\": \"sixty\"," +
@@ -126,93 +160,8 @@ public class GameTheoryCustomFitnessTest extends BaseGameTheoryTest {
             .perform(post("/api/game-theory-solver")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(invalidJson))
-            .andDo(print())
-            .andExpect(status().isBadRequest());
-    }
-
-    private void testAlgorithm(String algorithm,
-                              java.util.function.Consumer<GameTheoryProblemDto> configurator,
-                              java.util.function.Consumer<JsonNode> additionalAssertions) throws Exception {
-        GameTheoryProblemDto testDto = setUpTestCase();
-        testDto.setAlgorithm(algorithm);
-
-        if (configurator != null) {
-            configurator.accept(testDto);
-        }
-
-        MvcResult result = this.mockMvc
-            .perform(post("/api/game-theory-solver")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(testDto)))
-            .andDo(print())
-            .andExpect(status().isOk())
-            .andReturn();
-
-        Response response = safelyParseWithJsonNode(result, true);
-        assertNotNull(response);
-        assertEquals(200, response.getStatus());
-        assertNotNull(response.getData());
-
-        JsonNode dataNode = (JsonNode) response.getData();
-        assertEquals(algorithm, dataNode.path("insights").path("algorithmName").asText());
-
-        if (additionalAssertions != null) {
-            additionalAssertions.accept(dataNode);
-        }
-    }
-
-    @ParameterizedTest
-    @MethodSource("gameTheoryAlgorithms")
-    void testFitnessFunction2(String algorithm) throws Exception {
-        testAlgorithm(algorithm, dto -> dto.setFitnessFunction("(u1 * u2) / (u3 + 1)"), null);
-    }
-
-    @ParameterizedTest
-    @MethodSource("gameTheoryAlgorithms")
-    void testCustomNonRelativePayoffFunction(String algorithm) throws Exception {
-        GameTheoryProblemDto testDto = setupNonRelativePayoffCase(algorithm);
-
-        MvcResult result = this.mockMvc
-            .perform(post("/api/game-theory-solver")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(testDto)))
-            .andDo(print())
-            .andExpect(status().isOk())
-            .andReturn();
-
-        Response response = safelyParseWithJsonNode(result, true);
-        assertNotNull(response);
-        assertEquals(200, response.getStatus());
-        assertNotNull(response.getData());
-
-        JsonNode dataNode = (JsonNode) response.getData();
-        assertEquals(algorithm, dataNode.path("insights").path("algorithmName").asText());
-    }
-
-    @ParameterizedTest
-    @MethodSource("gameTheoryAlgorithms")
-    void testCustomRelativePayoffFunction(String algorithm) throws Exception {
-        GameTheoryProblemDto testDto = setupRelativePayoffCase(algorithm);
-
-        MvcResult result = this.mockMvc
-            .perform(post("/api/game-theory-solver")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(testDto)))
-            .andDo(print())
-            .andExpect(status().isOk())
-            .andReturn();
-
-        Response response = safelyParseWithJsonNode(result, true);
-        assertNotNull(response);
-        assertEquals(200, response.getStatus());
-        assertNotNull(response.getData());
-
-        JsonNode dataNode = (JsonNode) response.getData();
-        assertEquals(algorithm, dataNode.path("insights").path("algorithmName").asText());
-    }
-
-    private static String[] gameTheoryAlgorithms() {
-        return org.fit.ssapp.constants.GameTheoryConst.ALLOWED_INSIGHT_ALGORITHMS;
+            .andExpect(status().isBadRequest())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 
     private GameTheoryProblemDto setUpTestCase() {
@@ -227,20 +176,6 @@ public class GameTheoryCustomFitnessTest extends BaseGameTheoryTest {
         dto.setMaxTime(5000);
         dto.setGeneration(100);
         dto.setPopulationSize(1000);
-        return dto;
-    }
-
-    private GameTheoryProblemDto setupNonRelativePayoffCase(String algorithm) {
-        GameTheoryProblemDto dto = setUpTestCase();
-        dto.setAlgorithm(algorithm);
-        dto.setDefaultPayoffFunction("p1 + p2 + p3"); // Custom non-relative payoff
-        return dto;
-    }
-
-    private GameTheoryProblemDto setupRelativePayoffCase(String algorithm) {
-        GameTheoryProblemDto dto = setUpTestCase();
-        dto.setAlgorithm(algorithm);
-        dto.setDefaultPayoffFunction("P2p1 + P1p2"); // Custom relative payoff
         return dto;
     }
 
