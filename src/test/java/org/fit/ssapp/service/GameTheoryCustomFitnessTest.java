@@ -54,7 +54,7 @@ public class GameTheoryCustomFitnessTest extends BaseGameTheoryTest {
       "OMOPSO,12 - 41  * u2 + u1",
       "SMPSO,u2 + 21 / 13"
   })
-  void validAndExp4j(String algorithm, String function) throws Exception {
+  void exp4j(String algorithm, String function) throws Exception {
     GameTheoryProblemDto dto = setUpTestCase();
 
     dto.setFitnessFunction(function);
@@ -93,7 +93,7 @@ public class GameTheoryCustomFitnessTest extends BaseGameTheoryTest {
       "OMOPSO,MEDIAN",
       "SMPSO,RANGE"
   })
-  void validAndCustom(String algorithm, String function) throws Exception {
+  void customFunction(String algorithm, String function) throws Exception {
     GameTheoryProblemDto dto = setUpTestCase();
 
     dto.setFitnessFunction(function);
