@@ -23,10 +23,10 @@ public abstract class BaseGameTheoryTest {
     protected ObjectMapper objectMapper;
 
     /**
-     * @param result MvcResult từ test
-     * @param expectedSuccess Có expected success response hay không
-     * @return Response object đã được parse
-     * @throws Exception nếu có lỗi xảy ra khi xử lý
+     * @param result MvcResult from result
+     * @param expectedSuccess Are expected response success
+     * @return Response object is parsed
+     * @throws Exception if it has bug
      */
     protected Response safelyParseWithJsonNode(MvcResult result, boolean expectedSuccess) throws Exception {
         String responseBody = result.getResponse().getContentAsString();
