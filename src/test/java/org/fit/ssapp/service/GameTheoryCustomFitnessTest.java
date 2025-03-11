@@ -225,8 +225,8 @@ public class GameTheoryCustomFitnessTest extends BaseGameTheoryTest {
         dto.setMaximizing(true);
         dto.setDistributedCores("all");
         dto.setMaxTime(5000);
-        dto.setGeneration(10);
-        dto.setPopulationSize(100);
+        dto.setGeneration(100);
+        dto.setPopulationSize(1000);
         return dto;
     }
 
