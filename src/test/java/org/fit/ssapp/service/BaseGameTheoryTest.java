@@ -18,10 +18,10 @@ import java.util.Arrays;
  * Base class for Game Theory tests with common helper methods
  */
 public abstract class BaseGameTheoryTest {
-    
+
     @Autowired
     protected ObjectMapper objectMapper;
-    
+
     /**
      * @param result MvcResult từ test
      * @param expectedSuccess Có expected success response hay không
@@ -30,26 +30,26 @@ public abstract class BaseGameTheoryTest {
      */
     protected Response safelyParseWithJsonNode(MvcResult result, boolean expectedSuccess) throws Exception {
         String responseBody = result.getResponse().getContentAsString();
-        
+
         JsonNode rootNode = objectMapper.readTree(responseBody);
-        
+
         Response response = new Response();
         JsonNode statusNode = rootNode.get("status");
         JsonNode messageNode = rootNode.get("message");
         JsonNode dataNode = rootNode.get("data");
-        
+
         if (statusNode != null && !statusNode.isNull() && statusNode.isInt()) {
             response.setStatus(statusNode.asInt());
         }
-        
+
         if (messageNode != null && !messageNode.isNull() && messageNode.isTextual()) {
             response.setMessage(messageNode.asText());
         }
-        
+
         if (dataNode != null && !dataNode.isNull()) {
             response.setData(dataNode);
         }
-        
+
         if (expectedSuccess) {
             assertEquals(200, response.getStatus(), "Expected status 200 for success case");
             assertNotNull(response.getData(), "Response data should not be null for success case");
@@ -57,10 +57,10 @@ public abstract class BaseGameTheoryTest {
             assertEquals(500, response.getStatus(), "Expected status 500 for error case");
             assertNotNull(response.getMessage(), "Error message should not be null for error case");
         }
-        
+
         return response;
     }
-    
+
     /**
      * @param result MvcResult from test
      * @param expectedSuccess expected success response or not
@@ -69,20 +69,20 @@ public abstract class BaseGameTheoryTest {
      */
     protected Response safelyParseResponse(MvcResult result, boolean expectedSuccess) throws Exception {
         String responseBody = result.getResponse().getContentAsString();
-        
+
         Response response = objectMapper.readValue(responseBody, Response.class);
-        
+
         if (expectedSuccess) {
             assertEquals(200, response.getStatus(), "Expected status 200 for success case");
             assertNotNull(response.getData(), "Response data should not be null for success case");
         } else {
-            assertEquals(500, response.getStatus(), "Expected status 500 for error case"); 
+            assertEquals(500, response.getStatus(), "Expected status 500 for error case");
             assertNotNull(response.getMessage(), "Error message should not be null for error case");
         }
-        
+
         return response;
     }
-    
+
     /**
      * Helper method to create a normal player with strategies
      */
@@ -104,4 +104,4 @@ public abstract class BaseGameTheoryTest {
         }
         return strategy;
     }
-} 
+}

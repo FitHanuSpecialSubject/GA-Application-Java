@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests focused on custom payoff functions in Game Theory.
- * 
+ *
  * Examples:
  * - Non-relative: "(p1+p2+p3)/3-(p4+p5)/2" uses only properties of the current player
  * - Relative: "(p1+P1p2)/(p3+1)" uses both current player properties and other player properties
@@ -42,10 +42,10 @@ public class GameTheoryCustomPayoffTest extends BaseGameTheoryTest {
     @ParameterizedTest
     @MethodSource("gameTheoryAlgorithms")
     void testCustomNonRelativePayoffFunction(String algorithm) throws Exception {
-    
+
         GameTheoryProblemDto testDto = setUpNonRelativePayoffCase();
         testDto.setAlgorithm(algorithm);
-        
+
         MvcResult result = this.mockMvc
             .perform(post("/api/game-theory-solver")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -53,12 +53,12 @@ public class GameTheoryCustomPayoffTest extends BaseGameTheoryTest {
             .andDo(print())
             .andExpect(status().isOk())
             .andReturn();
-            
+
         Response response = safelyParseWithJsonNode(result, true);
         assertNotNull(response);
         assertEquals(200, response.getStatus());
         assertNotNull(response.getData());
-        
+
         // Verify algorithm in response matches requested algorithm
         JsonNode dataNode = (JsonNode) response.getData();
         assertEquals(algorithm, dataNode.path("insights").path("algorithmName").asText());
@@ -70,7 +70,7 @@ public class GameTheoryCustomPayoffTest extends BaseGameTheoryTest {
         // Create DTO with relative payoff function
         GameTheoryProblemDto testDto = setUpRelativePayoffCase();
         testDto.setAlgorithm(algorithm);
-        
+
         MvcResult result = this.mockMvc
             .perform(post("/api/game-theory-solver")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -78,12 +78,12 @@ public class GameTheoryCustomPayoffTest extends BaseGameTheoryTest {
             .andDo(print())
             .andExpect(status().isOk())
             .andReturn();
-            
+
         Response response = safelyParseWithJsonNode(result, true);
         assertNotNull(response);
         assertEquals(200, response.getStatus());
         assertNotNull(response.getData());
-        
+
         JsonNode dataNode = (JsonNode) response.getData();
         assertEquals(algorithm, dataNode.path("insights").path("algorithmName").asText());
     }
@@ -94,7 +94,7 @@ public class GameTheoryCustomPayoffTest extends BaseGameTheoryTest {
         // Create DTO with explicit relative payoff function
         GameTheoryProblemDto testDto = setUpExplicitRelativePayoffCase();
         testDto.setAlgorithm(algorithm);
-        
+
         MvcResult result = this.mockMvc
             .perform(post("/api/game-theory-solver")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -102,12 +102,12 @@ public class GameTheoryCustomPayoffTest extends BaseGameTheoryTest {
             .andDo(print())
             .andExpect(status().isOk())
             .andReturn();
-            
+
         Response response = safelyParseWithJsonNode(result, true);
         assertNotNull(response);
         assertEquals(200, response.getStatus());
         assertNotNull(response.getData());
-        
+
         // Verify algorithm in response matches requested algorithm
         JsonNode dataNode = (JsonNode) response.getData();
         assertEquals(algorithm, dataNode.path("insights").path("algorithmName").asText());
@@ -132,21 +132,21 @@ public class GameTheoryCustomPayoffTest extends BaseGameTheoryTest {
             .andDo(print())
             .andExpect(status().isBadRequest())
             .andReturn();
-            
+
         String responseBody = result.getResponse().getContentAsString();
         JsonNode responseNode = objectMapper.readTree(responseBody);
-        
+
         assertEquals("BAD_REQUEST", responseNode.path("status").asText());
         assertTrue(responseNode.path("message").isTextual());
         assertTrue(responseNode.path("errors").isArray());
         assertTrue(responseNode.path("errors").size() > 0);
-        
+
         // Verify that the error message contains "payoff"
         String firstError = responseNode.path("errors").get(0).asText();
         assertTrue(firstError.contains("payoff"), "Error should mention payoff function");
     }
 
-    
+
     private static String[] gameTheoryAlgorithms() {
         return org.fit.ssapp.constants.GameTheoryConst.ALLOWED_INSIGHT_ALGORITHMS;
     }
@@ -156,7 +156,7 @@ public class GameTheoryCustomPayoffTest extends BaseGameTheoryTest {
         dto.setFitnessFunction("default");
         // Non-relative payoff function
         dto.setDefaultPayoffFunction("(p1+p2+p3)/3-(p4+p5)/2");
-        
+
         List<NormalPlayer> players = Arrays.asList(
             createNormalPlayer("Player 1", new double[][]{{10.0, 5.0, 8.0, 4.0, 2.0}, {3.0, 7.0, 6.0, 1.0, 5.0}}),
             createNormalPlayer("Player 2", new double[][]{{6.0, 2.0, 9.0, 3.0, 7.0}, {4.0, 8.0, 5.0, 2.0, 6.0}})
@@ -190,7 +190,7 @@ public class GameTheoryCustomPayoffTest extends BaseGameTheoryTest {
         dto.setPopulationSize(1000);
         return dto;
     }
-    
+
     private GameTheoryProblemDto setUpExplicitRelativePayoffCase() {
         GameTheoryProblemDto dto = new GameTheoryProblemDto();
         dto.setFitnessFunction("default");
@@ -210,4 +210,4 @@ public class GameTheoryCustomPayoffTest extends BaseGameTheoryTest {
         dto.setPopulationSize(1000);
         return dto;
     }
-} 
+}
