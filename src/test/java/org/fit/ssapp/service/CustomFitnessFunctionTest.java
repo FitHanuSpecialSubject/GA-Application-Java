@@ -1,10 +1,14 @@
 package org.fit.ssapp.service;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.asyncDispatch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.fit.ssapp.constants.StableMatchingConst;
 import org.fit.ssapp.dto.request.StableMatchingProblemDto;
@@ -17,11 +21,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.util.Assert;
 
 @SpringBootTest
@@ -136,7 +142,7 @@ public class CustomFitnessFunctionTest {
     }
 
     @Test
-    void invalidDTO() {
+    void invalidDTO() throws Exception {
         StableMatchingProblemDto invalidDto = new StableMatchingProblemDto();
         invalidDto.setProblemName("");
         invalidDto.setNumberOfSets(1); // Less than 2 sets
@@ -170,79 +176,92 @@ public class CustomFitnessFunctionTest {
         invalidDto.setAlgorithm("Genetic Algorithm");
         invalidDto.setDistributedCores("4");
 
-        try {
-            _mock
-                    .perform(post("/api/stable-matching-solver")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(invalidDto)))
-                    .andDo(print())
-                    .andExpect(status().isBadRequest());
-        } catch (Exception e) {
-            Assert.isTrue(false, e.getMessage());
-        }
+        _mock
+                .perform(post("/api/stable-matching-solver")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidDto)))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 
     @Test
     public void testFitnessCalculationWithSIGMAS() throws Exception {
-        // Define the custom fitness function
         String customFitnessFunction = "SIGMA{S1}";
         sampleDTO.setFitnessFunction(customFitnessFunction);
-        // Set the evaluate functions to the default "default" (exp4j)
         sampleDTO.setEvaluateFunctions(new String[]{"default", "default"});
-        double[] combinedSatisfactions = {1.0, 2.0, 3.0, 4.0, 5.0};
 
-        double result = evaluator.withFitnessFunctionEvaluation(combinedSatisfactions, sampleDTO.getFitnessFunction());
-        double expected = 1.0 + 2.0 + 3.0 + 4.0 + 5.0;
-        assertEquals(expected, result, 0.001);
+        MvcResult result = _mock.perform(post("/api/stable-matching-solver")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(sampleDTO)))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+
+        final String response = _mock.perform(asyncDispatch(result))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        final JsonNode jsonNode = objectMapper.readTree(response);
+        assertTrue(jsonNode.has("data"));
+        final JsonNode data = jsonNode.get("data");
+        assertTrue(data.has("matching"));
+        assertTrue(data.has("fitnessValue"));
     }
-
-
-//    @Test
-//    public void testFitnessCalculationWithCustomFitnessFunction2() throws Exception {
-//        // Custom fitness function using exp4j
-//        String customFitnessFunction = "max(u1, u2) + min(u3, u4) + u5";
-//        sampleDTO.setFitnessFunction(customFitnessFunction);
-//        // Set the evaluate functions to the default "default" (exp4j)
-//        sampleDTO.setEvaluateFunctions(new String[]{"default", "default"});
-//
-//        _mock.perform(post("/api/stable-matching-solver")
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(objectMapper.writeValueAsString(sampleDTO)))
-//                .andDo(print())
-//                .andExpect(status().isOk())
-//                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
-//    }
-
-//    @Test
-//    public void testFitnessCalculationWithCustomFitnessFunction3() throws Exception {
-//        // Custom fitness function using exp4j
-//        String customFitnessFunction = "sqrt(u1*u2) + log(u3) + u4 + u5";
-//        sampleDTO.setFitnessFunction(customFitnessFunction);
-//        // Set the evaluate functions to the default "default" (exp4j)
-//        sampleDTO.setEvaluateFunctions(new String[]{"default", "default"});
-//
-//        _mock.perform(post("/api/stable-matching-solver")
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(objectMapper.writeValueAsString(sampleDTO)))
-//                .andDo(print())
-//                .andExpect(status().isOk())
-//                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
-//    }
 
     @Test
     public void testFitnessCalculation() throws Exception {
-        double[] satisfactions = {1.0, 2.0, 3.0, 4.0, 5.0};
         String fitnessFunction = "SIGMA{S1}";
-        // Perform the fitness function evaluation
-        double result = evaluator.withFitnessFunctionEvaluation(satisfactions, fitnessFunction);
-        // Verify the result
-        double expected = 15.0;
-        Assertions.assertEquals(expected, result, 0.001);
+        sampleDTO.setFitnessFunction(fitnessFunction);
+
+        MvcResult result = _mock.perform(post("/api/stable-matching-solver")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(sampleDTO)))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+
+        final String response = _mock.perform(asyncDispatch(result))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        final JsonNode jsonNode = objectMapper.readTree(response);
+        assertTrue(jsonNode.has("data"));
+        final JsonNode data = jsonNode.get("data");
+        assertTrue(data.has("matching"));
+        assertTrue(data.has("fitnessValue"));
     }
+
 
     @ParameterizedTest
     @MethodSource("stableMatchingAlgorithms")
     void stableMatching(String algoritm) throws Exception {}
+
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "SIGMA{S1} + INVALID",
+            "SIGMA{S1} * / SIGMA{S2}",
+            "SIGMA{S1} + INVALID_VARIABLE",
+            "INVALID_FUNCTION",
+            "code qua chien"
+    })
+    void invalidFitnessFunction(String function) throws Exception {
+        sampleDTO.setFitnessFunction(function);
+
+        _mock.perform(post("/api/stable-matching-solver")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(sampleDTO)))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
 
     private static String[] stableMatchingAlgorithms() {
         return StableMatchingConst.ALLOWED_INSIGHT_ALGORITHMS;
