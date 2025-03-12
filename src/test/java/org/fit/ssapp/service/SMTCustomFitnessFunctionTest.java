@@ -234,11 +234,6 @@ public class SMTCustomFitnessFunctionTest {
     }
 
 
-//    @ParameterizedTest
-//    @MethodSource("stableMatchingAlgorithms")
-//    void stableMatching(String algoritm) throws Exception {}
-//
-
     @ParameterizedTest
     @ValueSource(strings = {
             "SIGMA{S1} + INVALID",
@@ -258,16 +253,14 @@ public class SMTCustomFitnessFunctionTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 
-
     @ParameterizedTest
     @CsvSource({
-            "NSGAII,(u2)^10 + 12",
-            "NSGAIII,abs(u1) / 100",
-            "eMOEA,ceil(100 / u3)",
-            "PESA2,log(4) - u1",
-            "VEGA,sqrt(u1) + sqrt(4)",
-            "OMOPSO,12 - 41 * u2 + u1",
-            "SMPSO,u2 + 21 / 13"
+            "NSGAII,SIGMA{S1}",
+            "NSGAIII,SIGMA{S1}",
+            "eMOEA,SIGMA{S1}",
+            "PESA2,SIGMA{S1}",
+            "VEGA,SIGMA{S1}",
+            "IBEA, SIGMA{S1}"
     })
     void exp4j(String algorithm, String function) throws Exception {
         StableMatchingProblemDto dto = sampleDTO;
@@ -337,13 +330,12 @@ public class SMTCustomFitnessFunctionTest {
 
     @ParameterizedTest
     @CsvSource({
-            "NSGAII,SUM",
-            "NSGAIII,AVERAGE",
-            "eMOEA,MIN",
-            "PESA2,MAX",
-            "VEGA,PRODUCT",
-            "OMOPSO,MEDIAN",
-            "SMPSO,RANGE"
+            "NSGAII, SIGMA{S1} + SIGMA{S2}",
+            "NSGAIII, M1 + M2",
+            "eMOEA, S1 + S2",
+            "PESA2, SIGMA{S1 * 2} - M3",
+            "VEGA, SIGMA{S1}",
+            "IBEA, SIGMA{S1} + SIGMA{S2}"
     })
     void customFunction(String algorithm, String function) throws Exception {
         StableMatchingProblemDto dto = sampleDTO;
