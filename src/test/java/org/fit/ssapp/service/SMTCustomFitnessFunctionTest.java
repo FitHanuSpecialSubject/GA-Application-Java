@@ -1,5 +1,6 @@
 package org.fit.ssapp.service;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.asyncDispatch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -180,7 +181,7 @@ public class SMTCustomFitnessFunctionTest {
     }
 
     @Test
-    public void testFitnessCalculationWithSIGMAS() throws Exception {
+    public void testFitnessCalculation1() throws Exception {
         String customFitnessFunction = "SIGMA{S1}";
         sampleDTO.setFitnessFunction(customFitnessFunction);
         sampleDTO.setEvaluateFunctions(new String[]{"default", "default"});
@@ -233,10 +234,10 @@ public class SMTCustomFitnessFunctionTest {
     }
 
 
-    @ParameterizedTest
-    @MethodSource("stableMatchingAlgorithms")
-    void stableMatching(String algoritm) throws Exception {}
-
+//    @ParameterizedTest
+//    @MethodSource("stableMatchingAlgorithms")
+//    void stableMatching(String algoritm) throws Exception {}
+//
 
     @ParameterizedTest
     @ValueSource(strings = {
@@ -306,7 +307,7 @@ public class SMTCustomFitnessFunctionTest {
             "VEGA,SIGMA{1}",
             "IBEA,SIGMA{1}"
     })
-    void geneticAlgorithmsWithSigma1(String algorithm, String function) throws Exception {
+    void geneticAlgo(String algorithm, String function) throws Exception {
         StableMatchingProblemDto dto = sampleDTO;
 
         dto.setFitnessFunction(function);
@@ -375,6 +376,40 @@ public class SMTCustomFitnessFunctionTest {
 
     private static String[] stableMatchingAlgorithms() {
         return StableMatchingConst.ALLOWED_INSIGHT_ALGORITHMS;
+    }
+
+    /*
+   * @param algorithm
+   * @throws Exception
+   */
+    @ParameterizedTest
+    @MethodSource("stableMatchingAlgorithms")
+    void stableMatching(final String algorithm) throws Exception {
+        final StableMatchingProblemDto dto = sampleDTO;
+
+        // Perform request
+        final MvcResult result = _mock
+                .perform(post("/api/stable-matching-solver")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+
+        final String response = _mock.perform(asyncDispatch(result))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        // Verify response structure
+        final JsonNode jsonNode = objectMapper.readTree(response);
+        assertThat(jsonNode.has("data")).isTrue();
+        final JsonNode data = jsonNode.get("data");
+        assertThat(data.has("matches")).isTrue();
+        assertThat(data.has("fitnessValue")).isTrue();
+        assertThat(data.has("setSatisfactions")).isTrue();
     }
 
     @Autowired
