@@ -36,7 +36,7 @@ import org.springframework.test.web.servlet.MvcResult;
  */
 @SpringBootTest
 @AutoConfigureMockMvc
-public class GameTheoryCustomPayoffTest extends BaseGameTheoryTest {
+public class GameTheoryCustomPayoffTest {
 
   @Autowired
   private MockMvc mockMvc;
