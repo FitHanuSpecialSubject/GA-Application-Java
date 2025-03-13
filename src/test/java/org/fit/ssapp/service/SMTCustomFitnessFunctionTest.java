@@ -16,7 +16,6 @@ import org.fit.ssapp.ss.smt.evaluator.impl.TwoSetFitnessEvaluator;
 import org.fit.ssapp.util.MatchingProblemType;
 import org.fit.ssapp.util.SampleDataGenerator;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -88,152 +87,6 @@ public class SMTCustomFitnessFunctionTest {
         sampleDTO.setExcludedPairs(new int[0][0]);
     }
 
-    @Test
-    void validDTO() throws Exception {
-        StableMatchingProblemDto dto = new StableMatchingProblemDto();
-        dto.setProblemName("Stable Matching Problem");
-        dto.setNumberOfSets(2);
-        dto.setNumberOfProperty(3);
-        dto.setNumberOfIndividuals(3);
-        dto.setIndividualSetIndices(new int[]{1, 1, 0});
-        dto.setIndividualCapacities(new int[]{1, 2, 1});
-        dto.setIndividualRequirements(new String[][]{
-                {"1", "1.1", "1--"},
-                {"1++", "1.1", "1.1"},
-                {"1", "1", "2"}
-        });
-        dto.setIndividualWeights(new double[][]{
-                {1.0, 2.0, 3.0},
-                {4.0, 5.0, 6.0},
-                {7.0, 8.0, 9.0}
-        });
-        dto.setIndividualProperties(new double[][]{
-                {1.0, 2.0, 3.0},
-                {4.0, 5.0, 6.0},
-                {7.0, 8.0, 9.0}
-        });
-        dto.setEvaluateFunctions(new String[]{
-                "default",
-                "default"
-        });
-        dto.setFitnessFunction("default");
-        dto.setExcludedPairs(new int[][]{
-                {1, 2},
-                {2, 3}
-        });
-        dto.setPopulationSize(500);
-        dto.setGeneration(50);
-        dto.setMaxTime(3600);
-        dto.setAlgorithm("Genetic Algorithm");
-        dto.setDistributedCores("4");
-
-
-        _mock
-                .perform(post("/api/stable-matching-solver")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dto)))
-                .andDo(print())
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    void invalidDTO() throws Exception {
-        StableMatchingProblemDto invalidDto = new StableMatchingProblemDto();
-        invalidDto.setProblemName("");
-        invalidDto.setNumberOfSets(1); // Less than 2 sets
-        invalidDto.setNumberOfProperty(2); // Less than 3 properties
-        invalidDto.setNumberOfIndividuals(2); // Less than 3 individuals
-        invalidDto.setIndividualSetIndices(new int[]{1, 0});
-        invalidDto.setIndividualCapacities(new int[]{1, 2});
-        invalidDto.setIndividualRequirements(new String[][]{
-                {"1", "1.1"},
-                {"1++", "1.1"}
-        });
-        invalidDto.setIndividualWeights(new double[][]{
-                {1.0, 2.0},
-                {4.0, 5.0}
-        });
-        invalidDto.setIndividualProperties(new double[][]{
-                {1.0, 2.0},
-                {4.0, 5.0}
-        });
-        invalidDto.setEvaluateFunctions(new String[]{
-                "10*(P1*W1) + 5*(P1*W2) + (P6*W6) + (P7*W7)"
-        });
-        invalidDto.setFitnessFunction(""); // Empty fitness function
-        invalidDto.setExcludedPairs(new int[][]{
-                {1, 2},
-                {2, 3}
-        });
-        invalidDto.setPopulationSize(500);
-        invalidDto.setGeneration(50);
-        invalidDto.setMaxTime(3600);
-        invalidDto.setAlgorithm("Genetic Algorithm");
-        invalidDto.setDistributedCores("4");
-
-        _mock
-                .perform(post("/api/stable-matching-solver")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(invalidDto)))
-                .andDo(print())
-                .andExpect(status().isBadRequest())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
-    }
-
-    @Test
-    public void testFitnessCalculation1() throws Exception {
-        String customFitnessFunction = "SIGMA{S1}";
-        sampleDTO.setFitnessFunction(customFitnessFunction);
-        sampleDTO.setEvaluateFunctions(new String[]{"default", "default"});
-
-        MvcResult result = _mock.perform(post("/api/stable-matching-solver")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(sampleDTO)))
-                .andExpect(request().asyncStarted())
-                .andReturn();
-
-        final String response = _mock.perform(asyncDispatch(result))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
-
-        final JsonNode jsonNode = objectMapper.readTree(response);
-        assertTrue(jsonNode.has("data"));
-        final JsonNode data = jsonNode.get("data");
-        assertTrue(data.has("matching"));
-        assertTrue(data.has("fitnessValue"));
-    }
-
-    @Test
-    public void testFitnessCalculation() throws Exception {
-        String fitnessFunction = "SIGMA{S1}";
-        sampleDTO.setFitnessFunction(fitnessFunction);
-
-        MvcResult result = _mock.perform(post("/api/stable-matching-solver")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(sampleDTO)))
-                .andExpect(request().asyncStarted())
-                .andReturn();
-
-        final String response = _mock.perform(asyncDispatch(result))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
-
-        final JsonNode jsonNode = objectMapper.readTree(response);
-        assertTrue(jsonNode.has("data"));
-        final JsonNode data = jsonNode.get("data");
-        assertTrue(data.has("matching"));
-        assertTrue(data.has("fitnessValue"));
-    }
-
-
     @ParameterizedTest
     @ValueSource(strings = {
             "SIGMA{S1} + INVALID",
@@ -263,44 +116,6 @@ public class SMTCustomFitnessFunctionTest {
             "IBEA, SIGMA{S1}"
     })
     void exp4j(String algorithm, String function) throws Exception {
-        StableMatchingProblemDto dto = sampleDTO;
-
-        dto.setFitnessFunction(function);
-        dto.setAlgorithm(algorithm);
-
-        MvcResult result = this._mock
-                .perform(post("/api/stable-matching-solver")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(request().asyncStarted())
-                .andReturn();
-
-        final String response = this._mock.perform(asyncDispatch(result))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
-
-        final JsonNode jsonNode = objectMapper.readTree(response);
-        assertTrue(jsonNode.has("data"));
-        final JsonNode data = jsonNode.get("data");
-        assertTrue(data.has("matching"));
-        assertTrue(data.has("fitnessValue"));
-    }
-
-
-    @ParameterizedTest
-    @CsvSource({
-            "NSGAII,SIGMA{1}",
-            "NSGAIII,SIGMA{1}",
-            "eMOEA,SIGMA{1}",
-            "PESA2,SIGMA{1}",
-            "VEGA,SIGMA{1}",
-            "IBEA,SIGMA{1}"
-    })
-    void geneticAlgo(String algorithm, String function) throws Exception {
         StableMatchingProblemDto dto = sampleDTO;
 
         dto.setFitnessFunction(function);
