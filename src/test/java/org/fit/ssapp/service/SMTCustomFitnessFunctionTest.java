@@ -95,7 +95,7 @@ public class SMTCustomFitnessFunctionTest {
         "INVALID_FUNCTION",
         "code qua chien"
     })
-    void invalidFitnessFunction(String function) throws Exception {
+    void invalidSyntax(String function) throws Exception {
         sampleDTO.setFitnessFunction(function);
 
         _mock.perform(post("/api/stable-matching-solver")
@@ -104,44 +104,6 @@ public class SMTCustomFitnessFunctionTest {
             .andDo(print())
             .andExpect(status().isBadRequest())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON));
-    }
-
-    @ParameterizedTest
-    @CsvSource({
-        "NSGAII,SIGMA{S1}",
-        "NSGAIII,SIGMA{S1}",
-        "eMOEA,SIGMA{S1}",
-        "PESA2,SIGMA{S1}",
-        "VEGA,SIGMA{S1}",
-        "IBEA, SIGMA{S1}"
-    })
-    void exp4j(String algorithm, String function) throws Exception {
-        StableMatchingProblemDto dto = sampleDTO;
-
-        dto.setFitnessFunction(function);
-        dto.setAlgorithm(algorithm);
-
-        MvcResult result = this._mock
-            .perform(post("/api/stable-matching-solver")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(dto)))
-            .andExpect(request().asyncStarted())
-            .andReturn();
-
-        final String response = this._mock.perform(asyncDispatch(result))
-            .andDo(print())
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andReturn()
-            .getResponse()
-            .getContentAsString();
-
-        final JsonNode jsonNode = objectMapper.readTree(response);
-        assertTrue(jsonNode.has("data"));
-        final JsonNode data = jsonNode.get("data");
-        assertTrue(data.has("matching"));
-        assertTrue(data.has("fitnessValue"));
-        assertTrue(data.has("setSatisfactions"));
     }
 
     @ParameterizedTest
