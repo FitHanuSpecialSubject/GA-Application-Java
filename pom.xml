@@ -351,7 +351,7 @@
                                 </goals>
                                 <configuration>
                                     <workingDirectory>${frontend.dir.env}</workingDirectory>
-                                    <arguments>serve -s build</arguments>
+                                    <arguments>serve -s dist</arguments>
                                 </configuration>
                             </execution>
                         </executions>
