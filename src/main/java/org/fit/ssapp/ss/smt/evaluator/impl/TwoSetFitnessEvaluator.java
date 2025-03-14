@@ -111,8 +111,8 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
     }
     System.out.println(tmpSB);
     return new ExpressionBuilder(tmpSB.toString())
-            .build()
-            .evaluate();
+        .build()
+        .evaluate();
   }
 
   private double sigmaCalculate(double[] satisfactions, String expression) {
