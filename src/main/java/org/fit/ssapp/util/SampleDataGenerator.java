@@ -8,29 +8,26 @@ import java.util.Map;
 import java.util.Random;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.fit.ssapp.constants.StableMatchingConst.ReqTypes;
 import org.fit.ssapp.dto.mapper.StableMatchingProblemMapper;
 import org.fit.ssapp.dto.request.StableMatchingProblemDto;
 import org.fit.ssapp.ss.smt.MatchingProblem;
-import org.moeaframework.Executor;
-import org.moeaframework.core.NondominatedPopulation;
-import org.moeaframework.core.Solution;
 
 /**
  * Stable Matching Problem Testing Space.
  */
 @Data
-@Slf4j
+@NoArgsConstructor
 @AllArgsConstructor
+@Slf4j
 public class SampleDataGenerator {
 
   private static final Random RANDOM = new Random();
   public Map<Integer, Integer> setCapacities = new HashMap<>();
-  boolean[] capRandomize = {true, true};
-  // Configuration parameters
-  private MatchingProblemType matchingProblemType;
-  // problemSize
+  boolean[] capRandomize = {true, true}; // Configuration parameters
+  private MatchingProblemType matchingProblemType; // problemSize
   private int individualNum;
   private int numberOfProperties;
   private int[] numberForeachSet;
@@ -45,8 +42,7 @@ public class SampleDataGenerator {
    * @param numberOfSet2        Number of individuals in the second set.
    * @param numberOfProperties  Number of properties per individual.
    */
-  public SampleDataGenerator(MatchingProblemType matchingProblemType, int numberOfSet1,
-      int numberOfSet2, int numberOfProperties) {
+  public SampleDataGenerator(MatchingProblemType matchingProblemType, int numberOfSet1, int numberOfSet2, int numberOfProperties) {
     if (numberOfSet1 <= 0 || numberOfSet2 <= 0 || numberOfProperties <= 0) {
       throw new IllegalArgumentException("Number of sets and properties must be greater than 0");
     }
@@ -71,10 +67,13 @@ public class SampleDataGenerator {
   }
 
   /**
-   * Generates a StableMatchingProblemDto instance based on the configured parameters.
+   * Constructs a SampleDataGenerator with the specified matching problem type and parameters.
+   *
+   * @param matchingProblemType The type of matching problem (MTM, OTM, OTO).
+   * @param numberForeachSet    Number of individuals in each set.
+   * @param numberOfProperties  Number of properties per individual.
    */
-  public SampleDataGenerator(MatchingProblemType matchingProblemType, int[] numberForeachSet,
-      int numberOfProperties) {
+  public SampleDataGenerator(MatchingProblemType matchingProblemType, int[] numberForeachSet, int numberOfProperties) {
     this.matchingProblemType = matchingProblemType;
     this.numberForeachSet = numberForeachSet;
     this.numberOfProperties = numberOfProperties;
@@ -87,47 +86,8 @@ public class SampleDataGenerator {
       case MTM -> this.capRandomize = new boolean[]{true, true};
       case OTM -> this.capRandomize = new boolean[]{true, false};
       case OTO -> this.capRandomize = new boolean[]{false, false};
-      default -> throw new IllegalArgumentException(
-          "Unknown Matching Problem Type:" + this.matchingProblemType);
+      default -> throw new IllegalArgumentException("Unknown Matching Problem Type: " + this.matchingProblemType);
     }
-  }
-
-  /**
-   * Main method to demonstrate usage.
-   */
-  public static void main(String[] args) {
-    int numberOfProperties = 5;
-    SampleDataGenerator generator = new SampleDataGenerator(MatchingProblemType.MTM, 20, 200,
-        numberOfProperties);
-    generator.setCapacities.put(0, 5);
-    generator.setCapacities.put(1, 5);
-    generator.setCapRandomize(new boolean[]{true, true});
-    generator.setEvaluateFunctions(new String[]{DEFAULT_EVALUATE_FUNC, DEFAULT_EVALUATE_FUNC});
-    generator.setFnf(DEFAULT_FITNESS_FUNC);
-
-    String algo = "IBEA";
-    MatchingProblem problem = generator.generateProblem();
-    // Run the algorithm
-    long startTime = System.currentTimeMillis();
-    NondominatedPopulation result = new Executor()
-        .withProblem(problem)
-        .withAlgorithm(algo)
-        .withMaxEvaluations(100)
-        .withProperty("populationSize", 1000)
-        .distributeOnAllCores()
-        .run();
-
-    long endTime = System.currentTimeMillis();
-    double runtime = ((double) (endTime - startTime) / 1000);
-    runtime = Math.round(runtime * 100.0) / 100.0;
-
-    // Process and print the results
-    for (Solution solution : result) {
-      System.out.println("Matches: " + solution.getAttribute("matches"));
-      System.out.println("Fitness Score: " + -solution.getObjective(0));
-    }
-    System.out.println("\nExecution time: " + runtime + " Second(s) with Algorithm: " + algo);
-
   }
 
   /**
@@ -142,11 +102,11 @@ public class SampleDataGenerator {
     problemDto.setNumberOfProperty(numberOfProperties);
     problemDto.setIndividualSetIndices(generateSetIndices());
     problemDto.setIndividualCapacities(generateCapacities());
-    problemDto.setIndividualProperties((double[][]) generatePw().get("property"));
-    problemDto.setIndividualWeights((double[][]) generatePw().get("weight"));
-    problemDto.setIndividualRequirements(generateRequirementString());
-    problemDto.setEvaluateFunctions(evaluateFunctions);
-    problemDto.setFitnessFunction(fnf);
+    problemDto.setIndividualProperties((double[][]) generatePw().get("property")); // Individual properties
+    problemDto.setIndividualWeights((double[][]) generatePw().get("weight")); // Individual weights
+    problemDto.setIndividualRequirements(generateRequirementString()); // Individual requirements
+    problemDto.setEvaluateFunctions(evaluateFunctions); // Evaluate functions
+    problemDto.setFitnessFunction(fnf); // Fitness function
     return problemDto;
   }
 
@@ -189,11 +149,14 @@ public class SampleDataGenerator {
       }
     }
 
-    result.put(ObjectKeys.PROPERTY, individualProperties);
-    result.put(ObjectKeys.WEIGHT, individualWeights);
+    result.put("property", individualProperties);
+    result.put("weight", individualWeights);
     return result;
   }
 
+  /**
+   * Generates individual requirements.
+   */
   private String[][] generateRequirementString() {
     String[][] individualRequirements = new String[this.individualNum][this.numberOfProperties];
 
@@ -210,16 +173,16 @@ public class SampleDataGenerator {
         } else {
           double propertyBound2 = RANDOM.nextDouble() * (70.0 - 20.0) + 20.0;
           requirement = propertyBound + ":" + propertyBound2;
-          //  if (ReqTypes.SCALE_TARGET == randomType)
         }
         individualRequirements[i][j] = requirement;
       }
-
     }
     return individualRequirements;
   }
 
-
+  /**
+   * Generates individual set indices.
+   */
   private int[] generateSetIndices() {
     int[] setIndices = new int[individualNum];
     int currentIndex = 0;
@@ -232,16 +195,18 @@ public class SampleDataGenerator {
     return setIndices;
   }
 
+  /**
+   * Generates individual capacities.
+   */
   private int[] generateCapacities() {
     int[] capacities = new int[individualNum];
     int currentIndex = 0;
     for (int i = 0; i < numberForeachSet.length; i++) {
       int setSize = numberForeachSet[i];
-      int setCapacity = setCapacities.get(i);
+      int setCapacity = setCapacities.getOrDefault(i, 1); // Default capacity if not provided
       for (int j = 0; j < setSize; j++) {
         if (capRandomize[i]) {
-          capacities[currentIndex++] =
-              1 + RANDOM.nextInt(setCapacity - 1); // Random capacity between 1 and setCapacity
+          capacities[currentIndex++] = 1 + RANDOM.nextInt(setCapacity - 1); // Random capacity between 1 and setCapacity
         } else {
           capacities[currentIndex++] = setCapacity;
         }
@@ -249,11 +214,4 @@ public class SampleDataGenerator {
     }
     return capacities;
   }
-
-  private interface ObjectKeys {
-
-    String PROPERTY = "property";
-    String WEIGHT = "weight";
-  }
-
 }
