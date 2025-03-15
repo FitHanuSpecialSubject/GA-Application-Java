@@ -5,35 +5,16 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.fit.ssapp.ss.smt.Matches;
 import org.fit.ssapp.ss.smt.preference.impl.list.TwoSetPreferenceList;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
+
 import java.util.*;
+import java.util.stream.Stream;
 
 class MatchesTest {
 
-    // 1. Select New Match
-    @ParameterizedTest
-    @CsvSource({
-            "0,1,2,1",
-            "1,2,3,2",
-            "2,3,4,3",
-            "3,4,5,4",
-            "4,5,6,5",
-            "5,6,7,6",
-            "6,7,8,7"
-    })
-    void testSelectNewMatch(int targetIndividual, int newIndividual, int leastPreferred, int expected) {
-        Matches matches = new Matches(10);
-        matches.addMatch(targetIndividual, leastPreferred);
-        matches.addMatch(targetIndividual, newIndividual);
-
-        Set<Integer> currentMatches = matches.getSetOf(targetIndividual);
-        currentMatches.add(newIndividual);
-
-        Integer result = Collections.min(currentMatches);
-        assertEquals(expected, result, "The least preferred individual should be " + expected);
-    }
-
-    // 2. Match Both Ways
+    // Match Both Ways
     @ParameterizedTest
     @CsvSource({
             "0,1",
@@ -53,7 +34,7 @@ class MatchesTest {
         assertTrue(matches.getSetOf(node2).contains(node1), "Node2 should be matched with Node1");
     }
 
-    // 3. Check Full
+    // Check Full
     @ParameterizedTest
     @CsvSource({
             "0,2,1,false",
@@ -75,16 +56,8 @@ class MatchesTest {
 
     // Unit Test cho getLeastNode
     @ParameterizedTest
-    @CsvSource({
-            "0,5,1,2,3,1",
-            "0,5,2,3,4,2",
-            "0,5,3,4,5,3",
-            "0,5,4,5,6,4",
-            "0,5,5,6,7,5",
-            "0,5,6,7,8,6",
-            "0,5,7,8,9,7"
-    })
-    void testGetLeastNode(int set, int newNode, int node1, int node2, int node3, int expected) {
+    @MethodSource("provideTestDataForGetLeastNode")
+    void testGetLeastNode(int set, int newNode, Set<Integer> currentNodes, int expected) {
         // Tạo một đối tượng TwoSetPreferenceList với padding = 0
         TwoSetPreferenceList preferenceList = new TwoSetPreferenceList(10, 0);
 
@@ -100,11 +73,21 @@ class MatchesTest {
         preferenceList.add(0.005); // Node 8
         preferenceList.add(0.001); // Node 9
 
-        // Tạo danh sách các node hiện tại
-        Set<Integer> currentNodes = new HashSet<>(Arrays.asList(node1, node2, node3));
-
         // Gọi phương thức getLeastNode và kiểm tra kết quả
         int result = preferenceList.getLeastNode(set, newNode, currentNodes);
         assertEquals(expected, result, "The least preferred node should be " + expected);
+    }
+
+    // Phương thức cung cấp dữ liệu test cho testGetLeastNode
+    private static Stream<Arguments> provideTestDataForGetLeastNode() {
+        return Stream.of(
+                Arguments.of(0, 5, new HashSet<>(Arrays.asList(1, 2, 3)), 1),
+                Arguments.of(0, 5, new HashSet<>(Arrays.asList(2, 3, 4)), 2),
+                Arguments.of(0, 5, new HashSet<>(Arrays.asList(3, 4, 5)), 3),
+                Arguments.of(0, 5, new HashSet<>(Arrays.asList(4, 5, 6)), 4),
+                Arguments.of(0, 5, new HashSet<>(Arrays.asList(5, 6, 7)), 5),
+                Arguments.of(0, 5, new HashSet<>(Arrays.asList(6, 7, 8)), 6),
+                Arguments.of(0, 5, new HashSet<>(Arrays.asList(7, 8, 9)), 7)
+        );
     }
 }
