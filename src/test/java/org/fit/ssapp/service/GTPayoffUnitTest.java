@@ -44,22 +44,20 @@ public class GTPayoffUnitTest {
 
     /**
      * Test custom non-relative payoff function (using pi syntax)
+     * where p1, p2, p3 refer to properties of the strategy
      */
     @ParameterizedTest
     @CsvSource({
-        "p1, 1.0",                   
-        "p2, 2.0",                      
-        "p3, 3.0",                     
-        "p1 + p2, 3.0",               
-        "p2 * p3, 6.0",             
-        "p3 / p1, 3.0"                 
+        "p1 + p2, 3.0",         
+        "p2 * p3, 6.0",      
+        "p3 / p1, 3.0"       
     })
     void testCustomNonRelativePayoff(String expression, double expected) {
         Strategy strategy = new Strategy();
         List<Double> properties = new ArrayList<>();
-        properties.add(1.0);  // p1
-        properties.add(2.0);  // p2
-        properties.add(3.0);  // p3
+        properties.add(1.0); 
+        properties.add(2.0);  
+        properties.add(3.0);  
         strategy.setProperties(properties);
         
         BigDecimal result = StringExpressionEvaluator.evaluatePayoffFunctionNoRelative(
@@ -70,10 +68,10 @@ public class GTPayoffUnitTest {
 
     /**
      * Test custom relative payoff function (using Pipj syntax)
+     * where Pi refers to player i, and pj refers to property j of that player's strategy
      */
     @Test
     void testCustomRelativePayoff() {
-
         NormalPlayer player1 = new NormalPlayer();
         Strategy strategy1 = new Strategy();
         List<Double> properties1 = new ArrayList<>();
@@ -91,14 +89,13 @@ public class GTPayoffUnitTest {
         player2.setStrategies(List.of(strategy2));
 
         List<NormalPlayer> players = List.of(player1, player2);
-        int[] chosenStrategyIndices = {0, 0}; // Both players choose their first strategy
+        int[] chosenStrategyIndices = {0, 0}; 
 
-        // Test relative payoff function
-        String expression = "P1p1 + P2p2"; // Player1's first property + Player2's second property
+        String expression = "P1p1 + P2p2"; 
         BigDecimal result = StringExpressionEvaluator.evaluatePayoffFunctionWithRelativeToOtherPlayers(
             strategy1, expression, players, chosenStrategyIndices);
         
-        assertEquals(5.0, result.doubleValue(), 0.00001); // 1.0 + 4.0
+        assertEquals(5.0, result.doubleValue(), 0.00001); 
     }
 
     /**
@@ -106,21 +103,45 @@ public class GTPayoffUnitTest {
      */
     @ParameterizedTest
     @CsvSource({
-        "p1^2, 1.0",                  
-        "p2^3, 8.0",                           
-        "abs(p2 - p1), 1.0",                        
-        "cbrt(p3^3), 3.0",              
-        "ceil(p2 + 0.1), 3.0",              
-        "floor(p3 - 0.1), 2.0",        
-        "log(p3), 1.23456789",
-        "sqrt(p3^2), 3.0"             
+        "p1^2, 1.0",             
+        "abs(p1 - p2), 1.0", 
+        "cbrt(p2^3), 2.0",    
+        "ceil(p1 + 0.5), 2.0",   
+        "floor(p2 + 0.9), 2.0", 
+        "sqrt(p2^2), 2.0",
+        "log(p3), 1.0986"
     })
     void exp4jOperations(String expression, double expected) {
         Strategy strategy = new Strategy();
         List<Double> properties = new ArrayList<>();
-        properties.add(1.0); 
-        properties.add(2.0);  
-        properties.add(3.0); 
+        properties.add(1.0);  // p1
+        properties.add(2.0);  // p2
+        properties.add(3.0);  // p3
+        strategy.setProperties(properties);
+        
+        BigDecimal result = StringExpressionEvaluator.evaluatePayoffFunctionNoRelative(
+            strategy, expression);
+        
+        // For ln(3), we need a larger epsilon
+        double epsilon = expression.startsWith("log") ? 0.001 : 0.00001;
+        assertEquals(expected, result.doubleValue(), epsilon);
+    }
+
+    /**
+     * Test indexing rules - using base 1 index
+     */
+    @ParameterizedTest
+    @CsvSource({
+        "p1, 1.0",   
+        "p2, 2.0",   
+        "p3, 3.0"    
+    })
+    void testIndexingRules(String expression, double expected) {
+        Strategy strategy = new Strategy();
+        List<Double> properties = new ArrayList<>();
+        properties.add(1.0);
+        properties.add(2.0);
+        properties.add(3.0);
         strategy.setProperties(properties);
         
         BigDecimal result = StringExpressionEvaluator.evaluatePayoffFunctionNoRelative(
@@ -134,15 +155,15 @@ public class GTPayoffUnitTest {
      */
     @ParameterizedTest
     @ValueSource(strings = {
-        "p0",           
-        "p-1",         
-        "p1 * p-1",   
-        "sqrt(p1 - p2)", 
-        "log(p1 - p2)", 
-        "p1 *",        
-        "p1 + + p2",
-        "invalid",
-        "@@@@ + abcbab"  
+        "p1p2",                      
+        "p1 + p0",                
+        "p1 * p-1",                 
+        "sqrt(p1 - p2)",            
+        "log(p1 - p2)",               
+        "p1 + p2)",                   
+        "invalid",                    
+        "p1 + invalid",             
+        "@@@@ + abcbab"              
     })
     void testInvalid(String expression) {
         Strategy strategy = new Strategy();
@@ -152,12 +173,10 @@ public class GTPayoffUnitTest {
         properties.add(3.0);
         strategy.setProperties(properties);
         
-        // Test both non-relative and relative evaluation methods
         assertThrows(Exception.class, () -> {
             StringExpressionEvaluator.evaluatePayoffFunctionNoRelative(strategy, expression);
         });
 
-        // For relative evaluation, we need to set up players
         NormalPlayer player1 = new NormalPlayer();
         player1.setStrategies(List.of(strategy));
         List<NormalPlayer> players = List.of(player1);
@@ -173,7 +192,7 @@ public class GTPayoffUnitTest {
      * Test function independence from object state
      */
     @Test
-    void testFunctionIndependence() {
+    void functionIndependence() {
 
         Strategy strategy1 = new Strategy();
         List<Double> properties1 = new ArrayList<>();
