@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import java.math.BigDecimal;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.fit.ssapp.util.StringExpressionEvaluator.evaluateFitnessValue;
 
 /**
@@ -75,16 +75,16 @@ public class GTUnitTestFitness {
    */
   @ParameterizedTest
   @CsvSource({
-          "u1+u2+*u3, 12.0",
-          "u2ceil(10 / u2), -4.0",
-          "INVALID FUNCTION, -5.0",
-          "MIN*Max, 3.0",
-          "MIN/0, -2.0",
+          "u1+u2+*u3",
+          "u2ceil(10 / u2)",
+          "INVALID FUNCTION",
+          "MIN*Max",
+          "MIN/0",
   })
-  public void testFitnessValueWithInvalidFunction(String fitnessFunction, boolean isMaximizing, double expected) {
+  public void testFitnessValueWithInvalidFunction(String fitnessFunction) {
     double[] payoffs = {3.0, 4.0, 5.0};
-    BigDecimal result = evaluateFitnessValue(payoffs, fitnessFunction);
-    assertEquals(new BigDecimal("12.0"), result);
-  }
 
+    assertThrows(Exception.class, () ->
+        evaluateFitnessValue(payoffs, fitnessFunction));
+    }
 }
