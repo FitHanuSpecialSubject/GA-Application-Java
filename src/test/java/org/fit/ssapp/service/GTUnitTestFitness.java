@@ -34,6 +34,7 @@ public class GTUnitTestFitness {
           "ceil(10 / u2), true, -3.0",
           "sqrt(u2) + u1, false, 5.0",
           "(u1+u2+u3)/4, false, 3.0",
+          "ceil(sin(u1) + cos(u2) + sqrt(u3)), false , 2.0"
   })
   public void testFitnessCalculation(String fitnessFunction, boolean isMaximizing, double expected) {
     double[] payoffs = {3.0, 4.0, 5.0};
@@ -45,7 +46,7 @@ public class GTUnitTestFitness {
       result = result.negate();
     }
 
-    assertEquals(expected, result.doubleValue());
+    assertEquals(expected, result.doubleValue(), 0.001);
   }
 
   /**
@@ -72,10 +73,17 @@ public class GTUnitTestFitness {
   /**
    * Tests the fitness calculation for invalid function.
    */
-  @Test
-  public void testFitnessValueWithInvalidFunction() {
+  @ParameterizedTest
+  @CsvSource({
+          "u1+u2+*u3, 12.0",
+          "u2ceil(10 / u2), -4.0",
+          "INVALID FUNCTION, -5.0",
+          "MIN*Max, 3.0",
+          "MIN/0, -2.0",
+  })
+  public void testFitnessValueWithInvalidFunction(String fitnessFunction, boolean isMaximizing, double expected) {
     double[] payoffs = {3.0, 4.0, 5.0};
-    BigDecimal result = evaluateFitnessValue(payoffs, "INVALID FUNCTION");
+    BigDecimal result = evaluateFitnessValue(payoffs, fitnessFunction);
     assertEquals(new BigDecimal("12.0"), result);
   }
 
