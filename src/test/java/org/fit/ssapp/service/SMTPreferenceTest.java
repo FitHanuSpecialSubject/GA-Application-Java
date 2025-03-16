@@ -5,9 +5,9 @@ import org.fit.ssapp.ss.smt.preference.PreferenceList;
 import org.fit.ssapp.ss.smt.preference.impl.list.TwoSetPreferenceList;
 import org.fit.ssapp.util.MatchingProblemType;
 import org.fit.ssapp.util.SampleDataGenerator;
-import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 public class SMTPreferenceTest {
     public StableMatchingProblemDto genSampleDto() {
@@ -47,39 +47,96 @@ public class SMTPreferenceTest {
         return dto;
     }
 
-    @Test
-    public void testDefaultPreferenceCalculation() {
-        StableMatchingProblemDto dto = genSampleDto();
+
+    @ParameterizedTest
+    @CsvSource({
+            "1, 2, 3, 4, 5, 6, 1, 2, 3, 36.0, 77.0", // req1, req2, req3, prop1, prop2, prop3, weight1, weight2, weight3, expectedScore0to1, expectedScore1to0
+            "4, 5, 6, 7, 8, 9, 4, 5, 6, 174.0, 122.0",
+            "1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 1, 2, 3, 43.0, 84.5"
+    })
+    public void testDefaultPreferenceCalculation(
+            double req1, double req2, double req3,
+            double prop1, double prop2, double prop3,
+            double weight1, double weight2, double weight3,
+            double expectedScore0to1, double expectedScore1to0) {
+
+        SampleDataGenerator sampleData = new SampleDataGenerator(MatchingProblemType.OTO, 2, 2, 3);
+        StableMatchingProblemDto dto = sampleData.generateDto();
+
+        dto.setIndividualRequirements(new String[][]{
+                {String.valueOf(req1), String.valueOf(req2), String.valueOf(req3)},
+                {"1", "1", "1"},
+                {"1", "1", "1"},
+                {"1", "1", "1"}
+        });
+        dto.setIndividualProperties(new double[][]{
+                {prop1, prop2, prop3},
+                {1, 2, 3},
+                {1, 2, 3},
+                {1, 2, 3}
+        });
+        dto.setIndividualWeights(new double[][]{
+                {weight1, weight2, weight3},
+                {4, 5, 6},
+                {1, 2, 3},
+                {1, 2, 3}
+        });
+
         PreferenceList preferenceList0 = createPreferenceList(dto, 0, "default");
         PreferenceList preferenceList1 = createPreferenceList(dto, 1, "default");
 
         double score0to1 = preferenceList0.getScore(1);
         double score1to0 = preferenceList1.getScore(0);
 
-        assertTrue(score0to1 > 0);
-        assertTrue(score1to0 > 0);
+        Assertions.assertEquals(expectedScore0to1, score0to1, 0.001);
+        Assertions.assertEquals(expectedScore1to0, score1to0, 0.001);
     }
 
-    @Test
-    public void testCustomPreferenceCalculation() {
+    @ParameterizedTest
+    @CsvSource({
+            "1--, 2:3, 3++, 4, 5, 6, 1, 2, 3, 38.0, 77.0", // req1, req2, req3, prop1, prop2, prop3, weight1, weight2, weight3, expectedScore0to1, expectedScore1to0
+            "4, 5, 6, 7, 8, 9, 4, 5, 6, 174.0, 122.0",
+            "1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 1, 2, 3, 43.0, 84.5"
+    })
+    public void testCustomPreferenceCalculation(
+            String req1, String req2, String req3,
+            double prop1, double prop2, double prop3,
+            double weight1, double weight2, double weight3,
+            double expectedScore0to1, double expectedScore1to0) {
+
         SampleDataGenerator sampleData = new SampleDataGenerator(MatchingProblemType.OTO, 2, 2, 3);
         StableMatchingProblemDto dto = sampleData.generateDto();
+
         dto.setIndividualRequirements(new String[][]{
-                {"1--", "2:3", "3++"},
-                {"4", "5", "6"},
-                {"1", "1", "2"},
-                {"1", "1", "2"}
+                {req1, req2, req3},
+                {"1", "1", "1"},
+                {"1", "1", "1"},
+                {"1", "1", "1"}
         });
+        dto.setIndividualProperties(new double[][]{
+                {prop1, prop2, prop3},
+                {1, 2, 3},
+                {1, 2, 3},
+                {1, 2, 3}
+        });
+        dto.setIndividualWeights(new double[][]{
+                {weight1, weight2, weight3},
+                {4, 5, 6},
+                {1, 2, 3},
+                {1, 2, 3}
+        });
+
         PreferenceList preferenceList0 = createPreferenceList(dto, 0, "custom");
         PreferenceList preferenceList1 = createPreferenceList(dto, 1, "custom");
 
         double score0to1 = preferenceList0.getScore(1);
         double score1to0 = preferenceList1.getScore(0);
 
-        assertTrue(score0to1 > 0);
-        assertTrue(score1to0 > 0);
+        Assertions.assertEquals(expectedScore0to1, score0to1, 0.001);
+        Assertions.assertEquals(expectedScore1to0, score1to0, 0.001);
     }
 
+    
     private PreferenceList createPreferenceList(StableMatchingProblemDto dto, int index, String evaluationType) {
         int size = dto.getIndividualRequirements().length - 1;
         TwoSetPreferenceList preferenceList = new TwoSetPreferenceList(size, 0);
