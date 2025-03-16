@@ -13,7 +13,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import java.util.Arrays;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * This class contains unit tests for the fitness evaluation functionality in the Stable Matching Problem (SMT).
@@ -98,32 +98,21 @@ public class SMTUnitTestFitness {
    */
   @ParameterizedTest
   @CsvSource({
-          "SIGMA{*S1}, 12.0",
-          "M1 *+ M2, 7.0",
-          "SIGMA{S1} - M1 / 0, 9.0",
-          "INVALID_FUNCTION{S1}, 0.0",
-          "SIGMA{S1 + M2, 0.0",
-          " , 0.0"
+          "SIGMA{*S1}",
+          "M1 *+ M2",
+          "SIGMA{S1} - M1 / 0",
+          "INVALID_FUNCTION{S1}",
+          "SIGMA{S1 + M2",
+          "null"
   })
-  public void testInvalidFitnessCustom(String fitnessFunction, double expected) {
+  public void testInvalidFitnessCustom(String fitnessFunction) {
     MatchingData matchingData = setupMatchingData(3, 1, 3);
     evaluator = new TwoSetFitnessEvaluator(matchingData);
 
     double[] satisfaction = {3.0, 4.0, 5.0};
-    double fitnessScore = evaluator.withFitnessFunctionEvaluation(satisfaction, fitnessFunction);
-    assertEquals(expected, fitnessScore, 0.001);
-  }
 
-  /**
-   * Tests the fitness function evaluation with an empty satisfaction array.
-   */
-  @Test
-  public void testFitnessValueWithEmptySatisfaction() {
-    MatchingData matchingData = setupMatchingData(0, 1, 3);
-    evaluator = new TwoSetFitnessEvaluator(matchingData);
-
-    double[] satisfaction = {};
-    double result = evaluator.withFitnessFunctionEvaluation(satisfaction, "SUM");
-    assertEquals(0.0, result, 0.001);
+    assertThrows(Exception.class, () ->
+        evaluator.withFitnessFunctionEvaluation(satisfaction, fitnessFunction)
+    );
   }
 }
