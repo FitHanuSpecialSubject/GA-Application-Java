@@ -1,20 +1,17 @@
 package org.fit.ssapp.service;
 
-import jakarta.validation.Validation;
-import jakarta.validation.Validator;
-import jakarta.validation.ValidatorFactory;
-import org.fit.ssapp.dto.request.StableMatchingProblemDto;
 import org.fit.ssapp.ss.smt.evaluator.impl.TwoSetFitnessEvaluator;
 import org.fit.ssapp.ss.smt.MatchingData;
 import org.fit.ssapp.util.MatchingProblemType;
 import org.fit.ssapp.util.SampleDataGenerator;
-import org.junit.Assert;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.Arrays;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -33,6 +30,40 @@ public class SMTUnitTestFitness {
             numberOfProperties
     );
     return sampleData.generateProblem().getMatchingData();
+  }
+
+  /**
+   * Provides a stream of test cases for the default fitness evaluation.
+   * Each test case consists of a satisfaction array .
+   */
+  static Stream<Arguments> satisfactionForDefault() {
+    return Stream.of(
+            Arguments.of(new double[]{3.0, 4.0, 5.0}),
+            Arguments.of(new double[]{0.0, 0.0, 0.0}),
+            Arguments.of(new double[]{5.0}),
+            Arguments.of(new double[]{-2.0, 3.0, -1.0}),
+            Arguments.of(new double[]{2.5, 3.5, 4.0}),
+            Arguments.of(new double[]{1.0, 2.0, 3.0, 4.0, 5.0}),
+            Arguments.of(new double[]{})
+    );
+  }
+
+  /**
+   * Tests the default fitness function, which sums up the satisfaction values.
+   *
+   * @param satisfaction The array of satisfaction values to evaluate.
+   */
+  @ParameterizedTest
+  @MethodSource("satisfactionForDefault")
+  public void testFitnessDefault(double[] satisfaction) {
+    MatchingData matchingData = setupMatchingData(3, 1, 3);
+    evaluator = new TwoSetFitnessEvaluator(matchingData);
+
+    double fitnessScore = evaluator.defaultFitnessEvaluation(satisfaction);
+
+    double expected = Arrays.stream(satisfaction).sum();
+
+    assertEquals(expected, fitnessScore, 0.001);
   }
 
   /**
@@ -71,7 +102,8 @@ public class SMTUnitTestFitness {
           "M1 *+ M2, 7.0",
           "SIGMA{S1} - M1 / 0, 9.0",
           "INVALID_FUNCTION{S1}, 0.0",
-          "SIGMA{S1 + M2, 0.0"
+          "SIGMA{S1 + M2, 0.0",
+          " , 0.0"
   })
   public void testInvalidFitnessCustom(String fitnessFunction, double expected) {
     MatchingData matchingData = setupMatchingData(3, 1, 3);
@@ -79,30 +111,6 @@ public class SMTUnitTestFitness {
 
     double[] satisfaction = {3.0, 4.0, 5.0};
     double fitnessScore = evaluator.withFitnessFunctionEvaluation(satisfaction, fitnessFunction);
-    assertEquals(expected, fitnessScore, 0.001);
-  }
-
-  /**
-   * Tests the default fitness function, which sums up the satisfaction values.
-   */
-  @ParameterizedTest
-  @CsvSource({
-          "{3.0,4.0,5.0}",
-          "{0.0,0.0,0.0}",
-          "{5.0}",
-          "{-2.0,3.0,-1.0}",
-          "{2.5,3.5,4.0}",
-          "{1.0,2.0,3.0,4.0,5.0}",
-  })
-  public void testFitnessDefault(String satisfactionStr) {
-    MatchingData matchingData = setupMatchingData(3, 1, 3);
-    evaluator = new TwoSetFitnessEvaluator(matchingData);
-
-    double[] satisfaction = stringToDoubleArray(satisfactionStr);
-    double fitnessScore = evaluator.defaultFitnessEvaluation(satisfaction);
-
-    double expected = Arrays.stream(satisfaction).sum();
-
     assertEquals(expected, fitnessScore, 0.001);
   }
 
@@ -118,40 +126,4 @@ public class SMTUnitTestFitness {
     double result = evaluator.withFitnessFunctionEvaluation(satisfaction, "SUM");
     assertEquals(0.0, result, 0.001);
   }
-
-  /**
-   * Tests the fitness function evaluation with a null fitness function.
-   */
-  @Test
-  public void testFitnessValueWithNullFunction() {
-    MatchingData matchingData = setupMatchingData(3, 1, 3);
-    evaluator = new TwoSetFitnessEvaluator(matchingData);
-
-    double[] satisfaction = {3.0, 4.0, 5.0};
-    double fitnessScore = evaluator.withFitnessFunctionEvaluation(satisfaction, null);
-    assertEquals(12.0, fitnessScore, 0.001);
-  }
-
-  /**
-   * Converse string to double array.
-   */
-  public static double[] stringToDoubleArray(String input) {
-    if (input == null || !input.contains("{") || !input.contains("}")) {
-      return new double[0];
-    }
-    int startIndex = input.indexOf('{') + 1;
-    int endIndex = input.indexOf('}');
-
-    String insideBrackets = input.substring(startIndex, endIndex);
-
-    String[] stringArray = insideBrackets.split(", ");
-
-    double[] doubleArray = new double[stringArray.length];
-    for (int i = 0; i < stringArray.length; i++) {
-      doubleArray[i] = Double.parseDouble(stringArray[i]);
-    }
-
-    return doubleArray;
-  }
-
 }

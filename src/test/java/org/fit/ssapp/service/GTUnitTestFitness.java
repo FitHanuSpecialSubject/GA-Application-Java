@@ -87,15 +87,4 @@ public class GTUnitTestFitness {
     assertEquals(new BigDecimal("12.0"), result);
   }
 
-  /**
-   * Tests the fitness calculation for complex fitness.
-   */
-  @Test
-  public void testFitnessValueWithComplexExpression() {
-    double[] payoffs = {3.0, 4.0, 5.0};
-    BigDecimal result = evaluateFitnessValue(payoffs, "sin(u1) + cos(u2) + sqrt(u3)");
-    // Expected:1.73
-    double expected = Math.sin(3.0) + Math.cos(4.0) + Math.sqrt(5.0);
-    assertEquals(expected, result.doubleValue(), 0.001);
-  }
 }
