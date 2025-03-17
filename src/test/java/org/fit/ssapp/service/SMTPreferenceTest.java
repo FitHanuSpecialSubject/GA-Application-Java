@@ -7,9 +7,23 @@ import org.fit.ssapp.util.MatchingProblemType;
 import org.fit.ssapp.util.SampleDataGenerator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Stream;
+
+/**
+ * Unit tests for SMT Preference calculation.
+ */
 public class SMTPreferenceTest {
+
+    /**
+     * Generates a sample StableMatchingProblemDto for testing.
+     *
+     * @return A sample StableMatchingProblemDto.
+     */
     public StableMatchingProblemDto genSampleDto() {
         StableMatchingProblemDto dto = new StableMatchingProblemDto();
         dto.setProblemName("Stable Matching Problem");
@@ -47,36 +61,41 @@ public class SMTPreferenceTest {
         return dto;
     }
 
-
+    /**
+     * Tests the default preference calculation.
+     *
+     * @param requirements      List of requirements.
+     * @param properties        List of properties.
+     * @param weights           List of weights.
+     * @param expectedScore0to1 Expected score from individual 0 to 1.
+     * @param expectedScore1to0 Expected score from individual 1 to 0.
+     */
     @ParameterizedTest
-    @CsvSource({
-            "1, 2, 3, 4, 5, 6, 1, 2, 3, 36.0, 77.0", // req1, req2, req3, prop1, prop2, prop3, weight1, weight2, weight3, expectedScore0to1, expectedScore1to0
-            "4, 5, 6, 7, 8, 9, 4, 5, 6, 174.0, 122.0",
-            "1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 1, 2, 3, 43.0, 84.5"
-    })
+    @MethodSource("defaultPreferenceTestCases")
     public void testDefaultPreferenceCalculation(
-            double req1, double req2, double req3,
-            double prop1, double prop2, double prop3,
-            double weight1, double weight2, double weight3,
-            double expectedScore0to1, double expectedScore1to0) {
+            List<Double> requirements,
+            List<Double> properties,
+            List<Double> weights,
+            double expectedScore0to1,
+            double expectedScore1to0) {
 
         SampleDataGenerator sampleData = new SampleDataGenerator(MatchingProblemType.OTO, 2, 2, 3);
         StableMatchingProblemDto dto = sampleData.generateDto();
 
         dto.setIndividualRequirements(new String[][]{
-                {String.valueOf(req1), String.valueOf(req2), String.valueOf(req3)},
+                requirements.stream().map(String::valueOf).toArray(String[]::new),
                 {"1", "1", "1"},
                 {"1", "1", "1"},
                 {"1", "1", "1"}
         });
         dto.setIndividualProperties(new double[][]{
-                {prop1, prop2, prop3},
+                properties.stream().mapToDouble(Double::doubleValue).toArray(),
                 {1, 2, 3},
                 {1, 2, 3},
                 {1, 2, 3}
         });
         dto.setIndividualWeights(new double[][]{
-                {weight1, weight2, weight3},
+                weights.stream().mapToDouble(Double::doubleValue).toArray(),
                 {4, 5, 6},
                 {1, 2, 3},
                 {1, 2, 3}
@@ -92,35 +111,41 @@ public class SMTPreferenceTest {
         Assertions.assertEquals(expectedScore1to0, score1to0, 0.001);
     }
 
+    /**
+     * Tests the custom preference calculation.
+     *
+     * @param requirements      List of requirements as strings.
+     * @param properties        List of properties.
+     * @param weights           List of weights.
+     * @param expectedScore0to1 Expected score from individual 0 to 1.
+     * @param expectedScore1to0 Expected score from individual 1 to 0.
+     */
     @ParameterizedTest
-    @CsvSource({
-            "1--, 2:3, 3++, 4, 5, 6, 1, 2, 3, 38.0, 77.0", // req1, req2, req3, prop1, prop2, prop3, weight1, weight2, weight3, expectedScore0to1, expectedScore1to0
-            "4, 5, 6, 7, 8, 9, 4, 5, 6, 174.0, 122.0",
-            "1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 1, 2, 3, 43.0, 84.5"
-    })
+    @MethodSource("customPreferenceTestCases")
     public void testCustomPreferenceCalculation(
-            String req1, String req2, String req3,
-            double prop1, double prop2, double prop3,
-            double weight1, double weight2, double weight3,
-            double expectedScore0to1, double expectedScore1to0) {
+            List<String> requirements,
+            List<Double> properties,
+            List<Double> weights,
+            double expectedScore0to1,
+            double expectedScore1to0) {
 
         SampleDataGenerator sampleData = new SampleDataGenerator(MatchingProblemType.OTO, 2, 2, 3);
         StableMatchingProblemDto dto = sampleData.generateDto();
 
         dto.setIndividualRequirements(new String[][]{
-                {req1, req2, req3},
+                requirements.toArray(new String[0]),
                 {"1", "1", "1"},
                 {"1", "1", "1"},
                 {"1", "1", "1"}
         });
         dto.setIndividualProperties(new double[][]{
-                {prop1, prop2, prop3},
+                properties.stream().mapToDouble(Double::doubleValue).toArray(),
                 {1, 2, 3},
                 {1, 2, 3},
                 {1, 2, 3}
         });
         dto.setIndividualWeights(new double[][]{
-                {weight1, weight2, weight3},
+                weights.stream().mapToDouble(Double::doubleValue).toArray(),
                 {4, 5, 6},
                 {1, 2, 3},
                 {1, 2, 3}
@@ -136,7 +161,36 @@ public class SMTPreferenceTest {
         Assertions.assertEquals(expectedScore1to0, score1to0, 0.001);
     }
 
-    
+    private static Stream<Arguments> defaultPreferenceTestCases() {
+        return Stream.of(
+                Arguments.of(Arrays.asList(1.0, 2.0, 3.0), Arrays.asList(4.0, 5.0, 6.0), Arrays.asList(1.0, 2.0, 3.0), 36.0, 77.0),
+                Arguments.of(Arrays.asList(4.0, 5.0, 6.0), Arrays.asList(7.0, 8.0, 9.0), Arrays.asList(4.0, 5.0, 6.0), 174.0, 122.0),
+                Arguments.of(Arrays.asList(1.5, 2.5, 3.5), Arrays.asList(4.5, 5.5, 6.5), Arrays.asList(1.0, 2.0, 3.0), 43.0, 84.5)
+        );
+    }
+
+    /**
+     * Provides test cases for custom preference calculation.
+     *
+     * @return Stream of Arguments for custom preference tests.
+     */
+    private static Stream<Arguments> customPreferenceTestCases() {
+        return Stream.of(
+                Arguments.of(Arrays.asList("1--", "2:3", "3++"), Arrays.asList(4.0, 5.0, 6.0), Arrays.asList(1.0, 2.0, 3.0), 38.0, 77.0),
+                Arguments.of(Arrays.asList("4", "5", "6"), Arrays.asList(7.0, 8.0, 9.0), Arrays.asList(4.0, 5.0, 6.0), 174.0, 122.0),
+                Arguments.of(Arrays.asList("1.5", "2.5", "3.5"), Arrays.asList(4.5, 5.5, 6.5), Arrays.asList(1.0, 2.0, 3.0), 43.0, 84.5)
+        );
+    }
+
+
+    /**
+     * Creates a preference list for a given individual.
+     *
+     * @param dto             StableMatchingProblemDto.
+     * @param index           Index of the individual.
+     * @param evaluationType  Type of evaluation.
+     * @return PreferenceList.
+     */
     private PreferenceList createPreferenceList(StableMatchingProblemDto dto, int index, String evaluationType) {
         int size = dto.getIndividualRequirements().length - 1;
         TwoSetPreferenceList preferenceList = new TwoSetPreferenceList(size, 0);
@@ -151,6 +205,15 @@ public class SMTPreferenceTest {
         return preferenceList;
     }
 
+    /**
+     * Calculates the preference score between two individuals.
+     *
+     * @param dto             StableMatchingProblemDto.
+     * @param individualA     Index of individual A.
+     * @param individualB     Index of individual B.
+     * @param evaluationType  Type of evaluation.
+     * @return Preference score.
+     */
     private double calculatePreference(StableMatchingProblemDto dto, int individualA, int individualB, String evaluationType) {
         double score = 0.0;
         for (int i = 0; i < dto.getNumberOfProperty(); i++) {
@@ -165,6 +228,12 @@ public class SMTPreferenceTest {
         return score;
     }
 
+    /**
+     * Parses a requirement string into a double.
+     *
+     * @param requirementStr Requirement string.
+     * @return Parsed requirement value.
+     */
     private double parseRequirement(String requirementStr) {
         if (requirementStr.endsWith("--")) {
             return Double.parseDouble(requirementStr.substring(0, requirementStr.length() - 2));
