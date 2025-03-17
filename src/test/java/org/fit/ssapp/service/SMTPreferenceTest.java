@@ -97,9 +97,9 @@ public class SMTPreferenceTest {
         TwoSetPreferenceProvider provider = new TwoSetPreferenceProvider(matchingData, new String[]{"", ""});
 
         PreferenceList preferenceList0 = provider.getPreferenceListByFunction(0);
-        PreferenceList preferenceList1 = provider.getPreferenceListByFunction(0);
+        PreferenceList preferenceList1 = provider.getPreferenceListByFunction(1);
 
-        double score0to1 = preferenceList0.getScore(1);
+        double score0to1 = preferenceList0.getScore(0);
         double score1to0 = preferenceList1.getScore(0);
 
         Assertions.assertEquals(expected, score0to1, 0.001);
