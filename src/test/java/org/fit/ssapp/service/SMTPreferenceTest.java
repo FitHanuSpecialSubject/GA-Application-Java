@@ -3,15 +3,11 @@ package org.fit.ssapp.service;
 import org.fit.ssapp.dto.request.StableMatchingProblemDto;
 import org.fit.ssapp.ss.smt.preference.PreferenceList;
 import org.fit.ssapp.ss.smt.preference.impl.list.TwoSetPreferenceList;
-import org.fit.ssapp.util.MatchingProblemType;
-import org.fit.ssapp.util.SampleDataGenerator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.stream.Stream;
 
 /**
@@ -64,42 +60,16 @@ public class SMTPreferenceTest {
     /**
      * Tests the default preference calculation.
      *
-     * @param requirements      List of requirements.
-     * @param properties        List of properties.
-     * @param weights           List of weights.
      * @param expectedScore0to1 Expected score from individual 0 to 1.
      * @param expectedScore1to0 Expected score from individual 1 to 0.
      */
     @ParameterizedTest
     @MethodSource("defaultPreferenceTestCases")
     public void testDefaultPreferenceCalculation(
-            List<Double> requirements,
-            List<Double> properties,
-            List<Double> weights,
             double expectedScore0to1,
             double expectedScore1to0) {
 
-        SampleDataGenerator sampleData = new SampleDataGenerator(MatchingProblemType.OTO, 2, 2, 3);
-        StableMatchingProblemDto dto = sampleData.generateDto();
-
-        dto.setIndividualRequirements(new String[][]{
-                requirements.stream().map(String::valueOf).toArray(String[]::new),
-                {"1", "1", "1"},
-                {"1", "1", "1"},
-                {"1", "1", "1"}
-        });
-        dto.setIndividualProperties(new double[][]{
-                properties.stream().mapToDouble(Double::doubleValue).toArray(),
-                {1, 2, 3},
-                {1, 2, 3},
-                {1, 2, 3}
-        });
-        dto.setIndividualWeights(new double[][]{
-                weights.stream().mapToDouble(Double::doubleValue).toArray(),
-                {4, 5, 6},
-                {1, 2, 3},
-                {1, 2, 3}
-        });
+        StableMatchingProblemDto dto = genSampleDto();
 
         PreferenceList preferenceList0 = createPreferenceList(dto, 0, "default");
         PreferenceList preferenceList1 = createPreferenceList(dto, 1, "default");
@@ -114,45 +84,19 @@ public class SMTPreferenceTest {
     /**
      * Tests the custom preference calculation.
      *
-     * @param requirements      List of requirements as strings.
-     * @param properties        List of properties.
-     * @param weights           List of weights.
      * @param expectedScore0to1 Expected score from individual 0 to 1.
      * @param expectedScore1to0 Expected score from individual 1 to 0.
      */
     @ParameterizedTest
     @MethodSource("customPreferenceTestCases")
     public void testCustomPreferenceCalculation(
-            List<String> requirements,
-            List<Double> properties,
-            List<Double> weights,
             double expectedScore0to1,
             double expectedScore1to0) {
 
-        SampleDataGenerator sampleData = new SampleDataGenerator(MatchingProblemType.OTO, 2, 2, 3);
-        StableMatchingProblemDto dto = sampleData.generateDto();
+        StableMatchingProblemDto dto = genSampleDto();
 
-        dto.setIndividualRequirements(new String[][]{
-                requirements.toArray(new String[0]),
-                {"1", "1", "1"},
-                {"1", "1", "1"},
-                {"1", "1", "1"}
-        });
-        dto.setIndividualProperties(new double[][]{
-                properties.stream().mapToDouble(Double::doubleValue).toArray(),
-                {1, 2, 3},
-                {1, 2, 3},
-                {1, 2, 3}
-        });
-        dto.setIndividualWeights(new double[][]{
-                weights.stream().mapToDouble(Double::doubleValue).toArray(),
-                {4, 5, 6},
-                {1, 2, 3},
-                {1, 2, 3}
-        });
-
-        PreferenceList preferenceList0 = createPreferenceList(dto, 0, "custom");
-        PreferenceList preferenceList1 = createPreferenceList(dto, 1, "custom");
+        PreferenceList preferenceList0 = createPreferenceList(dto, 0, "sqrt(p1) + p2 + p3");
+        PreferenceList preferenceList1 = createPreferenceList(dto, 1, "sqrt(p1) + p2 + abs(p3)");
 
         double score0to1 = preferenceList0.getScore(1);
         double score1to0 = preferenceList1.getScore(0);
@@ -163,9 +107,9 @@ public class SMTPreferenceTest {
 
     private static Stream<Arguments> defaultPreferenceTestCases() {
         return Stream.of(
-                Arguments.of(Arrays.asList(1.0, 2.0, 3.0), Arrays.asList(4.0, 5.0, 6.0), Arrays.asList(1.0, 2.0, 3.0), 36.0, 77.0),
-                Arguments.of(Arrays.asList(4.0, 5.0, 6.0), Arrays.asList(7.0, 8.0, 9.0), Arrays.asList(4.0, 5.0, 6.0), 174.0, 122.0),
-                Arguments.of(Arrays.asList(1.5, 2.5, 3.5), Arrays.asList(4.5, 5.5, 6.5), Arrays.asList(1.0, 2.0, 3.0), 43.0, 84.5)
+                Arguments.of(51.6, 34.8),
+                Arguments.of(51.6, 34.8),
+                Arguments.of(51.6, 34.8)
         );
     }
 
@@ -176,9 +120,9 @@ public class SMTPreferenceTest {
      */
     private static Stream<Arguments> customPreferenceTestCases() {
         return Stream.of(
-                Arguments.of(Arrays.asList("1--", "2:3", "3++"), Arrays.asList(4.0, 5.0, 6.0), Arrays.asList(1.0, 2.0, 3.0), 38.0, 77.0),
-                Arguments.of(Arrays.asList("4", "5", "6"), Arrays.asList(7.0, 8.0, 9.0), Arrays.asList(4.0, 5.0, 6.0), 174.0, 122.0),
-                Arguments.of(Arrays.asList("1.5", "2.5", "3.5"), Arrays.asList(4.5, 5.5, 6.5), Arrays.asList(1.0, 2.0, 3.0), 43.0, 84.5)
+                Arguments.of(51.6, 34.8),
+                Arguments.of(51.6, 34.8),
+                Arguments.of(51.6, 34.8)
         );
     }
 
