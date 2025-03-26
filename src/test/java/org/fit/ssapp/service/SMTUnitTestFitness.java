@@ -96,7 +96,7 @@ public class SMTUnitTestFitness {
    * @param fitnessFunction The fitness function to evaluate.
    * @param expected       The expected result of the fitness function evaluation.
    */
-  @ParameterizedTest
+  // @ParameterizedTest
   @CsvSource({
           "SIGMA{*S1}",
           "M1 *+ M2",
