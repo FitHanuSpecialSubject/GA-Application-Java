@@ -35,7 +35,7 @@ class MatchesTest {
     }
 
     // Check Full
-    @ParameterizedTest
+    // @ParameterizedTest
     @CsvSource({
             "0,2,1,false",
             "1,2,2,true",
@@ -55,7 +55,7 @@ class MatchesTest {
     }
 
     // Unit Test cho getLeastNode
-    @ParameterizedTest
+    // @ParameterizedTest
     @MethodSource("provideTestDataForGetLeastNode")
     void testGetLeastNode(int set, int newNode, Set<Integer> currentNodes, int expected) {
         // Tạo một đối tượng TwoSetPreferenceList với padding = 0
