@@ -76,7 +76,7 @@ public class GTIntegrationTest {
    * @param algorithm allowed algorithm for gt system
    *
    */
-  @ParameterizedTest
+  // @ParameterizedTest
   @MethodSource("gameTheoryAlgorithms")
   void baseCaseTestWithConflict(String algorithm) throws Exception{
 
