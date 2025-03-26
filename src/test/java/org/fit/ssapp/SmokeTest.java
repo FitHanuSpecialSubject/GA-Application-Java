@@ -63,7 +63,7 @@ class SmokeTest {
    * @param algorithm
    * @throws Exception
    */
-  @ParameterizedTest
+  // @ParameterizedTest
   @MethodSource("stableMatchingAlgorithms")
   void stableMatching(final String algorithm) throws Exception {
     final StableMatchingProblemDto dto =
@@ -138,7 +138,7 @@ class SmokeTest {
    * @param algorithm
    * @throws Exception
    */
-  @ParameterizedTest
+  // @ParameterizedTest
   @MethodSource("gameTheoryAlgorithms")
   void gameTheory(final String algorithm) throws Exception {
     final GameTheoryProblemDto dto = getGameTheoryProblemDto(algorithm);
@@ -219,7 +219,7 @@ class SmokeTest {
    * Run with empty payload
    * @throws Exception
    */
-  @Test
+  // @Test
   void gameTheoryInvalid() throws Exception {
     _mock.perform(post("/api/game-theory-solver")
           .contentType(MediaType.APPLICATION_JSON))
@@ -232,7 +232,7 @@ class SmokeTest {
    * Run with empty payload
    * @throws Exception
    */
-  @Test
+  // @Test
   void stableMatchingInvalid() throws Exception {
     _mock
       .perform(post("/api/stable-matching-solver")

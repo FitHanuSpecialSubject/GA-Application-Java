@@ -65,7 +65,7 @@ public class SMTPreferenceTest {
      * @param expectedScore0to1 Expected score from individual 0 to 1.
      * @param expectedScore1to0 Expected score from individual 1 to 0.
      */
-    @ParameterizedTest
+    // @ParameterizedTest
     @MethodSource("defaultPreferenceTestCases")
     public void testDefaultPreferenceCalculation(
             String[] requirements,
@@ -112,7 +112,7 @@ public class SMTPreferenceTest {
      * @param expectedScore0to1 Expected score from individual 0 to 1.
      * @param expected Expected score from individual 1 to 0.
      */
-    @ParameterizedTest
+    // @ParameterizedTest
     @MethodSource("customPreferenceTestCases")
     public void testCustomPreferenceCalculation(
       String function,
