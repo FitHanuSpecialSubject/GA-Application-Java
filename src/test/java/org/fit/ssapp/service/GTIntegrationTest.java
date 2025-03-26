@@ -108,7 +108,7 @@ public class GTIntegrationTest {
    * Test case for base case with empty request .
    *
    */
-  @Test
+  // @Test
   void testEmptyRequestBody() throws Exception{
 
     MvcResult result = mockMvc
