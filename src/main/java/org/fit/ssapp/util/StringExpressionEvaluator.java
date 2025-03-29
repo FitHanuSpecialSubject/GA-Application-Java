@@ -123,23 +123,23 @@ public class StringExpressionEvaluator {
    * Evaluates the fitness function based on given payoffs.
    *
    * @param payoffs         Array of payoff values.
-   * @param fitnessFunction The fitness function as a string.
-   * @return The computed fitness value as a {@code BigDecimal}.
-   * @throws IllegalArgumentException If the function contains invalid variables.
+   * @param fitnessFunction The fitness function as a string. If null or blank, SUM is used as default.
+   * @return The computed fitness value as a {@code BigDecimal} with scale 1.
+   * @throws RuntimeException If the function contains invalid syntax or cannot be evaluated.
    */
   public static BigDecimal evaluateFitnessValue(double[] payoffs, String fitnessFunction) {
-    String expression = fitnessFunction;
     List<Double> payoffList = new ArrayList<>();
     for (double payoff : payoffs) {
       payoffList.add(payoff);
     }
 
-    if (fitnessFunction.isBlank()) {
-      // if the fitnessFunction is absent,
-      // the fitness value is the average of all payoffs of all chosen strategies by default
+    if (fitnessFunction == null || fitnessFunction.isBlank()) {
+      // if the fitnessFunction is absent or null,
+      // the fitness value is the sum function of all payoffs by default
       return calculateByDefault(payoffList, null);
     } else {
       // replace placeholders for players' payoffs with the actual values
+      String expression = fitnessFunction;
 
       if (checkIfIsDefaultFunction(fitnessFunction)) {
         return calculateByDefault(payoffList, fitnessFunction);
@@ -154,10 +154,8 @@ public class StringExpressionEvaluator {
       }
 
       double val = evaluateExpression(expression);
-      return new BigDecimal(val).setScale(10, RoundingMode.HALF_UP);
-
+      return new BigDecimal(val).setScale(1, RoundingMode.HALF_UP);
     }
-
   }
 
   /**
@@ -212,6 +210,9 @@ public class StringExpressionEvaluator {
   }
 
   private static boolean checkIfIsDefaultFunction(String function) {
+    if (function == null) {
+      return false;
+    }
     return Arrays
             .stream(DefaultFunction.values())
             .anyMatch(f -> f.name().equalsIgnoreCase(function));
@@ -246,6 +247,9 @@ public class StringExpressionEvaluator {
   }
 
   private static double calMedian(List<Double> values) {
+    if (values.isEmpty()) {
+      return 0.0;
+    }
     double[] arr = values.stream().mapToDouble(Double::doubleValue).sorted().toArray();
     int n = arr.length;
     if (n % 2 == 0) {
@@ -256,6 +260,9 @@ public class StringExpressionEvaluator {
   }
 
   private static double calRange(List<Double> values) {
+    if (values.isEmpty()) {
+      return 0.0;
+    }
     double[] arr = values.stream().mapToDouble(Double::doubleValue).sorted().toArray();
     return arr[arr.length - 1] - arr[0];
   }
@@ -272,8 +279,7 @@ public class StringExpressionEvaluator {
       case RANGE -> calRange(values);
       default -> calSum(values);
     };
-
-    return new BigDecimal(val);
+    return new BigDecimal(val).setScale(1, RoundingMode.HALF_UP);
   }
 
   /**
