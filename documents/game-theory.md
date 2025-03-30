@@ -78,14 +78,14 @@ public class GameTheoryService {
 ```
 
 #### Using `GameTheoryProblemMapper` in `GameTheoryService`
+`GameTheoryProblemMapper` is a conversion class that maps a DTO (`GameTheoryProblemDto`) to an appropriate `GameTheoryProblem` instance based on the specified algorithm type in the request. When adding a new variation (`NewGameTheoryVariant`), update the `toProblem` method to check if `request.getAlgorithm()` contains the value "NewGameTheoryVariant". If so, it will initialize and return an instance of `NewGameTheoryVariant`.
+
 When a request is sent to the API, `GameTheoryService` will use `GameTheoryProblemMapper.toProblem(request)` to retrieve the appropriate problem instance.
 
 This ensures that the new variation is handled correctly without requiring changes to `GameTheoryService`.
 
-#### Updating the documentation
-Add the following information under the "How to register to a mapper" section:
 
-`GameTheoryProblemMapper` is a conversion class that maps a DTO (`GameTheoryProblemDto`) to an appropriate `GameTheoryProblem` instance based on the specified algorithm type in the request. When adding a new variation (`NewGameTheoryVariant`), update the `toProblem` method to check if `request.getAlgorithm()` contains the value "NewGameTheoryVariant". If so, it will initialize and return an instance of `NewGameTheoryVariant`.
+
 
 ## 3. Conclusion
 By following the steps above, you can extend the system to support new variations of game theory problems. If you need more information, please refer to the system source code.
