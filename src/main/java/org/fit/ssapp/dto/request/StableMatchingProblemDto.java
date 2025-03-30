@@ -8,7 +8,10 @@ import java.util.Arrays;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import org.fit.ssapp.constants.MessageConst.ErrMessage;
 import org.fit.ssapp.dto.validator.*;
 
@@ -16,7 +19,6 @@ import org.fit.ssapp.dto.validator.*;
 /**
  * Dto class for SMT problem request.
  */
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @ValidIndividualArraysSize
@@ -24,11 +26,9 @@ import org.fit.ssapp.dto.validator.*;
 @ValidIndividualArrayPropertyCount
 @ValidStableMatching
 @Builder
-public class StableMatchingProblemDto implements ProblemRequestDto {
-
-  @Size(max = 255, message = ErrMessage.PROBLEM_NAME)
-  private String problemName;
-
+@Getter
+@Setter
+public class StableMatchingProblemDto extends ProblemDto {
   @Min(value = 2, message = ErrMessage.MES_001)
   private int numberOfSets;
 
@@ -61,18 +61,7 @@ public class StableMatchingProblemDto implements ProblemRequestDto {
 
   private int[][] excludedPairs;
 
-  private int populationSize;
-
-  private int generation;
-
   private int numberOfIndividuals;
-
-  private int maxTime;
-
-  private String algorithm;
-
-  @ValidDistributedCores
-  private String distributedCores;
 
   @Override
   public String toString() {
@@ -95,10 +84,5 @@ public class StableMatchingProblemDto implements ProblemRequestDto {
             ", algorithm='" + algorithm + '\'' +
             ", distributedCores='" + distributedCores + '\'' +
             '}';
-  }
-
-  @Override
-  public String getAlgorithm() {
-    return algorithm;
   }
 }

@@ -8,6 +8,7 @@ import org.fit.ssapp.ss.gt.NormalPlayer;
 import org.fit.ssapp.ss.gt.SpecialPlayer;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -19,26 +20,21 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class GameTheoryProblemDto implements ProblemRequestDto {
-  private SpecialPlayer specialPlayer;
-  private List<NormalPlayer> normalPlayers;
-  private List<Conflict> conflictSet = new ArrayList<>();
-  private String fitnessFunction;
-  private String defaultPayoffFunction;
-  private String algorithm;
+@Builder
+public class GameTheoryProblemDto extends ProblemDto {
+  private float[][][] normalPlayers;
+  private int[][] conflictSet;
   private boolean isMaximizing;
-  private String distributedCores;
-  private Integer maxTime;
-  private Integer generation;
-  private Integer populationSize;
+  private String defaultPayoffFunction;
+  private String fitnessFunction;
 
   @Override
   public String toString() {
-    return "GameTheoryProblemDto{" + "specialPlayer=" + specialPlayer + ", normalPlayers="
-            + normalPlayers + ", conflictSet=" + ", fitnessFunction='" + conflictSet + fitnessFunction
-            + '\'' + ", defaultPayoffFunction='" + defaultPayoffFunction + '\'' + ", algorithm='"
-            + algorithm + '\'' + ", isMaximizing=" + isMaximizing + ", distributedCores='"
-            + distributedCores + '\'' + ", maxTime=" + maxTime + ", generation=" + generation
-            + ", populationSize=" + populationSize + '}';
+    return "GameTheoryProblemDto{" + ", normalPlayers="
+        + normalPlayers + ", conflictSet=" + ", fitnessFunction='" + conflictSet + fitnessFunction
+        + '\'' + ", defaultPayoffFunction='" + defaultPayoffFunction + '\'' + ", algorithm='"
+        + algorithm + '\'' + ", isMaximizing=" + isMaximizing + ", distributedCores='"
+        + distributedCores + '\'' + ", maxTime=" + maxTime + ", generation=" + generation
+        + ", populationSize=" + populationSize + '}';
   }
 }
