@@ -33,8 +33,8 @@ public class GameSolution {
   @Builder
   public static class Player {
 
-    private String playerName;
-    private String strategyName;
+    private int index;
+    private int strategy;
     private double payoff;
   }
 }

@@ -6,7 +6,6 @@ import org.fit.ssapp.config.ValidationConfig;
 import org.fit.ssapp.constants.MessageConst;
 import org.fit.ssapp.dto.request.StableMatchingProblemDto;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 public class StableMatchingValidator implements ConstraintValidator<ValidStableMatching, StableMatchingProblemDto> {
 

@@ -1,8 +1,16 @@
 package org.fit.ssapp.dto.mapper;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import org.apache.commons.math3.random.NormalizedRandomGenerator;
 import org.fit.ssapp.constants.AppConst;
 import org.fit.ssapp.dto.request.GameTheoryProblemDto;
+import org.fit.ssapp.ss.gt.Conflict;
 import org.fit.ssapp.ss.gt.GameTheoryProblem;
+import org.fit.ssapp.ss.gt.NormalPlayer;
+import org.fit.ssapp.ss.gt.Strategy;
 import org.fit.ssapp.ss.gt.implement.PsoCompatibleGameTheoryProblem;
 import org.fit.ssapp.ss.gt.implement.StandardGameTheoryProblem;
 import org.fit.ssapp.util.EvaluatorUtils;
@@ -31,16 +39,52 @@ public class GameTheoryProblemMapper {
     } else {
       problem = new StandardGameTheoryProblem();
     }
+
     problem.setDefaultPayoffFunction(EvaluatorUtils
         .getIfDefaultFunction(request.getDefaultPayoffFunction()));
     problem.setFitnessFunction(EvaluatorUtils
         .getValidFitnessFunction(request.getFitnessFunction()));
-    problem.setSpecialPlayer(request.getSpecialPlayer());
-    problem.setNormalPlayers(request.getNormalPlayers());
-    problem.setConflictSet(request.getConflictSet());
+    problem.setNormalPlayers(toList(request.getNormalPlayers()));
+    problem.setConflictSet(toList(request.getConflictSet()));
     problem.setMaximizing(request.isMaximizing());
 
     return problem;
+  }
+
+  private static List<NormalPlayer> toList(double[][][] playerDto) {
+    List<NormalPlayer> playerList = new ArrayList<>();
+    for (double[][] matrix: playerDto) {
+      NormalPlayer player = new NormalPlayer();
+      
+      List<Strategy> stratList = new ArrayList<>();
+      for (double[] strat : matrix) {
+        Strategy temp = new Strategy();
+        
+        List<Double> props = new ArrayList(strat.length);
+
+        for (double p : strat) {
+          props.add(p);
+        }
+
+        stratList.add(temp);
+      }
+      
+
+      playerList.add(player);
+    }
+
+    return playerList;
+  }
+
+  private static List<Conflict> toList(int[][] conflictDto) {
+    List<Conflict> conflictList = new ArrayList<>();
+
+    for (int[] list : conflictDto) {
+      Conflict conflict = new Conflict(list[0], list[1], list[2], list[3]);
+      conflictList.add(conflict);
+    }
+
+    return conflictList;
   }
 
   /**
@@ -55,7 +99,6 @@ public class GameTheoryProblemMapper {
         .getIfDefaultFunction(problem.getDefaultPayoffFunction()));
     result.setFitnessFunction(EvaluatorUtils
         .getValidFitnessFunction(problem.getFitnessFunction()));
-    result.setSpecialPlayer(problem.getSpecialPlayer());
     result.setNormalPlayers(problem.getNormalPlayers());
     result.setConflictSet(problem.getConflictSet());
     result.setMaximizing(problem.isMaximizing());
@@ -75,7 +118,6 @@ public class GameTheoryProblemMapper {
         .getIfDefaultFunction(problem.getDefaultPayoffFunction()));
     result.setFitnessFunction(EvaluatorUtils
         .getValidFitnessFunction(problem.getFitnessFunction()));
-    result.setSpecialPlayer(problem.getSpecialPlayer());
     result.setNormalPlayers(problem.getNormalPlayers());
     result.setConflictSet(problem.getConflictSet());
     result.setMaximizing(problem.isMaximizing());

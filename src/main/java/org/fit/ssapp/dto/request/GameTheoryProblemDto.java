@@ -22,7 +22,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 public class GameTheoryProblemDto extends ProblemDto {
-  private float[][][] normalPlayers;
+  private double[][][] normalPlayers;
   private int[][] conflictSet;
   private boolean isMaximizing;
   private String defaultPayoffFunction;

@@ -7,7 +7,6 @@ import static org.fit.ssapp.util.StringExpressionEvaluator.evaluatePayoffFunctio
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import lombok.Getter;
@@ -15,7 +14,6 @@ import lombok.Setter;
 import org.fit.ssapp.ss.gt.Conflict;
 import org.fit.ssapp.ss.gt.GameTheoryProblem;
 import org.fit.ssapp.ss.gt.NormalPlayer;
-import org.fit.ssapp.ss.gt.SpecialPlayer;
 import org.fit.ssapp.ss.gt.Strategy;
 import org.moeaframework.core.Solution;
 import org.moeaframework.core.variable.BinaryIntegerVariable;

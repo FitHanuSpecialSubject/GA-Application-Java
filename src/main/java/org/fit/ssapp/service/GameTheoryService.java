@@ -205,13 +205,10 @@ public class GameTheoryService {
 
       double strategyPayoff = normalPlayer.getStrategyAt(chosenStratIdx).getPayoff();
 
-      String playerName = getPlayerName(normalPlayer, i);
-      String strategyName = getStrategyName(chosenStratIdx, normalPlayer, i);
-
       GameSolution.Player gameSolutionPlayer = GameSolution.Player
           .builder()
-          .playerName(playerName)
-          .strategyName(strategyName)
+          .index(i)
+          .strategy(chosenStratIdx)
           .payoff(strategyPayoff)
           .build();
 
@@ -377,42 +374,6 @@ public class GameTheoryService {
         .message(message)
         .build();
   }
-
-  /**
-   * Retrieves the name of a player, defaulting to a formatted string if the name is null.
-   *
-   * @param normalPlayer the player object
-   * @param index        the index of the player
-   * @return the player name
-   */
-  public static String getPlayerName(NormalPlayer normalPlayer, int index) {
-    String playerName = normalPlayer.getName();
-    if (playerName == null) {
-      playerName = String.format("Player %d", index);
-    }
-
-    return playerName;
-  }
-
-  /**
-   * Retrieves the name of a strategy, defaulting to a formatted string if the name is null.
-   *
-   * @param chosenStrategyIndex the index of the chosen strategy
-   * @param normalPlayer        the player object
-   * @param index               the index of the player
-   * @return the strategy name
-   */
-  public static String getStrategyName(int chosenStrategyIndex,
-      NormalPlayer normalPlayer,
-      int index) {
-    String strategyName = normalPlayer.getStrategies().get(chosenStrategyIndex).getName();
-    if (strategyName == null) {
-      strategyName = String.format("Strategy %d", index);
-    }
-
-    return strategyName;
-  }
-
 
   /**
    * Retrieves the fitness value from the first solution in the nominated population.
