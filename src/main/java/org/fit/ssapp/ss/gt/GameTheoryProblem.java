@@ -13,22 +13,11 @@ public interface GameTheoryProblem extends Problem {
    */
   void setDefaultPayoffFunction(String payoffFunction);
 
-  /**
-   * Sets the special player in the game.
-   */
-
   void setFitnessFunction(String fitnessFunction);
-
-  /**
-   * Sets the list of normal players in the game.
-   */
-
-  void setSpecialPlayer(SpecialPlayer specialPlayer);
 
   /**
    * Defines whether the game is maximizing or minimizing the payoff.
    */
-
   void setNormalPlayers(List<NormalPlayer> normalPlayers);
 
   /**

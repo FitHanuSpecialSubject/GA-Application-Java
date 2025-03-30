@@ -32,9 +32,6 @@ import org.moeaframework.core.variable.RealVariable;
 @Data
 @NoArgsConstructor
 public class PsoCompatibleGameTheoryProblem implements GameTheoryProblem, Serializable {
-
-  /** Array to store best response strategies for each player */
-  private int[] bestResponses = new int[4];
   private SpecialPlayer specialPlayer;
   private List<NormalPlayer> normalPlayers;
   private List<NormalPlayer> oldNormalPlayers = new ArrayList<>();
@@ -46,66 +43,6 @@ public class PsoCompatibleGameTheoryProblem implements GameTheoryProblem, Serial
   private String fitnessFunction;
   private String defaultPayoffFunction;
   private boolean isMaximizing;
-
-  /**
-   * The main method to execute the PSO-based game theory problem. It reads the problem from a file,
-   * runs the OMOPSO algorithm, and prints the solution along with execution time.
-   *
-   * @param args Command-line arguments (not used).
-   */
-  public static void main(String[] args) {
-    PsoCompatibleGameTheoryProblem problem = (PsoCompatibleGameTheoryProblem)
-        ProblemUtils.readProblemFromFile(".data/gt_data_1.ser");
-    if (Objects.isNull(problem)) {
-      return;
-    }
-    long startTime = System.currentTimeMillis();
-    NondominatedPopulation result = new Executor()
-        .withProblem(problem)
-        .withAlgorithm("OMOPSO")
-        .withMaxEvaluations(100)
-        .withProperty("populationSize", 1000)
-        .distributeOnAllCores()
-        .run();
-    long endTime = System.currentTimeMillis();
-    double runtime = ((double) (endTime - startTime) / 1000);
-    runtime = Math.round(runtime * 100.0) / 100.0;
-    System.out.println("Runtime: " + runtime);
-
-    GameSolution solution = GameTheoryService.formatSolution(problem, result);
-    System.out.println(solution);
-  }
-
-  @SuppressWarnings("unused")
-  private void eliminateConflictStrategies() {
-    if (Objects.isNull(this.conflictSet)) {
-      return;
-    }
-
-    for (Conflict conflict : conflictSet) {
-      NormalPlayer evaluatingLeftPlayer = normalPlayers.get(conflict.getLeftPlayer());
-      NormalPlayer evaluatingRightPlayer = normalPlayers.get(conflict.getRightPlayer());
-      int leftConflictStrat = conflict.getLeftPlayerStrategy();
-      int rightConflictStrat = conflict.getRightPlayerStrategy();
-
-      if (evaluatingLeftPlayer.getStrategyAt(leftConflictStrat) != null
-          &&
-          conflict.getLeftPlayer() > -1) {
-        evaluatingLeftPlayer.removeStrategiesAt(leftConflictStrat);
-      }
-
-      if (evaluatingRightPlayer.getStrategyAt(rightConflictStrat) != null
-          &&
-          conflict.getRightPlayer() > -1) {
-        evaluatingRightPlayer.removeStrategiesAt(rightConflictStrat);
-      }
-
-    }
-    for (NormalPlayer player : normalPlayers) {
-      player.removeAllNull();
-    }
-  }
-
 
   /**
    * Returns a string representation of this game theory problem.
@@ -281,6 +218,35 @@ public class PsoCompatibleGameTheoryProblem implements GameTheoryProblem, Serial
 
   @Override
   public void close() {
+  }
+
+  /**
+   * The main method to execute the PSO-based game theory problem. It reads the problem from a file,
+   * runs the OMOPSO algorithm, and prints the solution along with execution time.
+   *
+   * @param args Command-line arguments (not used).
+   */
+  public static void main(String[] args) {
+    PsoCompatibleGameTheoryProblem problem = (PsoCompatibleGameTheoryProblem)
+        ProblemUtils.readProblemFromFile(".data/gt_data_1.ser");
+    if (Objects.isNull(problem)) {
+      return;
+    }
+    long startTime = System.currentTimeMillis();
+    NondominatedPopulation result = new Executor()
+        .withProblem(problem)
+        .withAlgorithm("OMOPSO")
+        .withMaxEvaluations(100)
+        .withProperty("populationSize", 1000)
+        .distributeOnAllCores()
+        .run();
+    long endTime = System.currentTimeMillis();
+    double runtime = ((double) (endTime - startTime) / 1000);
+    runtime = Math.round(runtime * 100.0) / 100.0;
+    System.out.println("Runtime: " + runtime);
+
+    GameSolution solution = GameTheoryService.formatSolution(problem, result);
+    System.out.println(solution);
   }
 
 }

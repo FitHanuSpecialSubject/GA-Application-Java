@@ -22,12 +22,10 @@ import org.fit.ssapp.util.StringExpressionEvaluator;
 @AllArgsConstructor
 public class NormalPlayer implements Serializable {
 
-  private String name;
   private List<Strategy> strategies;
   private List<BigDecimal> payoffValues;
   private int prevStrategyIndex = -1; // this is for the problem with dynamic data
   private String payoffFunction;
-  private BigDecimal payoff;
 
   /**
    * Retrieves the strategy at the specified index.
@@ -46,41 +44,7 @@ public class NormalPlayer implements Serializable {
     strategies.set(index, null);
   }
 
-  /**
-   * Removes all null values from the strategy list.
-   */
-  public void removeAllNull() {
-    strategies.removeIf(Objects::isNull);
-  }
 
-  /**
-   * Finds and returns the index of the dominant strategy, which is the strategy with the highest
-   * payoff value.
-   *
-   * @return The index of the dominant strategy, or -1 if no strategies exist.
-   */
-  public int getDominantStrategyIndex() {
-    List<Double> payoffs = strategies.stream()
-        .map(Strategy::getPayoff)
-        .toList();
-
-    double maxPayoffValue = payoffs.stream()
-            .max(Double::compareTo)
-            .orElse(0D);
-
-    // return index of the strategy having the max payOffValue
-    return payoffs.indexOf(maxPayoffValue);
-  }
-
-
-  public void evaluatePayoff(List<NormalPlayer> normalPlayers, int[] chosenStrategyIndices) {
-    if (payoffFunction != null && !payoffFunction.isBlank()) {
-      this.payoff = StringExpressionEvaluator.evaluatePayoffFunctionWithRelativeToOtherPlayers(this.getStrategyAt(chosenStrategyIndices[this.strategies.indexOf(this)]), payoffFunction, normalPlayers, chosenStrategyIndices);
-    } else {
-      // Default behavior: sum all properties of the strategy
-      this.payoff = StringExpressionEvaluator.calculateByDefault(this.getStrategyAt(chosenStrategyIndices[this.strategies.indexOf(this)]).getProperties(), null);
-    }
-  }
   /**
    * Generates a string representation of the strategies and their payoffs.
    *

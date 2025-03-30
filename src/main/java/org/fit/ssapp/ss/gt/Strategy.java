@@ -20,7 +20,6 @@ import org.fit.ssapp.util.StringExpressionEvaluator;
 @AllArgsConstructor
 public class Strategy implements Serializable {
 
-  private String name;
   private List<Double> properties = new ArrayList<>();
   private double payoff;
 

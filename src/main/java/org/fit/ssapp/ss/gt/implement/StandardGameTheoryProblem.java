@@ -55,33 +55,18 @@ import org.moeaframework.core.variable.BinaryIntegerVariable;
  * This class represents a standard game theory problem. It implements the {@link GameTheoryProblem}
  * interface and supports serialization.
  */
+@Getter
+@Setter
 public class StandardGameTheoryProblem implements GameTheoryProblem, Serializable {
-
-  @Getter
-  @Setter
-  private SpecialPlayer specialPlayer;
-  @Getter
   private List<NormalPlayer> normalPlayers;
-  @Getter
-  @Setter
   private List<NormalPlayer> oldNormalPlayers = new ArrayList<>();
-  @Setter
-  @Getter
   private List<Conflict> conflictSet = new ArrayList<>();
 
   //Store average pure payoff differences
-  @Setter
   private List<Double> playerAvgDiffs;
-  @Getter
-  @Setter
   private String fitnessFunction;
-  @Setter
-  @Getter
   private String defaultPayoffFunction;
   private boolean isMaximizing;
-  @Getter
-  @Setter
-  int[] bestResponses = new int[4];
 
   /**
    * Default constructor for StandardGameTheoryProblem. Initializes an empty game theory problem.
@@ -100,35 +85,6 @@ public class StandardGameTheoryProblem implements GameTheoryProblem, Serializabl
 
   public int getBestResponse() {
     return playerAvgDiffs.indexOf(Collections.min(playerAvgDiffs));
-  }
-
-  /**
-   * Determines the remaining alliances based on the best response strategy.
-   *
-   * @return An array of integers representing the best response strategy for each player.
-   */
-
-  @SuppressWarnings("unused")
-  public int[] getRemainAlliances() {
-    int[] bestResponse = new int[normalPlayers.size()];
-    Arrays.fill(bestResponse, 2);
-    int bestPlayerIndex = getBestResponse();
-    int bestStrategyIndex = normalPlayers.get(bestPlayerIndex).getDominantStrategyIndex();
-    bestResponse[bestPlayerIndex] = bestStrategyIndex;
-    if (bestStrategyIndex == normalPlayers.size() - 1) {
-      Arrays.fill(bestResponse, bestStrategyIndex);
-    } else {
-      for (int i = 0; i < normalPlayers.size(); ++i) {
-        int upperBound = normalPlayers.size() - i;
-        if (bestStrategyIndex == i) {
-          bestResponses[i] =
-              playerAvgDiffs.indexOf(Collections.min(playerAvgDiffs)) / upperBound;
-        } else {
-          bestResponses[i] = 2;
-        }
-      }
-    }
-    return bestResponse;
   }
 
   /**
