@@ -194,10 +194,8 @@ public class GameTheoryCustomPayoffTest {
   }
 
   private GameTheoryProblemDto setUpTestCase() {
-    List<NormalPlayer> players = getNormalPlayers();
     GameTheoryProblemDto dto = new GameTheoryProblemDto();
-    dto.setSpecialPlayer(null);
-    dto.setNormalPlayers(players);
+    dto.setNormalPlayers(getNormalPlayers());
     dto.setFitnessFunction("default");
     dto.setDefaultPayoffFunction("default");
     dto.setMaximizing(true);
@@ -208,32 +206,9 @@ public class GameTheoryCustomPayoffTest {
     return dto;
   }
 
-  private List<NormalPlayer> getNormalPlayers() {
-    final List<Double> stratProps = new ArrayList<Double>(5);
-    stratProps.add(10.0d);
-    stratProps.add(5.0d);  
-    stratProps.add(8.0d);  
-    stratProps.add(4.0d); 
-    stratProps.add(2.0d);  
-    
-    final Strategy strat = new Strategy();
-    strat.setPayoff(10d);
-    strat.setProperties(stratProps);
-
-    final List<Strategy> strats = new ArrayList<Strategy>(3);
-    strats.add(strat);
-    strats.add(strat);
-    strats.add(strat);
-
-    final NormalPlayer player = new NormalPlayer();
-    player.setName("Player");
-    player.setStrategies(strats);
-    player.setPayoffFunction("default");
-
-    final List<NormalPlayer> players = new ArrayList<NormalPlayer>(3);
-    players.add(player);
-    players.add(player);
-    players.add(player);
-    return players;
+  private double[][][] getNormalPlayers() {
+    double[] props = {1.0d, 2.0d, 4.0d, 3.0d};
+    double[][] strats = {props, props, props};
+    return new double[][][] { strats, strats, strats};
   }
 }

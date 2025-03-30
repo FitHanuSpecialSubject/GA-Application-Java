@@ -82,11 +82,10 @@ public class GTIntegrationTest {
 
     GameTheoryProblemDto dto = setUpBaseCase(algorithm);
 
-    List<Conflict> conflicts = Arrays.asList(
-            createConflict(0,1,0,1),
-            createConflict(1,2,1,0)
+    int[][] conflicts = {
+        { 0, 1, 0, 1 },
+        { 1, 2, 1, 0 } };
 
-    );
     dto.setConflictSet(conflicts);
 
     MvcResult result = performPostRequest(dto);
@@ -171,45 +170,10 @@ public class GTIntegrationTest {
    */
   private GameTheoryProblemDto setUpBaseCase(String algorithm){
     GameTheoryProblemDto dto = new GameTheoryProblemDto();
-    dto.setConflictSet(new ArrayList<>(0));
+    dto.setConflictSet(new int[][]{});
     dto.setFitnessFunction("DEFAULT");
     dto.setDefaultPayoffFunction("DEFAULT");
-
-    List<NormalPlayer> players = new ArrayList<>();
-    NormalPlayer p1 = new NormalPlayer();
-
-    List<Strategy> strategies1 = Arrays.asList(
-            createStrategy(1.0, 2.0, 5.0),
-            createStrategy(3.0, 4.0, 2.0),
-            createStrategy(7.0, 8.0, 4.0)
-    );
-    p1.setStrategies(strategies1);
-
-    NormalPlayer p2 = new NormalPlayer();
-
-    List<Strategy> strategies2 = Arrays.asList(
-            createStrategy(5.0, 6.0, 3.0),
-            createStrategy(7.0, 8.0, 4.0),
-            createStrategy(1.0, 2.0, 5.0)
-
-    );
-    p2.setStrategies(strategies2);
-
-    NormalPlayer p3 = new NormalPlayer();
-
-    List<Strategy> strategies3 = Arrays.asList(
-            createStrategy(4.0, 5.0, 3.0),
-            createStrategy(1.0, 6.0, 4.0),
-            createStrategy(7.0, 8.0, 4.0)
-    );
-    p3.setStrategies(strategies3);
-
-    players.add(p1);
-    players.add(p2);
-    players.add(p3);
-
-    dto.setNormalPlayers(players);
-
+    dto.setNormalPlayers(getNormalPlayers());
     dto.setAlgorithm(algorithm);
     dto.setMaximizing(false);
     dto.setDistributedCores("all");
@@ -219,17 +183,10 @@ public class GTIntegrationTest {
     return dto;
   }
 
-  /**
-   * Set up strategy for player .
-   *
-   * @return Strategy
-   */
-  private Strategy createStrategy(double... properties) {
-    Strategy strategy = new Strategy();
-    for (double prop : properties) {
-      strategy.addProperty(prop);
-    }
-    return strategy;
+  private double[][][] getNormalPlayers() {
+    double[] props = {1.0d, 2.0d, 4.0d, 3.0d};
+    double[][] strats = {props, props, props};
+    return new double[][][] { strats, strats, strats};
   }
 
   /**
@@ -247,14 +204,18 @@ public class GTIntegrationTest {
     return conflict;
   }
 
-  void validateConflict(JsonNode playersNode, List<Conflict> conflicts){
-    for (Conflict conflict : conflicts) {
-      JsonNode player1Node = playersNode.get(conflict.getLeftPlayer());
-      JsonNode player2Node = playersNode.get(conflict.getRightPlayer());
+  void validateConflict(JsonNode playersNode, int[][] conflicts){
+    for (int[] conflict : conflicts) {
+      int left = conflict[0];
+      int right = conflict[1];
+      int leftStrat = conflict[2];
+      int rightStrat = conflict[3];
+      JsonNode player1Node = playersNode.get(left);
+      JsonNode player2Node = playersNode.get(right);
 
       assertThat(
-          player1Node.get("strategyName").asText().equals("Strategy " + conflict.getLeftPlayerStrategy())
-              && player2Node.get("strategyName").asText().equals("Strategy " + conflict.getRightPlayerStrategy())
+          player1Node.get("strategyName").asText().equals("Strategy " + leftStrat)
+              && player2Node.get("strategyName").asText().equals("Strategy " + rightStrat)
       ).isFalse();
     }
 

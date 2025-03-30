@@ -19,7 +19,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProblemDto {
+public abstract class ProblemDto {
 
   /**
    * Get code name of one of MOEA supported Genetic Algorithms.

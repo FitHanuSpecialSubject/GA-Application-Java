@@ -5,9 +5,6 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.util.Arrays;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -19,15 +16,13 @@ import org.fit.ssapp.dto.validator.*;
 /**
  * Dto class for SMT problem request.
  */
-@NoArgsConstructor
-@AllArgsConstructor
 @ValidIndividualArraysSize
 @ValidEvaluateFunctionCount
 @ValidIndividualArrayPropertyCount
 @ValidStableMatching
-@Builder
 @Getter
 @Setter
+@NoArgsConstructor
 public class StableMatchingProblemDto extends ProblemDto {
   @Min(value = 2, message = ErrMessage.MES_001)
   private int numberOfSets;

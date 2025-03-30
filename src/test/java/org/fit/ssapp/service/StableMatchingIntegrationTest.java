@@ -123,25 +123,27 @@ public class StableMatchingIntegrationTest {
 
   private StableMatchingProblemDto createBaseCaseDto(String algorithm) {
 
-    return StableMatchingProblemDto.builder()
-        .problemName("Test Base Case")
-        .numberOfSets(2)
-        .numberOfProperty(2)
-        .individualSetIndices(new int[]{0, 1, 1})
-        .individualCapacities(new int[]{1, 1, 1})
-        .individualRequirements(new String[][]{{"2:3", "1--"}, {"2++", "1:2" }, {"2++", "1--"}})
-        .individualWeights(new double[][]{{1.0, 2.0}, {3.0, 4.0 }, {3.0, 4.0}})
-        .individualProperties(new double[][]{{5.0, 6.0}, {7.0, 8.0 }, {7.0, 8.0}})
-        .evaluateFunctions(new String[]{"default", "default"} )
-        .fitnessFunction("default")
-        .excludedPairs( null)
-        .populationSize(100)
-        .generation(50)
-        .numberOfIndividuals(3)
-        .maxTime(5000)
-        .algorithm(algorithm)
-        .distributedCores("all")
-        .build();
+    StableMatchingProblemDto dto  = new StableMatchingProblemDto();
+
+        dto.setProblemName("Test Base Case");
+        dto.setNumberOfSets(2);
+        dto.setNumberOfProperty(2);
+        dto.setIndividualSetIndices(new int[]{0, 1, 1});
+        dto.setIndividualCapacities(new int[]{1, 1, 1});
+        dto.setIndividualRequirements(new String[][]{{"2:3", "1--"}, {"2++", "1:2" }, {"2++", "1--"}});
+        dto.setIndividualWeights(new double[][]{{1.0, 2.0}, {3.0, 4.0 }, {3.0, 4.0}});
+        dto.setIndividualProperties(new double[][]{{5.0, 6.0}, {7.0, 8.0 }, {7.0, 8.0}});
+        dto.setEvaluateFunctions(new String[]{"default", "default"} );
+        dto.setFitnessFunction("default");
+        dto.setExcludedPairs( null);
+        dto.setPopulationSize(100);
+        dto.setGeneration(50);
+        dto.setNumberOfIndividuals(3);
+        dto.setMaxTime(5000);
+        dto.setAlgorithm(algorithm);
+        dto.setDistributedCores("all");
+        
+        return dto;
   }
 
   private StableMatchingProblemDto createExcludePairDto(String algorithm) {
