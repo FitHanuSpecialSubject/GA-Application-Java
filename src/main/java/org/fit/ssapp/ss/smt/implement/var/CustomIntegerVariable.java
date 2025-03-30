@@ -1,6 +1,5 @@
 package org.fit.ssapp.ss.smt.implement.var;
 
-import org.moeaframework.core.variable.BinaryIntegerVariable;
 import org.moeaframework.core.variable.RealVariable;
 
 /**

@@ -1,12 +1,5 @@
 package org.fit.ssapp.dto.request;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.fit.ssapp.ss.gt.Conflict;
-import org.fit.ssapp.ss.gt.NormalPlayer;
-import org.fit.ssapp.ss.gt.SpecialPlayer;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

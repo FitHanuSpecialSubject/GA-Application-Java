@@ -1,10 +1,8 @@
 package org.fit.ssapp.dto.mapper;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.math3.random.NormalizedRandomGenerator;
 import org.fit.ssapp.constants.AppConst;
 import org.fit.ssapp.dto.request.GameTheoryProblemDto;
 import org.fit.ssapp.ss.gt.Conflict;
