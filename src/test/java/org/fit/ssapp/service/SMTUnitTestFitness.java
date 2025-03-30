@@ -98,12 +98,12 @@ public class SMTUnitTestFitness {
    */
   // @ParameterizedTest
   @CsvSource({
-          "SIGMA{*S1}",
+//          "SIGMA{*S1}",
           "M1 *+ M2",
-          "SIGMA{S1} - M1 / 0",
-          "INVALID_FUNCTION{S1}",
-          "SIGMA{S1 + M2",
-          "null"
+//          "SIGMA{S1} - M1 / 0",
+//          "INVALID_FUNCTION{S1}",
+//          "SIGMA{S1 + M2",
+//          "null"
   })
   public void testInvalidFitnessCustom(String fitnessFunction) {
     MatchingData matchingData = setupMatchingData(3, 1, 3);

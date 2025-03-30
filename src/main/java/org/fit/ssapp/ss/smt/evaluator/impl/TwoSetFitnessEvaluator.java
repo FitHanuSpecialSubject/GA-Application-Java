@@ -7,6 +7,8 @@ import static org.fit.ssapp.util.StringExpressionEvaluator.isNumericValue;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.DoubleUnaryOperator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.DoubleStream;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -110,9 +112,16 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
       }
     }
     System.out.println(tmpSB);
-    return new ExpressionBuilder(tmpSB.toString())
-        .build()
-        .evaluate();
+    String finalExpression = tmpSB.toString();
+    validateMathExpression(finalExpression);
+
+    try {
+      return new ExpressionBuilder(finalExpression)
+              .build()
+              .evaluate();
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Invalid mathematical expression: " + finalExpression, e);
+    }
   }
 
   private double sigmaCalculate(double[] satisfactions, String expression) {
@@ -167,4 +176,20 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
     }
     return result;
   }
+
+  private void validateMathExpression(String expression) {
+    // Kiểm tra các toán tử kề nhau không hợp lệ
+    Pattern invalidOperators = Pattern.compile("([+\\-*/])\\s*([+\\-*/])");
+    Matcher matcher = invalidOperators.matcher(expression);
+    if (matcher.find()) {
+      throw new IllegalArgumentException("Invalid mathematical expression: consecutive operators found: " +
+              matcher.group(1) + matcher.group(2));
+    }
+
+    // Kiểm tra biểu thức bắt đầu hoặc kết thúc bằng toán tử
+    if (expression.matches("^[+\\-*/].*") || expression.matches(".*[+\\-*/]$")) {
+      throw new IllegalArgumentException("Invalid mathematical expression: starts or ends with an operator");
+    }
+  }
+
 }

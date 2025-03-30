@@ -17,7 +17,8 @@ import org.fit.ssapp.ss.smt.MatchingData;
 import org.fit.ssapp.ss.smt.preference.PreferenceBuilder;
 import org.fit.ssapp.ss.smt.preference.PreferenceList;
 import org.fit.ssapp.ss.smt.preference.PreferenceListWrapper;
-import org.fit.ssapp.ss.smt.preference.impl.list.TwoSetPreferenceList;
+import org.fit.ssapp.ss.smt.preference.impl.list.TwoSetPreferListRewrite;
+import org.fit.ssapp.ss.smt.preference.impl.list.TwoSetPreferListRewrite;
 import org.fit.ssapp.ss.smt.requirement.Requirement;
 import org.fit.ssapp.util.EvaluatorUtils;
 import org.fit.ssapp.util.PreferenceProviderUtils;
@@ -148,10 +149,10 @@ public class TwoSetPreferenceProvider implements PreferenceBuilder {
    */
   public PreferenceList getPreferenceListByFunction(int index) {
     int set = matchingData.getSetNoOf(index);
-    TwoSetPreferenceList a;
+    TwoSetPreferListRewrite a;
     Expression e;
     if (set == 0) {
-      a = new TwoSetPreferenceList(this.sizeOf2, this.sizeOf1);
+      a = new TwoSetPreferListRewrite(this.sizeOf2);
       if (this.expressionOfSet1 == null) {
         return this.getPreferenceListByDefault(index);
       }
@@ -159,10 +160,10 @@ public class TwoSetPreferenceProvider implements PreferenceBuilder {
       for (int i = this.sizeOf1; i < matchingData.getSize(); i++) {
         e.setVariables(this.getVariableValuesForSet1(index, i));
         double totalScore = e.evaluate();
-        a.add(totalScore);
+        a.add(i, totalScore);
       }
     } else {
-      a = new TwoSetPreferenceList(this.sizeOf1, 0);
+      a = new TwoSetPreferListRewrite(this.sizeOf1);
       if (this.expressionOfSet2 == null) {
         return this.getPreferenceListByDefault(index);
       }
@@ -170,7 +171,7 @@ public class TwoSetPreferenceProvider implements PreferenceBuilder {
       for (int i = 0; i < sizeOf1; i++) {
         e.setVariables(this.getVariableValuesForSet2(index, i));
         double totalScore = e.evaluate();
-        a.add(totalScore);
+        a.add(i, totalScore);
       }
     }
     a.sort();
@@ -186,9 +187,9 @@ public class TwoSetPreferenceProvider implements PreferenceBuilder {
   public PreferenceList getPreferenceListByDefault(int index) {
     int set = matchingData.getSetNoOf(index);
     int numberOfProperties = matchingData.getPropertyNum();
-    TwoSetPreferenceList a;
+    TwoSetPreferListRewrite a;
     if (set == 0) {
-      a = new TwoSetPreferenceList(this.sizeOf2, this.sizeOf1);
+      a = new TwoSetPreferListRewrite(this.sizeOf2);
       for (int i = sizeOf1; i < matchingData.getSize(); i++) {
         double totalScore = 0;
         for (int j = 0; j < numberOfProperties; j++) {
@@ -198,10 +199,10 @@ public class TwoSetPreferenceProvider implements PreferenceBuilder {
           totalScore += requirement.getDefaultScaling(propertyValue) * propertyWeight;
         }
         // Add
-        a.add(totalScore);
+        a.add(i, totalScore);
       }
     } else {
-      a = new TwoSetPreferenceList(this.sizeOf1, 0);
+      a = new TwoSetPreferListRewrite(this.sizeOf1);
       for (int i = 0; i < sizeOf1; i++) {
         double totalScore = 0;
         for (int j = 0; j < numberOfProperties; j++) {
@@ -211,7 +212,7 @@ public class TwoSetPreferenceProvider implements PreferenceBuilder {
           totalScore += requirement.getDefaultScaling(PropertyValue) * PropertyWeight;
         }
         // Add
-        a.add(totalScore);
+        a.add(i, totalScore);
       }
     }
     a.sort();
