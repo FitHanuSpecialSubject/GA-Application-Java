@@ -36,7 +36,7 @@ public class NumberUtils {
    * @return true if the string is a valid double, false otherwise
    */
   public static boolean isDouble(String str) {
-    if (!str.contains(",") || !str.contains(".")) {
+    if (!str.contains(",") && !str.contains(".")) {
       return false;
     }
     try {

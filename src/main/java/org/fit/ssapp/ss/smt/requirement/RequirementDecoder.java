@@ -79,7 +79,7 @@ public class RequirementDecoder {
           result[1] = "++";
         }
       } else if (isDouble(item)) {
-        result[0] = "-2";
+        result[0] = item;
         result[1] = null;
       } else {
         result[0] = "-3";

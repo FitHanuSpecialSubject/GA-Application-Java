@@ -201,49 +201,49 @@ public class SMTPreferenceTest {
     private static Stream<Arguments> customPreferenceTestCases() {
         return Stream.of(
           // ceil
-//          Arguments.of(
-//            "ceil(R2) + (15 / 2) * W3",
-//            new String[] {"1--", "2:3", "3++"},
-//            new double[] { 4.0, 5.0, 6.0 }, // property
-//            new double[] { 1.0, 2.0, 3.0 }, // weight
-//            6, 25.5
-//          ),
-//
-//          // floor
-//          Arguments.of(
-//            "floor(R2) + 15^2",
-//            new String[] {"4", "5", "6"},
-//            new double[] {7.0, 8.0, 9.0}, // property
-//            new double[] {4.0, 5.0, 6.0}, // weight
-//            25.5, 230
-//          ),
-//
-//          // cbrt
-//          Arguments.of(
-//            "cbrt(3) + R1 * W2 + R3",
-//            new String[] {"4", "5", "6"},
-//            new double[] {7.0, 8.0, 9.0}, // property
-//            new double[] {4.0, 5.0, 6.0}, // weight
-//            25.5, 27.442249570307407
-//          ),
-//
-//          // abs
-//          Arguments.of(
-//            "abs(R1 - R2) + 1",
-//            new String[] {"4", "5", "6"},
-//            new double[] {7.0, 8.0, 9.0}, // property
-//            new double[] {4.0, 5.0, 6.0}, // weight
-//            25.5, 2
-//          ),
-//
-//          // sqrt
-//          Arguments.of(
-//            "sqrt(4) + 17",
-//            new String[] {"4", "5", "6"},
-//            new double[] {7.0, 8.0, 9.0}, // property
-//            new double[] {4.0, 5.0, 6.0}, // weight
-//            25.5, 19
-//          ),
+          Arguments.of(
+            "ceil(R2) + (15 / 2) * W3",
+            new String[] {"1--", "2:3", "3++"},
+            new double[] { 4.0, 5.0, 6.0 }, // property
+            new double[] { 1.0, 2.0, 3.0 }, // weight
+            6, 25.5
+          ),
+
+          // floor
+          Arguments.of(
+            "floor(R2) + 15^2",
+            new String[] {"4", "5", "6"},
+            new double[] {7.0, 8.0, 9.0}, // property
+            new double[] {4.0, 5.0, 6.0}, // weight
+            25.5, 230
+          ),
+
+          // cbrt
+          Arguments.of(
+            "cbrt(3) + R1 * W2 + R3",
+            new String[] {"4", "5", "6"},
+            new double[] {7.0, 8.0, 9.0}, // property
+            new double[] {4.0, 5.0, 6.0}, // weight
+            25.5, 27.442249570307407
+          ),
+
+          // abs
+          Arguments.of(
+            "abs(R1 - R2) + 1",
+            new String[] {"4", "5", "6"},
+            new double[] {7.0, 8.0, 9.0}, // property
+            new double[] {4.0, 5.0, 6.0}, // weight
+            25.5, 2
+          ),
+
+          // sqrt
+          Arguments.of(
+            "sqrt(4) + 17",
+            new String[] {"4", "5", "6"},
+            new double[] {7.0, 8.0, 9.0}, // property
+            new double[] {4.0, 5.0, 6.0}, // weight
+            25.5, 19
+          ),
 
           // log
           Arguments.of(
@@ -251,7 +251,7 @@ public class SMTPreferenceTest {
             new String[] {"1.5", "2.5", "3.5"},
             new double[] { 4.5, 5.5, 6.5 }, // property
             new double[] { 1.0, 2.0, 3.0 }, // weight
-                  0 , 151.5
+                  12.971428571428572 , 153.32459298648675
           )
   );
     }
