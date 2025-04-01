@@ -41,6 +41,10 @@ public class TwoSetPreferenceProvider implements PreferenceBuilder {
   private Map<String, Set<Integer>> variablesOfSet1;
   private Map<String, Set<Integer>> variablesOfSet2;
 
+  // set indices of nodeId
+  private List<Integer> set0Indices;
+  private List<Integer> set1Indices;
+
 
   /**
    * initialize Exp4j mathematical Expression & variables for each set.
@@ -76,6 +80,16 @@ public class TwoSetPreferenceProvider implements PreferenceBuilder {
       this.expressionOfSet2 = new ExpressionBuilder(evalFunctionForSet2)
               .variables(PreferenceProviderUtils.convertMapToSet(variablesOfSet2))
               .build();
+    }
+
+    set0Indices = new ArrayList<>();
+    set1Indices = new ArrayList<>();
+    for (int i = 0; i < matchingData.getSize(); i++) {
+      if (matchingData.getSetNoOf(i) == 0) {
+        set0Indices.add(i);
+      } else {
+        set1Indices.add(i);
+      }
     }
 
   }
@@ -157,7 +171,7 @@ public class TwoSetPreferenceProvider implements PreferenceBuilder {
         return this.getPreferenceListByDefault(index);
       }
       e = this.expressionOfSet1;
-      for (int i = this.sizeOf1; i < matchingData.getSize(); i++) {
+      for (int i : set1Indices) {
         e.setVariables(this.getVariableValuesForSet1(index, i));
         double totalScore = e.evaluate();
         a.add(i, totalScore);
@@ -168,7 +182,7 @@ public class TwoSetPreferenceProvider implements PreferenceBuilder {
         return this.getPreferenceListByDefault(index);
       }
       e = this.expressionOfSet2;
-      for (int i = 0; i < sizeOf1; i++) {
+      for (int i : set0Indices) {
         e.setVariables(this.getVariableValuesForSet2(index, i));
         double totalScore = e.evaluate();
         a.add(i, totalScore);
@@ -190,7 +204,7 @@ public class TwoSetPreferenceProvider implements PreferenceBuilder {
     TwoSetPreferListRewrite a;
     if (set == 0) {
       a = new TwoSetPreferListRewrite(this.sizeOf2);
-      for (int i = sizeOf1; i < matchingData.getSize(); i++) {
+      for (int i : set1Indices) {
         double totalScore = 0;
         for (int j = 0; j < numberOfProperties; j++) {
           double propertyValue = matchingData.getPropertyValueOf(i, j);
@@ -203,7 +217,7 @@ public class TwoSetPreferenceProvider implements PreferenceBuilder {
       }
     } else {
       a = new TwoSetPreferListRewrite(this.sizeOf1);
-      for (int i = 0; i < sizeOf1; i++) {
+      for (int i : set0Indices) {
         double totalScore = 0;
         for (int j = 0; j < numberOfProperties; j++) {
           double PropertyValue = matchingData.getPropertyValueOf(i, j);
