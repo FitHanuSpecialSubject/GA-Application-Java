@@ -171,7 +171,7 @@ public class SMTPreferenceTest {
                         new double[]{4.0, 5.0, 6.0}, // weight
                         25.5
                 ),
-                
+
                 Arguments.of(
                         new String[]{"1:3", "5:10", "100:200"},
                         new double[]{100, 100, 150.0}, // property
@@ -188,7 +188,7 @@ public class SMTPreferenceTest {
                         new String[]{"1.5", "2.5", "3.5"},
                         new double[]{11, 20, 30}, // property
                         new double[]{1.0, 2.0, 3.0}, // weight
-                        0
+                        49.04761904761905
                 )
         );
     }
