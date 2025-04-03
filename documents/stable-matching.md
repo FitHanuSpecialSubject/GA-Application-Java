@@ -312,4 +312,3 @@ In the context of the provided API endpoint, the `StableMatchingService` likely 
 6.  Return the `Response` to the client.
 
 This abstraction allows the API to handle different types of Stable Matching problems using the power of the MOEA Framework for optimization.
-```
