@@ -21,24 +21,12 @@ public class TwoSetPreferListRewrite implements PreferenceList {
   private final Map<Integer, Double> scores;
 
   /**
-   * Preference order when matching
-   */
-  private final List<Integer> preferOrder;
-
-  /**
-   * Check preferOrder is sort or not
-   */
-  private boolean isSorted;
-
-  /**
    * TwoSetPreferListRewrite.
    *
    * @param size    int
    */
   public TwoSetPreferListRewrite(int size) {
     scores = new HashMap<>(size, 0.9f);
-    preferOrder = new ArrayList<>();
-    isSorted = false;
   }
 
   @Override
@@ -59,7 +47,6 @@ public class TwoSetPreferListRewrite implements PreferenceList {
    */
   public void add(int nodeId, double score) {
     scores.put(nodeId, score);
-    preferOrder.add(nodeId);
   }
 
   /**
@@ -96,20 +83,12 @@ public class TwoSetPreferListRewrite implements PreferenceList {
 
   @Override
   public int getPositionByRank(int set, int rank) {
-    if (!isSorted) {
-      sort();
-    }
-    try {
-      return preferOrder.get(rank);
-    } catch (ArrayIndexOutOfBoundsException e) {
-      log.error("Position {} not found:", rank, e);
-      return -1;
-    }
+    return 0 ;
   }
 
   @Override
   public int getLastOption(int set) {
-    return this.getPositionByRank(set, preferOrder.size() - 1);
+    return 0;
   }
 
   @Override
@@ -117,18 +96,6 @@ public class TwoSetPreferListRewrite implements PreferenceList {
     return scores.getOrDefault(proposeNode, 0.0) > scores.getOrDefault(preferNodeCurrentNode, 0.0);
   }
 
-  /**
-   *sort.
-   */
-  public void sort() {
-    preferOrder.sort((a, b) -> {
-      Double scoreA = scores.getOrDefault(a, 0.0);
-      Double scoreB = scores.getOrDefault(b, 0.0);
-      return Double.compare(scoreB, scoreA); // Descending order
-    });
-
-    isSorted = true;
-  }
 
   /**
    * getScore of a node ;
@@ -144,21 +111,24 @@ public class TwoSetPreferListRewrite implements PreferenceList {
   @Override
   public String toString() {
     StringBuilder result = new StringBuilder("{");
-    for (int i = 0; i < preferOrder.size(); i++) {
-      int nodeId = preferOrder.get(i);
-      double score = scores.getOrDefault(nodeId, 0.0);
+    Iterator<Map.Entry<Integer, Double>> iterator = scores.entrySet().iterator();
 
-      result
-              .append("[")
-              .append(nodeId)
+    while (iterator.hasNext()) {
+      Map.Entry<Integer, Double> entry = iterator.next();
+      result.append("[")
+              .append(entry.getKey())
               .append(" -> ")
-              .append(formatDouble(score))
+              .append(formatDouble(entry.getValue()))
               .append("]");
-      if (i < preferOrder.size() - 1) {
+      if (iterator.hasNext()) {
         result.append(", ");
       }
     }
     result.append("}");
     return result.toString();
+  }
+
+  public Set<Integer> getAllNodeId() {
+    return Collections.unmodifiableSet(scores.keySet());
   }
 }
