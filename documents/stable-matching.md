@@ -65,6 +65,69 @@ The MOEA Framework is a multi-objective evolutionary optimization library that h
 
 Spring Boot to build the API facilitates rapid development, easy scaling, and maintenance while MOEA Framework helps optimize the pairing process with more efficient solutions compared to traditional matching algorithms. Combined with other supporting libraries, the system ensures high performance and the ability to flexibly handle various variants of the Stable Matching problem.
 
+### Reusing MOEA Framework’s `Problem`
+
+#### Defining the `MatchingProblem` Interface
+
+The `MOEA Framework` provides an abstract `Problem` class that defines the structure for optimization problems. To adapt it for **Stable Matching**, we introduce the `MatchingProblem` interface, which extends `Problem` and serves as a foundation for different matching problem types.
+
+The `MatchingProblem` interface acts as a generic contract for all matching-related problems. It ensures that all derived classes implement core functionalities required for solving the **Stable Matching Problem** using MOEA's optimization techniques.
+
+#### Interface definition
+
+```java
+import org.moeaframework.core.Problem;
+
+public interface MatchingProblem extends Problem
+```
+
+#### Adding core methods
+```java
+  /**
+   * Get Matching type name.
+   */
+  String getMatchingTypeName();
+
+  /**
+   * Get problem's matching data.
+   */
+  MatchingData getMatchingData();
+```
+- `getMatchingTypeName()`: Returns a string representing the type of matching problem (e.g., One-to-One, One-to-Many, Many-to-Many).
+- `getMatchingData()`: Provides access to the structured data required for the matching process.
+
+```java
+  /**
+   * Main matching logic for Stable Matching Problem Types.
+   */
+  Matches stableMatching(Variable var);
+
+  /**
+   * Get all satisfactions of matches result.
+   */
+  double[] getMatchesSatisfactions(Matches matches);
+```
+- `stableMatching(Variable var)`: Implements the matching logic for different **Stable Matching** problem types.
+- `getMatchesSatisfactions(Matches matches)`: Evaluates and returns an array of satisfaction values for each match.
+
+### Implementing different matching problems
+
+By defining `MatchingProblem`, we allow different types of Stable Matching problems to reuse the same structure while implementing problem-specific logic.
+
+#### One-to-One matching (`OTOProblem`)
+
+```java
+public class OTOProblem implements MatchingProblem {
+    // Implements stable matching logic for One-to-One problem(s)
+}
+public class OTMProblem implements MatchingProblem {
+    // Implements stable matching logic for One-to-Many problem(s)
+}
+public class MTMProblem implements MatchingProblem {
+    // Implements stable matching logic for Many-to-Many problem(s)
+}
+```
+
 ## 4. Abstraction
 
 ### Individual
@@ -151,12 +214,6 @@ The system implements Stable Matching algorithms through service classes:
 - `StableMatchingService`: Handles general requests for the Stable Matching problem.
 - `StableMatchingOtmService`: Specialized service for the One-to-Many Matching problem.
 - `TripletMatchingService`: Handles the extended problem with groups of three entities.
-
-The main algorithms used are:
-
-- Gale-Shapley Algorithm: Creates a stable pairing based on preference lists.
-- Gusfield’s Algorithm: Optimized for One-to-One problems with specific conditions.
-- Farkas’ Algorithm: Used for the Triplet Matching problem.
 
 These algorithms are implemented in the `ss.smt.implement` package, with each problem having a corresponding class like `OTMProblem`, `MTMProblem`, `TripletOTOProblem`.
 
