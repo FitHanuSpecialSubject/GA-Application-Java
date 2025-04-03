@@ -177,7 +177,6 @@ public class TwoSetPreferenceProvider implements PreferenceBuilder {
         }
       }
     }
-    a.sort();
     return a;
   }
 
@@ -222,7 +221,6 @@ public class TwoSetPreferenceProvider implements PreferenceBuilder {
         }
       }
     }
-    a.sort();
     return a;
   }
 

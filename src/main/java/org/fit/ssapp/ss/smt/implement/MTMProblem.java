@@ -3,6 +3,8 @@ package org.fit.ssapp.ss.smt.implement;
 import java.util.LinkedList;
 import java.util.Objects;
 import java.util.Queue;
+import java.util.Set;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,6 +17,7 @@ import org.fit.ssapp.ss.smt.MatchingProblem;
 import org.fit.ssapp.ss.smt.evaluator.FitnessEvaluator;
 import org.fit.ssapp.ss.smt.preference.PreferenceList;
 import org.fit.ssapp.ss.smt.preference.PreferenceListWrapper;
+import org.fit.ssapp.ss.smt.preference.impl.list.TwoSetPreferListRewrite;
 import org.fit.ssapp.util.StringUtils;
 import org.moeaframework.core.Solution;
 import org.moeaframework.core.Variable;
@@ -159,53 +162,53 @@ public class MTMProblem implements MatchingProblem {
     }
 
     while (!queue.isEmpty()) {
-      int leftNode = queue.poll();
+      int leftNode = queue.poll(); // Lấy node bên trái tiếp theo từ hàng đợi
       if (matches.isMatched(leftNode)) {
         continue;
       }
 
-      //Get preference list of proposing node
-      PreferenceList nodePreference = preferenceLists.get(leftNode);
-
-      //Loop through LeftNode's preference list to find a Match
-      for (int i = 0; i < nodePreference.size(UNUSED_VAL); i++) {
-        int rightNode = nodePreference.getPositionByRank(UNUSED_VAL, i);
-
+      TwoSetPreferListRewrite nodePreference = (TwoSetPreferListRewrite) preferenceLists.get(leftNode);
+      for (int rightNode : nodePreference.getScores().keySet()) {
         if (matches.isMatched(rightNode, leftNode)) {
           continue;
         }
 
-        boolean rightIsFull = matches.isFull(rightNode, this.matchingData.getCapacityOf(rightNode));
+        Set<Integer> currentMatchesOfLeftNode = matches.getSetOf(leftNode);
 
-        if (!rightIsFull) {
-          matches.addMatchBi(leftNode, rightNode);
-          break;
+        boolean leftIsFull = matches.isFull(leftNode, matchingData.getCapacityOf(leftNode));
+        boolean rightIsFull = matches.isFull(rightNode, matchingData.getCapacityOf(rightNode));
+
+        if (leftIsFull) {
+          if (rightNode == nodePreference.getLeastNode(UNUSED_VAL, rightNode, currentMatchesOfLeftNode)) {
+            continue;
+          } // nếu rightNode mới tốt hơn rightNode cũ
         }
 
-        // The node that rightNode has the least preference considering
-        // its currents matches and leftNode
-        int rightLoser = preferenceLists.getLeastScoreNode(
-                UNUSED_VAL,
-                rightNode,
-                leftNode,
-                matches.getSetOf(rightNode),
-                matchingData.getCapacityOf(rightNode));
-
-        // rightNode likes its current matches more than leftNode
-        if (rightLoser == leftNode) {
-          // if leftNode like rightNode the least
-          if (preferenceLists.getLastChoiceOf(UNUSED_VAL, leftNode) == rightNode) {
-            break;
-          }
-        } else {
-          matches.removeMatchBi(rightNode, rightLoser);
+        if (!rightIsFull && leftIsFull) {
+          // và nếu rightNode mới chưa full
+          int oldRightNote = nodePreference.getLeastNode(UNUSED_VAL, rightNode, currentMatchesOfLeftNode);
+          matches.removeMatchBi(leftNode, oldRightNote);
           matches.addMatchBi(leftNode, rightNode);
-          queue.add(rightLoser);
-          break;
+          continue;
+        } else if (!rightIsFull && !leftIsFull) {
+          matches.addMatchBi(leftNode, rightNode);
+          continue;
         }
+        Set<Integer> currentMatches = matches.getSetOf(rightNode);
+        int leastPreferredNode = nodePreference.getLeastNode(UNUSED_VAL, leftNode, currentMatches);
+
+        if (leastPreferredNode == leftNode) {
+          continue;
+        }
+
+        int oldRightNote = nodePreference.getLeastNode(UNUSED_VAL, rightNode, currentMatchesOfLeftNode);
+        matches.removeMatchBi(leftNode, oldRightNote);
+
+        matches.removeMatchBi(rightNode, leastPreferredNode);
+        matches.addMatchBi(leftNode, rightNode);
+        queue.add(leastPreferredNode);
       }
     }
-
     return matches;
   }
 
