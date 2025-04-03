@@ -201,9 +201,6 @@ public class MTMProblem implements MatchingProblem {
           continue;
         }
 
-        int oldRightNote = nodePreference.getLeastNode(UNUSED_VAL, rightNode, currentMatchesOfLeftNode);
-        matches.removeMatchBi(leftNode, oldRightNote);
-
         matches.removeMatchBi(rightNode, leastPreferredNode);
         matches.addMatchBi(leftNode, rightNode);
         queue.add(leastPreferredNode);
