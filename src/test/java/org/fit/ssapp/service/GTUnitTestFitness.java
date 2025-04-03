@@ -56,11 +56,16 @@ public class GTUnitTestFitness {
     assertEquals(12.0, result.doubleValue(), 0.0001);
   }
   
-  @Test
-  public void testFitnessValueWithEmptyString() {
+  @ParameterizedTest
+  @CsvSource({
+    "'', 12.0, 'Empty string should default to sum of payoffs'",
+    "   , 12.0, 'Blank string should default to sum of payoffs'",
+    "SUM, 12.0, 'Explicit SUM function should match default behavior'"
+  })
+  public void testFitnessValueWithEmptyInput(String fitnessFunction, double expected, String testDescription) {
     double[] payoffs = {3.0, 4.0, 5.0};
-    BigDecimal result = evaluateFitnessValue(payoffs, "");
-    assertEquals(12.0, result.doubleValue(), 0.0001);
+    BigDecimal result = evaluateFitnessValue(payoffs, fitnessFunction);
+    assertEquals(expected, result.doubleValue(), 0.0001, testDescription);
   }
 
   @ParameterizedTest

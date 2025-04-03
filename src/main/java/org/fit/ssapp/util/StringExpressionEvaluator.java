@@ -144,8 +144,6 @@ public class StringExpressionEvaluator {
     }
 
     if (fitnessFunction == null || fitnessFunction.isBlank()) {
-      // if the fitnessFunction is absent or null,
-      // the fitness value is the sum function of all payoffs by default
       return calculateByDefault(payoffList, null);
     } else {
       // replace placeholders for players' payoffs with the actual values
