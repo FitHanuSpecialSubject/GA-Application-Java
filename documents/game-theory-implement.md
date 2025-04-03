@@ -7,7 +7,9 @@
 4. [Game Solution](#game-solution)
 5. [Evaluation Process](#evaluation-process)
 6. [Running a Game Theory Problem](#running-a-game-theory-problem)
-7. [Conclusion](#conclusion)
+7. [Conflict](#conflict)
+8. [Strategy](#strategy)
+9. [Conclusion](#conclusion)
 
 ## Overview
 This project implements a coordination game using game theory principles and evolutionary algorithms. A coordination game is a type of game where players benefit from making the same or complementary decisions. A well-known example is the **Prisoner’s Dilemma**, where cooperation leads to the best collective outcome, but individual incentives might lead to defection.
@@ -76,6 +78,47 @@ algorithm.run(10000);
 
 // Retrieve results
 List<GameSolution> solutions = algorithm.getResult();
+```
+
+## Conflict
+The `Conflict` class represents a competitive situation between two players and their chosen strategies.
+
+### Attributes:
+- `leftPlayer`: ID of the first player.
+- `rightPlayer`: ID of the second player.
+- `leftPlayerStrategy`: Strategy chosen by the first player.
+- `rightPlayerStrategy`: Strategy chosen by the second player.
+
+### Functionality:
+- The class stores information about two competing players and their respective strategies.
+- It provides a `toString()` method to format conflict details in a readable format.
+
+### Example:
+```java
+Conflict conflict = new Conflict(0, 1, 2, 3);
+System.out.println(conflict.toString());
+// Output: Player: 1, Strategy: 3, Player: 2, Strategy: 4
+```
+
+## Strategy
+The `Strategy` class defines a strategy with properties and a payoff function.
+
+### Attributes:
+- `name`: The name of the strategy.
+- `properties`: A list of numerical properties associated with the strategy.
+- `payoff`: The computed payoff value for this strategy.
+
+### Functionality:
+- The class supports adding new properties dynamically.
+- The `evaluateStringExpression()` method evaluates the payoff function using input expressions and other players' strategies.
+- A `toString()` method formats the strategy's details for output.
+
+### Example:
+```java
+Strategy strategy = new Strategy("Aggressive", Arrays.asList(0.5, 1.2), 0.0);
+strategy.addProperty(0.8);
+System.out.println(strategy.toString());
+// Output: [ 0.5, 1.2, 0.8 ]
 ```
 
 ## Conclusion
