@@ -1,76 +1,84 @@
-# Tổng quan về SMT (Stable Matching)
+# Overview of SMT (Stable Matching)
 ## 1. Overview
 
-> The Stable Matching Problem (SMP) is a classical problem in algorithmic game theory, introduced by David Gale and Lloyd Shapley in 1962. It involves two sets of agents (e.g., doctors and hospitals, students and schools) who have preferences over each other, and the goal is to create a stable matching, where no two agents would prefer each other over their current partner (Nguồn: Mistralai).
+In mathematics, economics, and computer science, the stable marriage problem (also stable matching problem) is the problem of finding a stable matching between two equally sized sets of elements given an ordering of preferences for each element. A matching is a bijection from the elements of one set to the elements of the other set. A matching is not stable if:
 
-Bài toán này thường được mô tả bằng ví dụ về việc ghép đôi nam và nữ, nhưng nó cũng có thể được áp dụng cho nhiều lĩnh vực khác như ghép đôi sinh viên với các vị trí thực tập, bệnh viện với bác sĩ thực tập, v.v.
+1. There is an element A of the first matched set which prefers some given element B of the second matched set over the element to which A is already matched, and
+2. B also prefers A over the element to which B is already matched.
 
-## 2. Các biến thể của bài toán
+In other words, a matching is stable when there does not exist any pair (A, B) which both prefer each other to their current partner under the matching.
 
-### Đầu vào của bài toán
+_Extracted from [Wikipedia](https://en.wikipedia.org/wiki/Stable_marriage_problem). This problem is conventionally referred as Stable marriage problem._
 
-Dữ liệu đầu vào được đóng gói trong `StableMatchingProblemDto` và gửi đến API thông qua `@RequestBody`.
+This problem (Stable Matching Problem) is often illustrated using the example of pairing men and women in a dating scenario, but it has broader applications, including student-internship assignments, hospital-resident placements, and job-market matchmaking.
 
-### Các Loại Bài toán Stable Matching
+## Stable Matching Problem's Variants
 
-- **One-to-One (OTO)** - Bài toán cổ điển của Gale-Shapley: Mỗi thực thể trong tập hợp đầu tiên chỉ có thể ghép với đúng một thực thể trong tập hợp thứ hai.
-    - Ví dụ: Một nhóm sinh viên được ghép với một nhóm trường đại học, mỗi sinh viên chỉ có thể nhập học tại một trường.
-    - Thuật toán Gale-Shapley đảm bảo rằng không có hai thực thể nào có thể cải thiện tình trạng của họ bằng cách thay đổi đối tượng ghép đôi.
-- **One-to-Many (OTM)** - (Một Thực Thể Có Nhiều Ghép Nối) Mở rộng từ OTO, một thực thể có thể có nhiều ghép nối, nhưng mỗi thực thể trong tập còn lại chỉ có một ghép nối.
-    - Ví dụ: Một bệnh viện có thể nhận nhiều bác sĩ thực tập, nhưng mỗi bác sĩ chỉ có thể làm việc tại một bệnh viện.
-    - Điều này đòi hỏi thuật toán phải xem xét khả năng tiếp nhận của mỗi thực thể trong quá trình ghép nối.
-- **Many-to-Many (MTM)** - (Ghép Nhiều-Nhiều) Cả hai tập hợp đều có thể có nhiều ghép nối.
-    - Ví dụ: Các freelancer có thể làm việc với nhiều công ty, và mỗi công ty có thể tuyển nhiều freelancer.
-    - Đây là một mở rộng phức tạp của thuật toán Gale-Shapley, trong đó phải quản lý danh sách ưu tiên theo cả hai chiều.
-- **Triplet Matching (TripletOTO)** - (Ghép Nhóm Ba) Thay vì chỉ có hai thực thể, mỗi ghép nối liên quan đến ba thực thể.
-    - Ví dụ: Trong lĩnh vực y tế, một ca phẫu thuật có thể cần một bác sĩ phẫu thuật, một bác sĩ gây mê và một y tá.
-    - Việc xác định sự ổn định trở nên phức tạp hơn, vì phải đảm bảo rằng cả ba thực thể đều hài lòng với lựa chọn của họ.
+### Input
 
-## 3. Về các thư viện được sử dụng
+A StableMatchingProblemDto object, sent from the front-end via API and converted using @RequestBody. All of the work is automatic, the only thing you have to do is import the source file (`.xlsx`).
 
-API xử lý bài toán Stable Matching được xây dựng bằng Java Spring Boot, tận dụng các công nghệ mạnh mẽ để đảm bảo hiệu suất, tính mở rộng và khả năng bảo trì. Một trong những thành phần quan trọng nhất của hệ thống là **MOEA Framework**, được sử dụng để tối ưu hóa quá trình tìm kiếm phương án ghép cặp tối ưu.
 
-Dưới đây là các công nghệ chính được sử dụng trong hệ thống:
+```java
+@Autowired
+private StableMatchingService stableMatchingSolver;
 
-### **Spring Boot - Nền tảng phát triển API**
+// Running `solve()` with the input being the StableMatchingProblemDto object - the input data sent from the front-end, converted to StableMatchingProblemDto using @RequestBody.
 
-Spring Boot giúp xây dựng các ứng dụng Java nhanh chóng và dễ dàng với ít cấu hình hơn. Trong API này, Spring Boot cung cấp (Mấy cái tên packages này thì kệ cũng được :> chủ yếu là chức năng nó mang lại thui):
+@PostMapping("/stable-matching-solver")
+public CompletableFuture<ResponseEntity<Response>> solveStableMatching(
+        @RequestBody @Valid StableMatchingProblemDto object) {
+    return CompletableFuture.completedFuture(stableMatchingSolver.solve(object));
+}
+```
 
-- **spring-boot-starter-web**: Xây dựng API RESTful xử lý các yêu cầu từ client.
-- **spring-boot-starter-aop**: Hỗ trợ lập trình hướng khía cạnh (AOP), giúp quản lý logging và xử lý các logic chung một cách hiệu quả.
-- **spring-boot-starter-thymeleaf**: Tích hợp Thymeleaf để hiển thị dữ liệu (nếu cần).
-- **spring-boot-starter-validation**: Hỗ trợ validation dữ liệu đầu vào.
-- **spring-boot-starter-websocket**: Hỗ trợ giao tiếp thời gian thực qua WebSocket.
-- **spring-boot-starter-actuator**: Cung cấp thông tin theo dõi và giám sát hệ thống.
+### Stable Matching Problem's Types
 
-### **MOEA (Multi-Objective Evolutionary Algorithm) Framework là gì?**
-MOEA Framework là một thư viện tối ưu hóa tiến hóa đa mục tiêu dành cho Java. Nó hỗ trợ nhiều thuật toán tối ưu hóa dựa trên tiến hóa, giúp tìm kiếm các giải pháp tối ưu trong các bài toán phức tạp.
+- One-to-One (OTO) - The classical Gale-Shapley problem: Each entity in the first set can only be matched with exactly one entity in the second set.
+    - Example: A group of students is matched with a group of universities, where each student can only enroll in one university.
+    - The Gale-Shapley algorithm ensures that no two entities can improve their situation by switching partners.
+- One-to-Many (OTM) - An extension of OTO, where one entity can have multiple matches, but each entity in the other set has only one match.
+    - Example: A hospital can accept multiple interns, but each intern can only work at one hospital.
+    - This requires the algorithm to consider the capacity of each entity during the matching process.
+- Many-to-Many (MTM) - Both sets can have multiple matches.
+    - Example: Freelancers can work with multiple companies, and each company can hire multiple freelancers.
+    - This is a complex extension of the Gale-Shapley algorithm, where preference lists must be managed in both directions.
+- Triplet Matching (TripletOTO) - Instead of just two entities, each match involves three entities.
+    - Example: In the medical field, a surgery may require a surgeon, an anesthesiologist, and a nurse.
+    - Determining stability becomes more complex, as it must be ensured that all three entities are satisfied with their choices.
 
-### **Tại sao sử dụng MOEA Framework?**
-1. **Tối ưu hóa đa mục tiêu:** Stable Matching có nhiều yếu tố ảnh hưởng đến việc ghép cặp (ví dụ: sở thích của cá nhân, yêu cầu cụ thể về năng lực, giới hạn số lượng). MOEA giúp tìm kiếm các phương án tối ưu thay vì chỉ một phương án duy nhất.
-2. **Linh hoạt và mạnh mẽ:** MOEA hỗ trợ nhiều thuật toán tối ưu hóa, phù hợp với nhiều biến thể của bài toán Stable Matching như One-to-One, One-to-Many và Many-to-Many.
-3. **Hiệu suất cao:** Được thiết kế để chạy hiệu quả trên các bài toán lớn, giúp xử lý hàng trăm nghìn cá nhân mà không ảnh hưởng nhiều đến thời gian chạy.
+## 3. Libraries
 
-### **Các thư viện hỗ trợ khác**
-- **exp4j**: Một thư viện giúp đánh giá biểu thức toán học nhanh chóng, được dùng để tính toán giá trị ưu tiên trong bài toán ghép cặp.
-- **commons-csv**: Hỗ trợ đọc/ghi dữ liệu CSV, giúp nhập và xuất danh sách cá nhân tham gia bài toán Stable Matching.
-- **JUnit**: Sử dụng cho kiểm thử đơn vị, đảm bảo tính chính xác của thuật toán ghép cặp.
+The API for handling the Stable Matching problem is built using Java with Spring Boot, leveraging powerful technologies to ensure performance, scalability, and maintainability. One of the most important components of the system is the MOEA Framework, which is used to optimize the search for optimal pairing solutions. Below are the main technologies used in the system:
 
-Việc sử dụng **Spring Boot** để xây dựng API giúp phát triển nhanh, dễ dàng mở rộng và bảo trì. **MOEA Framework** là thành phần cốt lõi giúp tối ưu hóa quá trình ghép cặp với các giải pháp hiệu quả hơn so với các thuật toán ghép cặp truyền thống. Kết hợp với các thư viện hỗ trợ khác, hệ thống đảm bảo hiệu suất cao và khả năng xử lý linh hoạt nhiều biến thể của bài toán Stable Matching.
+### Spring Boot - API Development Platform
 
-## 4. Từng component của Stable Matching được trừu tượng hóa như thế nào?
+Spring Boot helps build Java applications quickly and easily with less configuration. In this API, Spring is used to handle the logic for the Web Server - building a RESTful API that processes requests from clients.
 
-### **Individual**
-Mỗi thực thể trong hệ thống được biểu diễn dưới dạng một `Individual`, chứa các thuộc tính quan trọng như:
+### MOEA (Multi-Objective Evolutionary Algorithm)
 
-- **Set indices**: Định danh của thực thể trong tập hợp.
-- **Capacity**: Số lượng tối đa các ghép nối có thể tham gia.
-- **PWR (Properties)**:
-  - **Value**: Mức độ quan trọng hoặc sự phù hợp của thực thể.
-  - **Weight**: Độ ưu tiên của thực thể trong quá trình ghép nối.
-  - **Requirement**: Điều kiện tối thiểu cần để một ghép nối hợp lệ.
+The MOEA Framework is a multi-objective evolutionary optimization library that helps find optimal solutions in complex problems like Stable Matching. Instead of just applying the traditional Gale-Shapley algorithm, the system leverages optimization algorithms to find the most beneficial pairing solutions based on multiple criteria. The MOEA Framework supports:
 
-Individual không được viết dưới dạng một Object mà thay vào đó sử dụng các Arrays đại diện tương ứng cho từng *properties* của một Individual (Credit cho anh Thành và anh Hoàng). Để hình dung rõ hơn thì bạn có thể ghé vào trong `StableMatchingProblemDto` và đây là phần mà mình đang nhắc đến:
+- Global solution search: Avoiding local minima of the Gale-Shapley algorithm.
+- Multi-objective optimization: Balancing multiple factors in matching, such as individual preferences and capacity limits.
+- High performance: Handling large-scale problems with complex constraints.
+
+Spring Boot to build the API facilitates rapid development, easy scaling, and maintenance while MOEA Framework helps optimize the pairing process with more efficient solutions compared to traditional matching algorithms. Combined with other supporting libraries, the system ensures high performance and the ability to flexibly handle various variants of the Stable Matching problem.
+
+## 4. Abstraction
+
+### Individual
+
+Each entity in the system is represented as an `individual` object, including:
+
+- Set indices: Identifier of the entity within its set.
+- Capacity: The maximum number of matches the entity can participate in.
+- PWR (Properties):
+  - Value: The level of importance or suitability of the entity.
+  - Weight: The priority of the entity during the matching process.
+  - Requirement: The minimum condition required for a valid match.
+
+`Individual` is not written as an Object in Java but instead uses multiple arrays representing each *property* of an Individual. Here is how it looks like when written in Java:
 
 ```java
   @Min(value = 2, message = ErrMessage.MES_001)
@@ -96,11 +104,36 @@ Individual không được viết dưới dạng một Object mà thay vào đó
   private double[][] individualProperties;
 ```
 
+Here is the JSON format:
 
-### **PreferenceList**
-Danh sách ưu tiên xác định mức độ mong muốn của một thực thể đối với các thực thể khác.
+```json
+{
+  "numberOfSets": 3,
+  "numberOfProperty": 2,
+  "individualSetIndices": [0, 1, 2],
+  "individualCapacities": [2, 3, 1],
+  "individualRequirements": [
+    ["", ""],
+    ["", ""],
+    ["", ""]
+  ],
+  "individualWeights": [
+    [0.5, 0.3],
+    [0.7, 0.2],
+    [0.4, 0.6]
+  ],
+  "individualProperties": [
+    [1.0, 2.5],
+    [3.2, 4.1],
+    [5.0, 6.3]
+  ]
+}
+```
 
-#### Code Snippet - Preference List
+### PreferenceList
+
+The preference list defines the level of desirability of one entity towards other entities.
+
 ```java
 public class PreferenceList {
     private Map<Integer, List<Integer>> preferences;
@@ -111,39 +144,31 @@ public class PreferenceList {
 }
 ```
 
-### Cách implementation tổng quan
+### Overall Implementation Approach
 
-Hệ thống triển khai các thuật toán Stable Matching thông qua các lớp dịch vụ:
+The system implements Stable Matching algorithms through service classes:
 
-- **`StableMatchingService`**: Xử lý yêu cầu chung về bài toán Stable Matching.
-- **`StableMatchingOtmService`**: Dịch vụ chuyên biệt dành cho bài toán One-to-Many Matching.
-- **`TripletMatchingService`**: Xử lý bài toán mở rộng với nhóm ba thực thể.
+- `StableMatchingService`: Handles general requests for the Stable Matching problem.
+- `StableMatchingOtmService`: Specialized service for the One-to-Many Matching problem.
+- `TripletMatchingService`: Handles the extended problem with groups of three entities.
 
-Các thuật toán chính được sử dụng:
+The main algorithms used are:
 
-- **Gale-Shapley Algorithm**: Tạo một cặp ghép đôi ổn định dựa trên danh sách ưu tiên.
-- **Gusfield’s Algorithm**: Tối ưu hóa cho các bài toán One-to-One với điều kiện đặc biệt.
-- **Farkas’ Algorithm**: Dùng cho bài toán Triplet Matching.
+- Gale-Shapley Algorithm: Creates a stable pairing based on preference lists.
+- Gusfield’s Algorithm: Optimized for One-to-One problems with specific conditions.
+- Farkas’ Algorithm: Used for the Triplet Matching problem.
 
-Các thuật toán này được triển khai trong package `ss.smt.implement`, mỗi bài toán có một class tương ứng như `OTMProblem`, `MTMProblem`, `TripletOTOProblem`.
+These algorithms are implemented in the `ss.smt.implement` package, with each problem having a corresponding class like `OTMProblem`, `MTMProblem`, `TripletOTOProblem`.
 
-### Đánh Giá Kết Quả
+### Result Evaluation
 
-#### **Evaluate Function**
-Xác định mức độ ưu tiên của một thực thể đối với các thực thể khác dựa trên các thuộc tính của nó.
+- **Evaluate Function**: Determines the preference level of one entity towards other entities based on its properties.
+- **Fitness Function**: Calculates the suitability level of the entire matching process, usually as the sum of preference list values.
+- **Exclude Pair**: Allows for the exclusion of undesirable pairs.
+- **Capacity**: Limits the maximum number of matches for each entity.
 
-#### **Fitness Function**
-Tính toán mức độ phù hợp của toàn bộ quá trình ghép đôi, thường bằng tổng giá trị danh sách ưu tiên.
+### Processing Flow
 
-#### **Exclude Pair**
-Cho phép loại bỏ các cặp ghép không mong muốn.
-
-#### **Capacity**
-Giới hạn số ghép nối tối đa của mỗi thực thể.
-
-### Quy trình xử lý
-
-Mỗi vòng lặp sẽ xử lý danh sách hàng đợi để tạo ra ghép nối ổn định, đồng thời đánh giá và điều chỉnh bằng thuật toán di truyền.
 
 ```mermaid
 flowchart TD
@@ -159,8 +184,6 @@ flowchart TD
 ```
 
 ### Core Stable Matching
-
-Hệ thống mở rộng thuật toán Gale-Shapley để hỗ trợ Many-to-Many Matching.
 
 ```mermaid
 flowchart TD
@@ -190,20 +213,22 @@ flowchart TD
     Q -->|Yes| R[Matches]
     R --> S[End]
 ```
-
-### Chạy Bài Toán SMT
-Phần code để mô tả cách gọi `StableMatchingService`:
-
+### Running the SMT Problem
+The code snippet to describe how to use `StableMatchingService`:
 
 ```java
-public class SMTExecutor {
-    public static void main(String[] args) {
-        StableMatchingService service = new StableMatchingService();
-        List<Matches> result = service.executeMatching(problemInstance);
-        System.out.println(result);
-    }
+
+@Autowired
+private StableMatchingService stableMatchingSolver;
+
+// Running `solve()` with the input being the StableMatchingProblemDto object - the input data sent from the front-end, converted to StableMatchingProblemDto using @RequestBody.
+
+@PostMapping("/stable-matching-solver")
+public CompletableFuture<ResponseEntity<Response>> solveStableMatching(
+        @RequestBody @Valid StableMatchingProblemDto object) {
+    return CompletableFuture.completedFuture(stableMatchingSolver.solve(object));
 }
+
 ```
 
-Các dịch vụ được sử dụng trong Controller để hình thành một API hoàn chỉnh, giúp xử lý bài toán Stable Matching hiệu quả và dễ dàng mở rộng.
-
+The services used in the Controller form a complete API, helping to handle the Stable Matching problem efficiently and easily scalable.
