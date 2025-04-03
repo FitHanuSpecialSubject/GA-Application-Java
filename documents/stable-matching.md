@@ -18,7 +18,6 @@ This problem (Stable Matching Problem) is often illustrated using the example of
 
 A StableMatchingProblemDto object, sent from the front-end via API and converted using @RequestBody. All of the work is automatic, the only thing you have to do is import the source file (`.xlsx`).
 
-
 ```java
 @Autowired
 private StableMatchingService stableMatchingSolver;
@@ -114,34 +113,33 @@ public interface MatchingProblem extends Problem
 
 By defining `MatchingProblem`, we allow different types of Stable Matching problems to reuse the same structure while implementing problem-specific logic.
 
-#### One-to-One matching (`OTOProblem`)
-
 ```java
 public class OTOProblem implements MatchingProblem {
     // Implements stable matching logic for One-to-One problem(s)
 }
+```
+
+```java
 public class OTMProblem implements MatchingProblem {
     // Implements stable matching logic for One-to-Many problem(s)
 }
+```
+
+```java
 public class MTMProblem implements MatchingProblem {
     // Implements stable matching logic for Many-to-Many problem(s)
 }
 ```
 
-## 4. Abstraction
+## 4. Core Components of Stable Matching Abstraction
 
 ### Individual
 
-Each entity in the system is represented as an `individual` object, including:
+In the context of Stable Matching within this system, an `Individual` represents a single entity participating in the matching process. Each individual possesses several key properties that influence the matching outcome. These properties define the characteristics and constraints of each entity.
 
-- Set indices: Identifier of the entity within its set.
-- Capacity: The maximum number of matches the entity can participate in.
-- PWR (Properties):
-  - Value: The level of importance or suitability of the entity.
-  - Weight: The priority of the entity during the matching process.
-  - Requirement: The minimum condition required for a valid match.
+The `Individual` is not explicitly defined as a class in the traditional sense within the Java code. Instead, its properties are represented using arrays within the `StableMatchingProblemDto`. This approach allows for a more flexible and data-driven representation of individuals.
 
-`Individual` is not written as an Object in Java but instead uses multiple arrays representing each *property* of an Individual. Here is how it looks like when written in Java:
+Here's how the properties of an `Individual` are structured within `StableMatchingProblemDto`:
 
 ```java
   @Min(value = 2, message = ErrMessage.MES_001)
@@ -167,35 +165,24 @@ Each entity in the system is represented as an `individual` object, including:
   private double[][] individualProperties;
 ```
 
-Here is the JSON format:
+-   **Set indices**: `individualSetIndices` array stores the identifier of each individual within its respective set. This helps in distinguishing between different groups of entities involved in the matching.
+-   **Capacity**: `individualCapacities` array defines the maximum number of matches an individual can have. This is particularly relevant for One-to-Many and Many-to-Many matching problems.
+-   **PWR (Properties)**: This encompasses three aspects of an individual:
+    -   **Value**: Represented by the `individualProperties` array, this indicates the inherent value or suitability of an individual.
+    -   **Weight**: Stored in the `individualWeights` array, this denotes the priority or importance of an individual in the matching process.
+    -   **Requirement**: Defined in the `individualRequirements` array, this specifies the minimum conditions that must be met for an individual to be considered a valid match.
 
-```json
-{
-  "numberOfSets": 3,
-  "numberOfProperty": 2,
-  "individualSetIndices": [0, 1, 2],
-  "individualCapacities": [2, 3, 1],
-  "individualRequirements": [
-    ["", ""],
-    ["", ""],
-    ["", ""]
-  ],
-  "individualWeights": [
-    [0.5, 0.3],
-    [0.7, 0.2],
-    [0.4, 0.6]
-  ],
-  "individualProperties": [
-    [1.0, 2.5],
-    [3.2, 4.1],
-    [5.0, 6.3]
-  ]
-}
-```
+While the `Individual` is currently represented using arrays for efficiency and flexibility, a future implementation might involve a dedicated `Individual` class to encapsulate these properties more explicitly.
 
-### PreferenceList
+### Preference List
 
-The preference list defines the level of desirability of one entity towards other entities.
+The preference list is a crucial component in Stable Matching as it defines the order in which an entity prefers other entities. This ordering guides the matching algorithm to find stable pairings where individuals are as satisfied as possible with their matches based on their preferences.
+
+In this system, preference lists are created based on the properties of the individuals. The exact mechanism for generating these lists might vary depending on the specific matching problem type and the criteria defined.
+
+The structure of a preference list typically involves a mapping where each entity is associated with an ordered list of other entities, ranked according to its preference.
+
+Here's a code snippet illustrating a basic structure for a `PreferenceList`:
 
 ```java
 public class PreferenceList {
@@ -207,85 +194,122 @@ public class PreferenceList {
 }
 ```
 
-### Overall Implementation Approach
-
-The system implements Stable Matching algorithms through service classes:
-
-- `StableMatchingService`: Handles general requests for the Stable Matching problem.
-- `StableMatchingOtmService`: Specialized service for the One-to-Many Matching problem.
-- `TripletMatchingService`: Handles the extended problem with groups of three entities.
-
-These algorithms are implemented in the `ss.smt.implement` package, with each problem having a corresponding class like `OTMProblem`, `MTMProblem`, `TripletOTOProblem`.
-
-### Result Evaluation
-
-- **Evaluate Function**: Determines the preference level of one entity towards other entities based on its properties.
-- **Fitness Function**: Calculates the suitability level of the entire matching process, usually as the sum of preference list values.
-- **Exclude Pair**: Allows for the exclusion of undesirable pairs.
-- **Capacity**: Limits the maximum number of matches for each entity.
-
-### Processing Flow
+This `PreferenceList` class uses a `Map` to store the preferences for each entity. The key of the map is the entity's identifier, and the value is a `List` of identifiers representing the other entities, ordered from most preferred to least preferred.
 
 
-```mermaid
-flowchart TD
-    A[Start] --> B[Queue]
-    B --> C[ Stable Matching]
-    C --> D[Matches]
-    D --> E[Preferences]
-    E --> F{Exclude pairs exist?}
-    F -->|Yes| G[Reduce Fitness]
-    F -->|No| H[ ]
-    G --> H
-    H --> J[End]
-```
+### SMT Problem
 
-### Core Stable Matching
+The Stable Matching Problem, as implemented within this system, leverages the MOEA Framework to find optimal solutions. Instead of relying solely on traditional algorithms like Gale-Shapley, this approach uses evolutionary computation to explore a wider range of potential matchings and optimize based on defined objectives.
 
-```mermaid
-flowchart TD
-    A[Start] --> B[Queue]
-    B --> C[Dequeue]
-    C --> D[Individual A]
-    D --> E[Preference List]
-    E --> F[Individual B]
-    F --> G{Is B full?}
-    G -->|No| H{Is A full?}
-    H -->|No| I[Match A and B]
-    H -->|Yes| J{Does A prefer B over any current match?}
-    J -->|Yes| K[Unmatch less preferred]
-    K --> I
-    J -->|No| L[No action]
-    G -->|Yes| M{Does B prefer A over any current match?}
-    M -->|Yes| N{Is A full?}
-    N -->|No| I
-    N -->|Yes| O{Does A prefer B over any current match?}
-    O -->|Yes| K
-    O -->|No| L
-    M -->|No| L
-    E --> P{Has next preference?}
-    P -->|Yes| F
-    P -->|No| Q{Is the queue empty?}
-    Q -->|No| B
-    Q -->|Yes| R[Matches]
-    R --> S[End]
-```
-### Running the SMT Problem
-The code snippet to describe how to use `StableMatchingService`:
+#### Solution
+
+In the context of the MOEA Framework, a `Solution` represents a single candidate solution to the Stable Matching problem. It's essentially a potential way of matching the entities involved. The `newSolution()` method is responsible for creating these candidate solutions.
+
+Here's a conceptual code snippet illustrating how a new `Solution` is generated:
 
 ```java
-
-@Autowired
-private StableMatchingService stableMatchingSolver;
-
-// Running `solve()` with the input being the StableMatchingProblemDto object - the input data sent from the front-end, converted to StableMatchingProblemDto using @RequestBody.
-
-@PostMapping("/stable-matching-solver")
-public CompletableFuture<ResponseEntity<Response>> solveStableMatching(
-        @RequestBody @Valid StableMatchingProblemDto object) {
-    return CompletableFuture.completedFuture(stableMatchingSolver.solve(object));
-}
-
+  @Override
+  public Solution newSolution() {
+    // A new Solution object is instantiated.
+    // The parameters (1, 1) indicate that this solution 
+    // has one decision variable and one objective function. 
+    Solution solution = new Solution(1, 1);
+    Permutation permutationVar = new Permutation(problemSize);
+    solution.setVariable(0, permutationVar);
+    // The newly created Solution, which encodes a potential matching, 
+    // is returned to the MOEA Framework for further processing.
+    return solution;
+  }
 ```
 
-The services used in the Controller form a complete API, helping to handle the Stable Matching problem efficiently and easily scalable.
+Essentially, `newSolution()` acts as a factory for creating different possible matchings that the MOEA algorithm will then try to improve.
+
+#### Evaluation
+
+Once a `Solution` (a potential matching) is generated, the `evaluate()` method is called to assess its quality. This method determines how well the proposed matching satisfies the criteria of the Stable Matching problem, such as stability and the preferences of the entities.
+
+Here's the code snippet for the `evaluate()` method:
+
+```java
+  public void evaluate(Solution solution) {
+    Matches result = this.stableMatching(solution.getVariable(0));
+    // Check Exclude Pairs
+    // This section handles constraints on the matching
+    int[][] excludedPairs = this.matchingData.getExcludedPairs();
+    if (Objects.nonNull(excludedPairs)) {
+      for (int[] excludedPair : excludedPairs) {
+        if (result.isMatched(excludedPair[0], excludedPair[1])) {
+          solution.setObjective(0, Double.MAX_VALUE);
+          return;
+        }
+      }
+    }
+    double[] satisfactions = this.preferenceLists.getMatchesSatisfactions(result, matchingData);
+    double fitnessScore;
+    if (this.hasFitnessFunc()) {
+      fitnessScore = fitnessEvaluator
+              .withFitnessFunctionEvaluation(satisfactions, this.fitnessFunction);
+    } else {
+      fitnessScore = fitnessEvaluator.defaultFitnessEvaluation(satisfactions);
+    }
+    solution.setAttribute(StableMatchingConst.MATCHES_KEY, result);
+    // Finally, the objective value of the `Solution` is set to 
+    // the negative of the `fitnessScore`. Most MOEA frameworks aim to 
+    // minimize objective values. By negating the fitness score, 
+    // we are essentially telling the algorithm to find solutions 
+    // that maximize the original fitness (satisfaction and stability).
+    solution.setObjective(0, -fitnessScore);
+  }
+```
+In summary, the `evaluate()` method takes a proposed matching, checks for constraint violations, calculates how satisfied the entities are, and assigns an objective value to the solution based on this satisfaction (fitness). This allows the MOEA Framework to compare different potential matchings and iteratively improve them to find the best stable solutions.
+
+#### Applying MOEA
+
+The MOEA Framework orchestrates the process of finding optimal stable matchings by repeatedly using the `newSolution()` method to generate a population of diverse candidate solutions and the `evaluate()` method to assess their quality.
+
+-   The **`newSolution()`** method provides the exploration capability, allowing the algorithm to explore different regions of the solution space (different possible matchings).
+-   The **`evaluate()`** method provides the exploitation capability, guiding the algorithm towards better solutions by assigning fitness scores based on the problem's objectives (e.g., maximizing overall satisfaction, minimizing instability) and constraints (e.g., excluding certain pairs).
+
+The MOEA Framework's **`Executor`** is responsible for managing this iterative process. You configure the `Executor` with:
+
+-   The specific MOEA algorithm you want to use (e.g., NSGA-II, SPEA2, which are algorithms designed for multi-objective optimization).
+-   The `Problem` definition, which includes the `newSolution()` and `evaluate()` methods that we've discussed.
+-   Termination criteria, such as the maximum number of evaluations or generations, to control how long the optimization process runs.
+
+The `Executor` then runs the chosen algorithm, which repeatedly generates new solutions using `newSolution()`, evaluates them using `evaluate()`, and uses evolutionary operators (like crossover and mutation) to create new generations of solutions that are hopefully better than the previous ones. This iterative process continues until the termination criteria are met, and the `Executor` returns a set of non-dominated solutions representing the best stable matchings found.
+
+
+### Running an SMT Problem
+
+To run a Stable Matching problem that has been defined within the system, you would typically interact with the `StableMatchingService`. This service likely handles the setup of the MOEA optimization process and returns the resulting stable matchings.
+
+Here's a code snippet illustrating how an SMT problem might be executed using the MOEA Framework:
+
+```java
+import org.moeaframework.Executor;
+import org.moeaframework.core.NondominatedPopulation;
+import org.moeaframework.core.Problem;
+import org.moeaframework.algorithm.NSGAII; // Example algorithm
+
+// Bình thường sẽ dùng Mapper để chuyển từ StableMatchingProblemDto sang MatchingProblem với Type
+OTOProblem otoProblem = new OTOProblem(/* ... problem-specific parameters ... */);
+
+// Configure and run the MOEA executor
+NondominatedPopulation result = new Executor()
+        .withProblem(problem)
+        .withAlgorithm(new NSGAII(problem, 100 /* population size */, 100 /* number of iterations */))
+        .withMaxEvaluations(10000) // Optional termination criteria
+        .run();
+```
+
+In the context of the provided API endpoint, the `StableMatchingService` likely encapsulates this execution logic. When the `/stable-matching-solver` endpoint is called with a `StableMatchingProblemDto`, the `stableMatchingSolver.solve(object)` method would:
+
+1.  Parse the input data from the `StableMatchingProblemDto`.
+2.  Create an instance of the appropriate `MatchingProblem` implementation (e.g., `OTOProblem`, `OTMProblem`).
+3.  Configure and run the MOEA `Executor` with the chosen algorithm and problem instance.
+4.  Extract the best matching solutions from the resulting nondominated population.
+5.  Format the results into a `Response` object.
+6.  Return the `Response` to the client.
+
+This abstraction allows the API to handle different types of Stable Matching problems using the power of the MOEA Framework for optimization.
+```
