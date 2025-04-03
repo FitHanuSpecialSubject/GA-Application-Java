@@ -26,11 +26,8 @@ import org.junit.jupiter.params.provider.ValueSource;
  * 5. Input validation and error handling
  */
 public class GTPayoffUnitTest {
-
     /**
      * Test default payoff function (sum of all properties)
-     * where Pi refers to player i
-     * where pi refers to property i of that player's strategy
      */
     @ParameterizedTest
     @MethodSource("defaultPayoffTestCases")
@@ -154,14 +151,14 @@ public class GTPayoffUnitTest {
                 List.of(5.0, 15.0),
                 List.of(10.0, 20.0),
                 "sqrt(P1p1 + P2p1) + cbrt(P1p2 + P2p2)",
-                7.1440496564
+                7.1440
             ),
             // logarithm
             Arguments.of(
                 List.of(5.0, 10.0, 15.0),
                 List.of(20.0, 25.0, 30.0),
                 "log2(P1p1 + P2p1) + log(P1p2 + P2p2) - log10(P1p2 + P2p2)",
-                6.6551362069
+                6.6551
             ),
             // Standard deviation approximation (for 2 values only)
             Arguments.of(
@@ -187,7 +184,7 @@ public class GTPayoffUnitTest {
         if (!isRelative) {
             BigDecimal result = StringExpressionEvaluator.evaluatePayoffFunctionNoRelative(
                 strategy, expression);
-            assertEquals(expected, result.doubleValue(), 0.0001);
+            assertEquals(expected, result.doubleValue(), 0.00001);
         } else {
             NormalPlayer player1 = new NormalPlayer();
             player1.setStrategies(List.of(strategy));
@@ -202,7 +199,7 @@ public class GTPayoffUnitTest {
 
             BigDecimal result = StringExpressionEvaluator.evaluatePayoffFunctionWithRelativeToOtherPlayers(
                 strategy, relativeExpression, players, chosenStrategyIndices);
-            assertEquals(expected, result.doubleValue(), 0.0001);
+            assertEquals(expected, result.doubleValue(), 0.00001);
         }
     }
 
@@ -231,13 +228,13 @@ public class GTPayoffUnitTest {
             Arguments.of(List.of(1.0, 2.0, 3.0), List.of(), "floor(p2 + 0.9)", "", false, 2.0, 0.00001),
             Arguments.of(List.of(1.7, 2.7), List.of(3.7, 4.7), "", "floor(P1p1)", true, 1.0, 0.00001),
 
-            Arguments.of(List.of(1.0, 2.0, 3.0), List.of(), "log(p3)", "", false, 1.0986122886681098, 0.0001),
-            Arguments.of(List.of(1.0, 2.0), List.of(3.0, 4.0), "", "log(P2p1)", true, 1.0986122886681098, 0.0001),
+            Arguments.of(List.of(1.0, 2.0, 3.0), List.of(), "log(p3)", "", false, 1.0986, 0.0001),
+            Arguments.of(List.of(1.0, 2.0), List.of(3.0, 4.0), "", "log(P2p1)", true, 1.0986, 0.0001),
 
             Arguments.of(List.of(1.0, 2.0, 3.0), List.of(), "sqrt(p2^2)", "", false, 2.0, 0.00001),
             Arguments.of(List.of(4.0, 5.0), List.of(9.0, 16.0), "", "sqrt(P1p1)", true, 2.0, 0.00001),
 
-            Arguments.of(List.of(2.0, 4.0, 8.0), List.of(), "sqrt(p1) + cbrt(p3)", "", false, 3.414213562373095, 0.00001), //non-relative
+            Arguments.of(List.of(2.0, 4.0, 8.0), List.of(), "sqrt(p1) + cbrt(p3)", "", false, 3.4142, 0.0001), //non-relative
             Arguments.of(List.of(4.0, 5.0), List.of(9.0, 16.0), "", "sqrt(P1p1) + sqrt(P2p1)", true, 5.0, 0.00001) //relative
         );
     }
