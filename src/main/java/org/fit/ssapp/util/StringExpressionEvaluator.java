@@ -18,6 +18,12 @@ import org.fit.ssapp.ss.gt.Strategy;
 /**
  * A utility class to evaluate mathematical expressions in string format. Supports variable
  * replacement, basic arithmetic operations, and trigonometric functions.
+ * 
+ * Note on decimal precision:
+ * This class uses a standard precision of 4 decimal places for all calculations.
+ * This precision is chosen to provide sufficient accuracy for most game theory calculations
+ * while avoiding excessive precision that could lead to floating-point errors.
+ * All BigDecimal results are rounded using HALF_UP rounding mode.
  */
 public class StringExpressionEvaluator {
 
@@ -32,7 +38,11 @@ public class StringExpressionEvaluator {
     SUM, AVERAGE, MIN, MAX, PRODUCT, MEDIAN, RANGE
   }
 
-  static DecimalFormat decimalFormat = new DecimalFormat("#.##############");
+  // Standard decimal format with 4 decimal places
+  static DecimalFormat decimalFormat = new DecimalFormat("#.####");
+  
+  // Standard scale for all calculations (4 decimal places)
+  private static final int STANDARD_SCALE = 4;
 
   /**
    * Evaluates a payoff function relative to other players.
@@ -41,7 +51,7 @@ public class StringExpressionEvaluator {
    * @param payoffFunction        The payoff function as a string.
    * @param normalPlayers         List of all normal players.
    * @param chosenStrategyIndices Indices of chosen strategies.
-   * @return The calculated payoff as a {@code BigDecimal}.
+   * @return The calculated payoff as a {@code BigDecimal} with 4 decimal places precision.
    */
   public static BigDecimal evaluatePayoffFunctionWithRelativeToOtherPlayers(Strategy strategy,
                                                                             String payoffFunction,
@@ -77,7 +87,7 @@ public class StringExpressionEvaluator {
 
     // evaluate this string expression to get the result using exp4j
     double val = evaluateExpression(expression);
-    return new BigDecimal(val).setScale(10, RoundingMode.HALF_UP);
+    return new BigDecimal(val).setScale(STANDARD_SCALE, RoundingMode.HALF_UP);
   }
 
   /**
@@ -85,7 +95,7 @@ public class StringExpressionEvaluator {
    *
    * @param strategy       The strategy containing properties used in the function.
    * @param payoffFunction The payoff function as a string.
-   * @return A {@code BigDecimal} result of the evaluated function.
+   * @return A {@code BigDecimal} result of the evaluated function with 4 decimal places precision.
    * @throws IllegalArgumentException If the function contains invalid variables.
    */
   public static BigDecimal evaluatePayoffFunctionNoRelative(Strategy strategy,
@@ -114,7 +124,7 @@ public class StringExpressionEvaluator {
 
       // evaluate this string expression to get the result using exp4j
       double val = evaluateExpression(expression);
-      return new BigDecimal(val).setScale(10, RoundingMode.HALF_UP);
+      return new BigDecimal(val).setScale(STANDARD_SCALE, RoundingMode.HALF_UP);
     }
   }
 
@@ -124,8 +134,8 @@ public class StringExpressionEvaluator {
    *
    * @param payoffs         Array of payoff values.
    * @param fitnessFunction The fitness function as a string. If null or blank, SUM is used as default.
-   * @return The computed fitness value as a {@code BigDecimal} with scale 1.
-   * @throws RuntimeException If the function contains invalid syntax or cannot be evaluated.
+   * @return The computed fitness value as a {@code BigDecimal} with 4 decimal places precision.
+   * @throws ArithmeticException If the function contains invalid syntax or cannot be evaluated.
    */
   public static BigDecimal evaluateFitnessValue(double[] payoffs, String fitnessFunction) {
     List<Double> payoffList = new ArrayList<>();
@@ -153,8 +163,12 @@ public class StringExpressionEvaluator {
         expression = expression.replaceAll(placeholder, formatDouble(propertyValue));
       }
 
-      double val = evaluateExpression(expression);
-      return new BigDecimal(val).setScale(1, RoundingMode.HALF_UP);
+      try {
+        double val = evaluateExpression(expression);
+        return new BigDecimal(val).setScale(STANDARD_SCALE, RoundingMode.HALF_UP);
+      } catch (Exception e) {
+        throw new ArithmeticException("Error evaluating fitness function: " + e.getMessage());
+      }
     }
   }
 
@@ -279,14 +293,15 @@ public class StringExpressionEvaluator {
       case RANGE -> calRange(values);
       default -> calSum(values);
     };
-    return new BigDecimal(val).setScale(1, RoundingMode.HALF_UP);
+    return new BigDecimal(val).setScale(STANDARD_SCALE, RoundingMode.HALF_UP); // 4 decimal places
   }
 
   /**
    * Evaluates a mathematical string expression.
    *
    * @param expression The expression to evaluate.
-   * @return The computed result as a double.
+   * @return The computed result as a double with 4 decimal places precision.
+   * @throws RuntimeException If the expression is invalid or cannot be evaluated.
    */
   private static double evaluateExpression(String expression) {
     // Replace NaN with 0

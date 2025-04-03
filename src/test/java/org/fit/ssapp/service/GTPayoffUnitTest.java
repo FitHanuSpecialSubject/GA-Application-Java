@@ -31,13 +31,6 @@ public class GTPayoffUnitTest {
      * Test default payoff function (sum of all properties)
      * where Pi refers to player i
      * where pi refers to property i of that player's strategy
-     * Test cases:
-     * 1. Basic addition of properties
-     * 2. Subtraction of properties
-     * 3. Multiplication of properties
-     * 
-     * @param properties The list of property values for the strategy
-     * @param expected The expected sum of all properties
      */
     @ParameterizedTest
     @MethodSource("defaultPayoffTestCases")
@@ -48,25 +41,12 @@ public class GTPayoffUnitTest {
         BigDecimal result = StringExpressionEvaluator.evaluatePayoffFunctionNoRelative(
             strategy, "");
 
-        assertEquals(expected, result.doubleValue(), 0.00001);
+        assertEquals(expected, result.doubleValue(), 0.0001);
     }
 
     /**
      * Provides test cases for default payoff function evaluation.
      * 
-     * Each test case includes:
-     * - A list of property values for a strategy
-     * - The expected result (sum of all property values)
-     * 
-     * Test cases cover:
-     * - Positive integers
-     * - Large positive values
-     * - Decimal values
-     * - Negative values
-     * - Zero values
-     * - Different length property lists
-     * 
-     * @return A stream of test case arguments
      */
     private static Stream<Arguments> defaultPayoffTestCases() {
         return Stream.of(
@@ -82,13 +62,6 @@ public class GTPayoffUnitTest {
 
     /**
      * Test custom non-relative payoff function (using pi syntax)
-     * where p1, p2, p3 refer to properties of the strategy
-     * where Pi refers to player i
-     * where pi refers to property i of that player's strategy
-     * 
-     * @param properties The list of property values for the strategy
-     * @param expression The payoff function expression to evaluate
-     * @param expected The expected result after evaluating the expression
      */
     @ParameterizedTest
     @MethodSource("nonRelativePayoff")
@@ -98,24 +71,12 @@ public class GTPayoffUnitTest {
 
         BigDecimal result = StringExpressionEvaluator.evaluatePayoffFunctionNoRelative(
             strategy, expression);
-        assertEquals(expected, result.doubleValue(), 0.00001);
+        assertEquals(expected, result.doubleValue(), 0.0001);
     }
 
     /**
      * Provides test cases for non-relative payoff function evaluation.
      * 
-     * Each test case includes:
-     * - A list of property values for a strategy
-     * - A non-relative payoff expression (using pi notation)
-     * - The expected result after evaluating the expression
-     * 
-     * Test cases cover:
-     * - Individual property references (p1, p2, p3)
-     * - Basic arithmetic operations (addition, subtraction, multiplication, division)
-     * - Complex expressions with multiple operations and parentheses
-     * - Mathematical functions (power, square root)
-     * 
-     * @return A stream of test case arguments
      */
     private static Stream<Arguments> nonRelativePayoff() {
         return Stream.of(
@@ -136,17 +97,6 @@ public class GTPayoffUnitTest {
     /**
      * Test custom relative payoff function (using Pipj syntax)
      * where Pi refers to player i, and pj refers to property j of that player's strategy
-     * Test cases:
-     * 1. Basic addition of properties
-     * 2. Subtraction of properties
-     * 3. Multiplication of properties
-     * 4. Division of properties
-     * 5. Power of properties
-     * 
-     * @param player1Properties The list of property values for player 1's strategy
-     * @param player2Properties The list of property values for player 2's strategy
-     * @param expression The relative payoff function expression to evaluate
-     * @param expected The expected result after evaluating the expression
      */
     @ParameterizedTest
     @MethodSource("relativePayoff")
@@ -168,26 +118,11 @@ public class GTPayoffUnitTest {
         BigDecimal result = StringExpressionEvaluator.evaluatePayoffFunctionWithRelativeToOtherPlayers(
             strategy1, expression, players, chosenStrategyIndices);
 
-        assertEquals(expected, result.doubleValue(), 0.00001);
+        assertEquals(expected, result.doubleValue(), 0.0001);
     }
 
     /**
      * Provides test cases for relative payoff function evaluation.
-     * 
-     * Each test case includes:
-     * - Property values for player 1's strategy
-     * - Property values for player 2's strategy
-     * - A relative payoff expression (using Pipj notation)
-     * - The expected result after evaluating the expression
-     * 
-     * Test cases cover:
-     * - Cross-player property references (P1p1, P2p2, etc.)
-     * - Basic arithmetic with properties from multiple players
-     * - Mathematical functions (sqrt, cbrt, log)
-     * - Rounding functions (ceil, floor)
-     * - Complex expressions combining multiple operations
-     * 
-     * @return A stream of test case arguments
      */
     private static Stream<Arguments> relativePayoff() {
         return Stream.of(
@@ -241,14 +176,6 @@ public class GTPayoffUnitTest {
     /**
      * Test built-in exp4j operations for both relative and non-relative expressions.
      * Tests mathematical functions and operations provided by the exp4j library.
-     * 
-     * @param properties The list of property values for the current player's strategy
-     * @param player2Properties The list of property values for player 2's strategy (used in relative tests)
-     * @param expression The non-relative expression to evaluate
-     * @param relativeExpression The relative expression to evaluate
-     * @param isRelative Flag indicating whether to test relative or non-relative evaluation
-     * @param expected The expected result after evaluating the expression
-     * @param epsilon The allowed error margin for floating-point comparison
      */
     @ParameterizedTest
     @MethodSource("exp4jOperation")
@@ -260,7 +187,7 @@ public class GTPayoffUnitTest {
         if (!isRelative) {
             BigDecimal result = StringExpressionEvaluator.evaluatePayoffFunctionNoRelative(
                 strategy, expression);
-            assertEquals(expected, result.doubleValue(), epsilon);
+            assertEquals(expected, result.doubleValue(), 0.0001);
         } else {
             NormalPlayer player1 = new NormalPlayer();
             player1.setStrategies(List.of(strategy));
@@ -275,32 +202,12 @@ public class GTPayoffUnitTest {
 
             BigDecimal result = StringExpressionEvaluator.evaluatePayoffFunctionWithRelativeToOtherPlayers(
                 strategy, relativeExpression, players, chosenStrategyIndices);
-            assertEquals(expected, result.doubleValue(), epsilon);
+            assertEquals(expected, result.doubleValue(), 0.0001);
         }
     }
 
     /**
-     * Provides test cases for exp4j mathematical operations in payoff functions.
-     * 
-     * Each test case includes:
-     * - Property values for the current player's strategy
-     * - Property values for player 2's strategy (used in relative tests)
-     * - A non-relative expression (for non-relative tests)
-     * - A relative expression (for relative tests)
-     * - A flag indicating whether to test relative or non-relative evaluation
-     * - The expected result after evaluating the expression
-     * - The allowed error margin for floating-point comparison
-     * 
-     * Test cases cover:
-     * - Exponentiation (power)
-     * - Cube root function (cbrt)
-     * - Ceiling function (ceil)
-     * - Floor function (floor)
-     * - Natural logarithm (log)
-     * - Square root function (sqrt)
-     * - Combined mathematical functions
-     * 
-     * @return A stream of test case arguments
+     * Provides test cases for exp4j mathematical operations in payoff functions. 
      */
     private static Stream<Arguments> exp4jOperation() {
         return Stream.of(
@@ -337,17 +244,6 @@ public class GTPayoffUnitTest {
 
     /**
      * Tests invalid syntax and values in payoff functions to ensure proper error handling.
-     * Verifies that appropriate exceptions are thrown for invalid expressions.
-     * 
-     * Test cases include:
-     * - Negative property indices
-     * - Invalid mathematical operations (sqrt of negative, log of negative)
-     * - Division by zero
-     * - Incomplete expressions
-     * - Unbalanced parentheses
-     * - Invalid characters and symbols
-     * 
-     * @param expression The invalid payoff function expression to test
      */
     @ParameterizedTest
     @ValueSource(strings = {
