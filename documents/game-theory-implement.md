@@ -9,7 +9,9 @@
 6. [Running a Game Theory Problem](#running-a-game-theory-problem)
 7. [Conflict](#conflict)
 8. [Strategy](#strategy)
-9. [Conclusion](#conclusion)
+9. [MOEA Problem Integration](#moea-problem-integration)
+10. [Executor Configuration](#executor-configuration)
+11. [Conclusion](#conclusion)
 
 ## Overview
 This project implements a coordination game using game theory principles and evolutionary algorithms. A coordination game is a type of game where players benefit from making the same or complementary decisions. A well-known example is the **Prisoner’s Dilemma**, where cooperation leads to the best collective outcome, but individual incentives might lead to defection.
@@ -119,6 +121,57 @@ Strategy strategy = new Strategy("Aggressive", Arrays.asList(0.5, 1.2), 0.0);
 strategy.addProperty(0.8);
 System.out.println(strategy.toString());
 // Output: [ 0.5, 1.2, 0.8 ]
+```
+
+## MOEA Problem Integration
+The system integrates a Multi-Objective Evolutionary Algorithm (MOEA) by defining a `Problem` class that structures the optimization process.
+
+### `newSolution()` Method
+The `newSolution()` method creates a new solution object for the evolutionary process. It initializes variables such as:
+- **Player strategies**: Randomly assigned at the start.
+- **Initial fitness values**: Set to default before evaluation.
+
+```java
+@Override
+public GameSolution newSolution() {
+    GameSolution solution = new GameSolution(players.size());
+    for (int i = 0; i < players.size(); i++) {
+        solution.setVariable(i, randomStrategy(players.get(i)));
+    }
+    return solution;
+}
+```
+
+### `evaluate()` Method
+The `evaluate()` method follows these steps:
+1. **Extracts chosen strategies from the solution.**
+2. **Computes payoffs for each player** using exp4j.
+3. **Aggregates fitness values** based on predefined objectives.
+4. **Updates the solution’s fitness scores** for MOEA optimization.
+
+```java
+@Override
+public void evaluate(GameSolution solution) {
+    double[] payoffs = computePayoffs(solution);
+    solution.setObjective(0, -sum(payoffs)); // Minimization objective
+}
+```
+
+## Executor Configuration
+The `Executor` class is responsible for configuring and running the evolutionary optimization process.
+
+### Configuration Steps
+1. **Instantiate the problem.**
+2. **Select an optimization algorithm (e.g., NSGA-II).**
+3. **Set algorithm parameters (e.g., mutation rate, population size).**
+4. **Run the algorithm for a defined number of generations.**
+5. **Extract and analyze solutions.**
+
+```java
+GameProblem problem = new GameProblem(players);
+Algorithm<GameSolution> algorithm = new NSGAII<>(problem, new SBXCrossover(1.0, 5), new PolynomialMutation(1.0/players.size(), 10.0));
+Executor<GameSolution> executor = new Executor<>(algorithm);
+executor.run();
 ```
 
 ## Conclusion
