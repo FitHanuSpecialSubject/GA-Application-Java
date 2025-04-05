@@ -58,12 +58,27 @@ public class GTUnitTestFitness {
   
   @ParameterizedTest
   @CsvSource({
-    "'', 12.0, 'Empty string should default to sum of payoffs'",
-    "   , 12.0, 'Blank string should default to sum of payoffs'",
-    "SUM, 12.0, 'Explicit SUM function should match default behavior'"
+    "'', '3.0,4.0,5.0', 12.0, 'Empty string should default to sum of payoffs'",
+    "'   ', '3.0,4.0,5.0', 12.0, 'Blank string should default to sum of payoffs'",
+    "'SUM', '3.0,4.0,5.0', 12.0, 'Explicit SUM function should match default behavior'",
+    "'SUM', '-3.0,-4.0,-5.0', -12.0, 'Sum of negative numbers'", //different payoff values
+    "'SUM', '1.5,2.5,3.5', 7.5, 'Sum of decimal numbers'",
+    "'SUM', '1000000.0,2000000.0,3000000.0', 6000000.0, 'Sum of large numbers'",
+    "'SUM', '1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0', 55.0, 'Sum of array with 10 elements'", //different array sizes
+    "'SUM', '', 0.0, 'Sum of empty array'"
   })
-  public void testFitnessValueWithEmptyInput(String fitnessFunction, double expected, String testDescription) {
-    double[] payoffs = {3.0, 4.0, 5.0};
+  public void testFitnessValueWithDifferentInputs(String fitnessFunction, String payoffsStr, double expected, String testDescription) {
+    double[] payoffs;
+    if (payoffsStr.isEmpty()) {
+      payoffs = new double[0];
+    } else {
+      String[] payoffStrings = payoffsStr.split(",");
+      payoffs = new double[payoffStrings.length];
+      for (int i = 0; i < payoffStrings.length; i++) {
+        payoffs[i] = Double.parseDouble(payoffStrings[i].trim());
+      }
+    }
+    
     BigDecimal result = evaluateFitnessValue(payoffs, fitnessFunction);
     assertEquals(expected, result.doubleValue(), 0.0001, testDescription);
   }
