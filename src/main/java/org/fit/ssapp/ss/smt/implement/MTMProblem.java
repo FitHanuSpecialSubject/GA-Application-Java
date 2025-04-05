@@ -17,7 +17,7 @@ import org.fit.ssapp.ss.smt.MatchingProblem;
 import org.fit.ssapp.ss.smt.evaluator.FitnessEvaluator;
 import org.fit.ssapp.ss.smt.preference.PreferenceList;
 import org.fit.ssapp.ss.smt.preference.PreferenceListWrapper;
-import org.fit.ssapp.ss.smt.preference.impl.list.TwoSetPreferListRewrite;
+import org.fit.ssapp.ss.smt.preference.impl.list.TwoSetPreferenceList;
 import org.fit.ssapp.util.StringUtils;
 import org.moeaframework.core.Solution;
 import org.moeaframework.core.Variable;
@@ -167,7 +167,7 @@ public class MTMProblem implements MatchingProblem {
         continue;
       }
 
-      TwoSetPreferListRewrite nodePreference = (TwoSetPreferListRewrite) preferenceLists.get(leftNode);
+      TwoSetPreferenceList nodePreference = (TwoSetPreferenceList) preferenceLists.get(leftNode);
       for (int rightNode : nodePreference.getScores().keySet()) {
 
         Set<Integer> currentMatchesOfLeftNode = matches.getSetOf(leftNode);
@@ -192,10 +192,10 @@ public class MTMProblem implements MatchingProblem {
 
         // if right is full and right does not like left more: continue
         if (rightIsFull) {
-          TwoSetPreferListRewrite rightNodePreference = (TwoSetPreferListRewrite) preferenceLists.get(rightNode);
+          TwoSetPreferenceList rightNodePreference = (TwoSetPreferenceList) preferenceLists.get(rightNode);
           int leastPreferredRightMatch = rightNodePreference.getLeastNode(UNUSED_VAL, leftNode, currentMatchesOfRightNode);
           if (leastPreferredRightMatch == leftNode) {
-            continue; // rightNode không thích leftNode hơn các node hiện tại
+            continue;
           }
         }
 
@@ -209,7 +209,7 @@ public class MTMProblem implements MatchingProblem {
 
         //  right prefer new left more: match
         if (rightIsFull) {
-          TwoSetPreferListRewrite rightNodePreference = (TwoSetPreferListRewrite) preferenceLists.get(rightNode);
+          TwoSetPreferenceList rightNodePreference = (TwoSetPreferenceList) preferenceLists.get(rightNode);
           int leastPreferredRightMatch = rightNodePreference.getLeastNode(UNUSED_VAL, leftNode, currentMatchesOfRightNode);
           matches.removeMatchBi(rightNode, leastPreferredRightMatch);
           matches.addMatchBi(leftNode, rightNode);
