@@ -162,53 +162,63 @@ public class MTMProblem implements MatchingProblem {
     }
 
     while (!queue.isEmpty()) {
-      int leftNode = queue.poll(); // Lấy node bên trái tiếp theo từ hàng đợi
+      int leftNode = queue.poll();
       if (matches.isMatched(leftNode)) {
         continue;
       }
 
       TwoSetPreferListRewrite nodePreference = (TwoSetPreferListRewrite) preferenceLists.get(leftNode);
       for (int rightNode : nodePreference.getScores().keySet()) {
-        if (matches.isMatched(rightNode, leftNode)) {
-          continue;
-        }
 
         Set<Integer> currentMatchesOfLeftNode = matches.getSetOf(leftNode);
+        Set<Integer> currentMatchesOfRightNode = matches.getSetOf(rightNode);
 
         boolean leftIsFull = matches.isFull(leftNode, matchingData.getCapacityOf(leftNode));
         boolean rightIsFull = matches.isFull(rightNode, matchingData.getCapacityOf(rightNode));
 
+        // if both left and right are not null: match
+        if (!leftIsFull && !rightIsFull) {
+          matches.addMatchBi(leftNode, rightNode);
+          continue;
+        }
+
+        // if left is full and left does not like right more: continue
         if (leftIsFull) {
-          if (rightNode == nodePreference.getLeastNode(UNUSED_VAL, rightNode, currentMatchesOfLeftNode)) {
+          int leastPreferredLeftMatch = nodePreference.getLeastNode(UNUSED_VAL, rightNode, currentMatchesOfLeftNode);
+          if (leastPreferredLeftMatch == rightNode) {
             continue;
-          } // nếu rightNode mới tốt hơn rightNode cũ
+          }
         }
 
-        if (!rightIsFull && leftIsFull) {
-          // và nếu rightNode mới chưa full
-          int oldRightNote = nodePreference.getLeastNode(UNUSED_VAL, rightNode, currentMatchesOfLeftNode);
-          matches.removeMatchBi(leftNode, oldRightNote);
+        // if right is full and right does not like left more: continue
+        if (rightIsFull) {
+          TwoSetPreferListRewrite rightNodePreference = (TwoSetPreferListRewrite) preferenceLists.get(rightNode);
+          int leastPreferredRightMatch = rightNodePreference.getLeastNode(UNUSED_VAL, leftNode, currentMatchesOfRightNode);
+          if (leastPreferredRightMatch == leftNode) {
+            continue; // rightNode không thích leftNode hơn các node hiện tại
+          }
+        }
+
+        //  left prefer new right more: match
+        if (leftIsFull) {
+          int leastPreferredLeftMatch = nodePreference.getLeastNode(UNUSED_VAL, rightNode, currentMatchesOfLeftNode);
+          matches.removeMatchBi(leftNode, leastPreferredLeftMatch);
           matches.addMatchBi(leftNode, rightNode);
-          continue;
-        } else if (!rightIsFull && !leftIsFull) {
+          queue.add(leastPreferredLeftMatch);
+        }
+
+        //  right prefer new left more: match
+        if (rightIsFull) {
+          TwoSetPreferListRewrite rightNodePreference = (TwoSetPreferListRewrite) preferenceLists.get(rightNode);
+          int leastPreferredRightMatch = rightNodePreference.getLeastNode(UNUSED_VAL, leftNode, currentMatchesOfRightNode);
+          matches.removeMatchBi(rightNode, leastPreferredRightMatch);
           matches.addMatchBi(leftNode, rightNode);
-          continue;
+          queue.add(leastPreferredRightMatch);
         }
-        Set<Integer> currentMatches = matches.getSetOf(rightNode);
-        int leastPreferredNode = nodePreference.getLeastNode(UNUSED_VAL, leftNode, currentMatches);
-
-        if (leastPreferredNode == leftNode) {
-          continue;
-        }
-
-        matches.removeMatchBi(rightNode, leastPreferredNode);
-        matches.addMatchBi(leftNode, rightNode);
-        queue.add(leastPreferredNode);
       }
     }
     return matches;
   }
-
   @Override
   public String getMatchingTypeName() {
     return "Many to Many";
