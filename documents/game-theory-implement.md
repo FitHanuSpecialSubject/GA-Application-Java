@@ -1,3 +1,4 @@
+
 # Game Theory Implementation Documentation
 
 ## Table of Contents
@@ -55,9 +56,28 @@ The `GameSolution` class encapsulates:
 Evaluation involves computing payoffs and fitness values:
 - **Payoffs are computed using exp4j**, based on strategy properties and other players' choices.
 - **Fitness functions evaluate overall strategy performance**, optimizing for the best set of strategies.
-- **Default operations** include summation, averaging, and other common statistical computations.
+- **Conflict constraints are checked**, and if a conflict is detected, a penalty is subtracted from the fitness.
+- **Final fitness values** are then assigned as objectives to the solution.
+
+### Example evaluate() Method
+
+```java
+@Override
+public void evaluate(GameSolution solution) {
+    double[] payoffs = computePayoffs(solution);
+    double fitness = computeFitness(payoffs);
+
+    // Conflict penalty
+    if (hasConflict(solution)) {
+        fitness -= conflictPenalty;
+    }
+
+    solution.setObjective(0, -fitness); // Minimization objective
+}
+```
 
 ## Running a Game Theory Problem
+
 ### Execution Workflow
 1. **Initialize players and define strategies.**
 2. **Assign payoff functions for each player.**
@@ -66,6 +86,7 @@ Evaluation involves computing payoffs and fitness values:
 5. **Analyze the resulting solutions.**
 
 ### Example Execution
+
 ```java
 // Initialize players and strategies
 NormalPlayer player1 = new NormalPlayer("Player1", strategiesList, "p1 + p2");
@@ -83,19 +104,22 @@ List<GameSolution> solutions = algorithm.getResult();
 ```
 
 ## Conflict
-The `Conflict` class represents a competitive situation between two players and their chosen strategies.
+
+The `Conflict` class represents a **constraint**, ensuring that two players do **not choose a specific pair of strategies in the same round**. It is not necessarily due to competition.
 
 ### Attributes:
 - `leftPlayer`: ID of the first player.
 - `rightPlayer`: ID of the second player.
-- `leftPlayerStrategy`: Strategy chosen by the first player.
-- `rightPlayerStrategy`: Strategy chosen by the second player.
+- `leftPlayerStrategy`: Strategy index restricted for the first player.
+- `rightPlayerStrategy`: Strategy index restricted for the second player.
 
 ### Functionality:
-- The class stores information about two competing players and their respective strategies.
-- It provides a `toString()` method to format conflict details in a readable format.
+- Prevents both players from selecting the specified strategies in the same round.
+- The game evaluation checks all conflicts, and if any are violated, a penalty is applied to the solution’s fitness.
+- Provides a `toString()` method to display readable conflict descriptions.
 
 ### Example:
+
 ```java
 Conflict conflict = new Conflict(0, 1, 2, 3);
 System.out.println(conflict.toString());
@@ -103,6 +127,7 @@ System.out.println(conflict.toString());
 ```
 
 ## Strategy
+
 The `Strategy` class defines a strategy with properties and a payoff function.
 
 ### Attributes:
@@ -111,11 +136,12 @@ The `Strategy` class defines a strategy with properties and a payoff function.
 - `payoff`: The computed payoff value for this strategy.
 
 ### Functionality:
-- The class supports adding new properties dynamically.
-- The `evaluateStringExpression()` method evaluates the payoff function using input expressions and other players' strategies.
+- Supports adding new properties dynamically.
+- `evaluateStringExpression()` method evaluates the payoff function using input expressions and other players' strategies.
 - A `toString()` method formats the strategy's details for output.
 
 ### Example:
+
 ```java
 Strategy strategy = new Strategy("Aggressive", Arrays.asList(0.5, 1.2), 0.0);
 strategy.addProperty(0.8);
@@ -124,10 +150,13 @@ System.out.println(strategy.toString());
 ```
 
 ## MOEA Problem Integration
+
 The system integrates a Multi-Objective Evolutionary Algorithm (MOEA) by defining a `Problem` class that structures the optimization process.
 
 ### `newSolution()` Method
-The `newSolution()` method creates a new solution object for the evolutionary process. It initializes variables such as:
+
+Creates a new `GameSolution` object for the evolutionary process. Initializes variables such as:
+
 - **Player strategies**: Randomly assigned at the start.
 - **Initial fitness values**: Set to default before evaluation.
 
@@ -143,40 +172,49 @@ public GameSolution newSolution() {
 ```
 
 ### `evaluate()` Method
-The `evaluate()` method follows these steps:
-1. **Extracts chosen strategies from the solution.**
-2. **Computes payoffs for each player** using exp4j.
-3. **Aggregates fitness values** based on predefined objectives.
-4. **Updates the solution’s fitness scores** for MOEA optimization.
 
 ```java
 @Override
 public void evaluate(GameSolution solution) {
     double[] payoffs = computePayoffs(solution);
-    solution.setObjective(0, -sum(payoffs)); // Minimization objective
+    double fitness = computeFitness(payoffs);
+
+    if (hasConflict(solution)) {
+        fitness -= conflictPenalty;
+    }
+
+    solution.setObjective(0, -fitness);
 }
 ```
 
 ## Executor Configuration
+
 The `Executor` class is responsible for configuring and running the evolutionary optimization process.
 
 ### Configuration Steps
 1. **Instantiate the problem.**
-2. **Select an optimization algorithm (e.g., NSGA-II).**
-3. **Set algorithm parameters (e.g., mutation rate, population size).**
+2. **Select an optimization algorithm** (e.g., NSGA-II).
+3. **Set algorithm parameters** (e.g., mutation rate, population size).
 4. **Run the algorithm for a defined number of generations.**
 5. **Extract and analyze solutions.**
 
+### Example:
+
 ```java
 GameProblem problem = new GameProblem(players);
-Algorithm<GameSolution> algorithm = new NSGAII<>(problem, new SBXCrossover(1.0, 5), new PolynomialMutation(1.0/players.size(), 10.0));
+Algorithm<GameSolution> algorithm = new NSGAII<>(
+    problem,
+    new SBXCrossover(1.0, 5),
+    new PolynomialMutation(1.0 / players.size(), 10.0)
+);
 Executor<GameSolution> executor = new Executor<>(algorithm);
 executor.run();
 ```
 
 ## Conclusion
+
 This implementation provides a robust framework for modeling coordination games using game theory and evolutionary algorithms. Key features include:
+
 - **Modular player and strategy representation**
 - **Flexible and customizable payoff evaluation**
 - **Optimized solution discovery using MOEA**
-
