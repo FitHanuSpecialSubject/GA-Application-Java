@@ -9,11 +9,13 @@ import java.util.Objects;
 import java.util.function.DoubleUnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
+import net.objecthunter.exp4j.ValidationResult;
 import org.fit.ssapp.ss.smt.MatchingData;
 import org.fit.ssapp.ss.smt.evaluator.FitnessEvaluator;
 import org.fit.ssapp.util.EvaluatorUtils;
@@ -113,15 +115,23 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
     }
     System.out.println(tmpSB);
     String finalExpression = tmpSB.toString();
-    validateMathExpression(finalExpression);
 
-    try {
-      return new ExpressionBuilder(finalExpression)
-              .build()
-              .evaluate();
-    } catch (Exception e) {
-      throw new IllegalArgumentException("Invalid mathematical expression: " + finalExpression, e);
+    ExpressionBuilder expressionBuilder = new ExpressionBuilder(finalExpression);
+
+    // Validate expression
+    Expression expression = expressionBuilder.build();
+    ValidationResult validationResult = expression.validate();
+
+    if (!validationResult.isValid()) {
+      throw new IllegalArgumentException("Invalid fitness expression: "
+              + finalExpression + ". Errors: "
+              + validationResult.getErrors().stream()
+                      .map(Object::toString)
+                      .collect(Collectors.joining(", ")));
     }
+
+    // If validation passes, evaluate the expression
+    return expression.evaluate();
   }
 
   private double sigmaCalculate(double[] satisfactions, String expression) {
@@ -175,21 +185,6 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
       }
     }
     return result;
-  }
-
-  private void validateMathExpression(String expression) {
-    // Kiểm tra các toán tử kề nhau không hợp lệ
-    Pattern invalidOperators = Pattern.compile("([+\\-*/])\\s*([+\\-*/])");
-    Matcher matcher = invalidOperators.matcher(expression);
-    if (matcher.find()) {
-      throw new IllegalArgumentException("Invalid mathematical expression: consecutive operators found: " +
-              matcher.group(1) + matcher.group(2));
-    }
-
-    // Kiểm tra biểu thức bắt đầu hoặc kết thúc bằng toán tử
-    if (expression.matches("^[+\\-*/].*") || expression.matches(".*[+\\-*/]$")) {
-      throw new IllegalArgumentException("Invalid mathematical expression: starts or ends with an operator");
-    }
   }
 
 }
