@@ -61,15 +61,13 @@ public class TwoSetPreferListRewrite implements PreferenceList {
   public int getLeastNode(int set, int newNode, Set<Integer> currentNodes) {
     Set<Integer> nodes = new HashSet<>(currentNodes);
     nodes.add(newNode);
-    int leastNode = nodes.stream()
-            .reduce((node1, node2) -> {
+
+    return nodes.stream()
+            .reduce(newNode, (node1, node2) -> {
               double score1 = scores.getOrDefault(node1, 0.0);
               double score2 = scores.getOrDefault(node2, 0.0);
               return score1 <= score2 ? node1 : node2;
-            })
-            .orElse(newNode);
-
-    return leastNode;
+            });
   }
 
   @Override
