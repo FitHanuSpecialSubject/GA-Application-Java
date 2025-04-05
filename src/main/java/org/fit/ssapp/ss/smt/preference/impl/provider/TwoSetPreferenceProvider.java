@@ -17,8 +17,8 @@ import org.fit.ssapp.ss.smt.MatchingData;
 import org.fit.ssapp.ss.smt.preference.PreferenceBuilder;
 import org.fit.ssapp.ss.smt.preference.PreferenceList;
 import org.fit.ssapp.ss.smt.preference.PreferenceListWrapper;
-import org.fit.ssapp.ss.smt.preference.impl.list.TwoSetPreferListRewrite;
-import org.fit.ssapp.ss.smt.preference.impl.list.TwoSetPreferListRewrite;
+import org.fit.ssapp.ss.smt.preference.impl.list.TwoSetPreferenceList;
+import org.fit.ssapp.ss.smt.preference.impl.list.TwoSetPreferenceList;
 import org.fit.ssapp.ss.smt.requirement.Requirement;
 import org.fit.ssapp.util.EvaluatorUtils;
 import org.fit.ssapp.util.PreferenceProviderUtils;
@@ -148,10 +148,10 @@ public class TwoSetPreferenceProvider implements PreferenceBuilder {
    */
   public PreferenceList getPreferenceListByFunction(int index) {
     int set = matchingData.getSetNoOf(index);
-    TwoSetPreferListRewrite a;
+    TwoSetPreferenceList a;
     Expression e;
     if (set == 0) {
-      a = new TwoSetPreferListRewrite(this.sizeOf2);
+      a = new TwoSetPreferenceList(this.sizeOf2);
       if (this.expressionOfSet1 == null) {
         return this.getPreferenceListByDefault(index);
       }
@@ -164,7 +164,7 @@ public class TwoSetPreferenceProvider implements PreferenceBuilder {
         }
       }
     } else {
-      a = new TwoSetPreferListRewrite(this.sizeOf1);
+      a = new TwoSetPreferenceList(this.sizeOf1);
       if (this.expressionOfSet2 == null) {
         return this.getPreferenceListByDefault(index);
       }
@@ -189,9 +189,9 @@ public class TwoSetPreferenceProvider implements PreferenceBuilder {
   public PreferenceList getPreferenceListByDefault(int index) {
     int set = matchingData.getSetNoOf(index);
     int numberOfProperties = matchingData.getPropertyNum();
-    TwoSetPreferListRewrite a;
+    TwoSetPreferenceList a;
     if (set == 0) {
-      a = new TwoSetPreferListRewrite(this.sizeOf2);
+      a = new TwoSetPreferenceList(this.sizeOf2);
       for (int i = 0; i < matchingData.getSize(); i++) {
         if (matchingData.getSetNoOf(i) == 1) {
           double totalScore = 0;
@@ -206,7 +206,7 @@ public class TwoSetPreferenceProvider implements PreferenceBuilder {
         }
       }
     } else {
-      a = new TwoSetPreferListRewrite(this.sizeOf1);
+      a = new TwoSetPreferenceList(this.sizeOf1);
       for (int i = 0; i < matchingData.getSize(); i++) {
         if (matchingData.getSetNoOf(i) == 0) {
           double totalScore = 0;

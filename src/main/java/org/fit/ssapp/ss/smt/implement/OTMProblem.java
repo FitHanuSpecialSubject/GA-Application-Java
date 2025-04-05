@@ -16,6 +16,7 @@ import org.fit.ssapp.ss.smt.MatchingProblem;
 import org.fit.ssapp.ss.smt.evaluator.FitnessEvaluator;
 import org.fit.ssapp.ss.smt.preference.PreferenceList;
 import org.fit.ssapp.ss.smt.preference.PreferenceListWrapper;
+import org.fit.ssapp.ss.smt.preference.impl.list.TwoSetPreferenceList;
 import org.fit.ssapp.util.StringUtils;
 import org.moeaframework.core.Solution;
 import org.moeaframework.core.Variable;
@@ -165,37 +166,64 @@ public class OTMProblem implements MatchingProblem {
     Matches matches = new Matches(matchingData.getSize());
     int[] decodeVar = EncodingUtils.getPermutation(var);
     Queue<Integer> queue = new LinkedList<>();
+
     for (int val : decodeVar) {
       queue.add(val);
     }
+
     while (!queue.isEmpty()) {
       int leftNode = queue.poll();
       if (matches.isMatched(leftNode)) {
         continue;
       }
-      PreferenceList nodePreference = preferenceLists.get(leftNode);
-      for (int i = 0; i < nodePreference.size(UNUSED_VAL); i++) {
-        int rightNode = nodePreference.getPositionByRank(UNUSED_VAL, i);
-        if (matches.isMatched(rightNode, leftNode)) {
+
+      TwoSetPreferenceList nodePreference = (TwoSetPreferenceList) preferenceLists.get(leftNode);
+      for (int rightNode : nodePreference.getScores().keySet()) {
+
+        Set<Integer> currentMatchesOfLeftNode = matches.getSetOf(leftNode);
+        Set<Integer> currentMatchesOfRightNode = matches.getSetOf(rightNode);
+
+        boolean leftIsFull = matches.isFull(leftNode, matchingData.getCapacityOf(leftNode));
+        boolean rightIsFull = matches.isFull(rightNode, matchingData.getCapacityOf(rightNode));
+
+        // if both left and right are not null: match
+        if (!leftIsFull && !rightIsFull) {
+          matches.addMatchBi(leftNode, rightNode);
           continue;
         }
-        boolean rightIsFull = matches.isFull(rightNode, matchingData.getCapacityOf(rightNode));
-        if (!rightIsFull) {
-          matches.addMatchBi(leftNode, rightNode);
-          break;
-        } else {
-          Set<Integer> currentMatches = matches.getSetOf(rightNode);
-          int leastPreferredNode = preferenceLists.getLeastScoreNode(
-                  UNUSED_VAL, rightNode, leftNode, currentMatches,
-                  matchingData.getCapacityOf(rightNode)
-          );
-          if (leastPreferredNode != -1 && preferenceLists.isPreferredOver(leftNode,
-                  leastPreferredNode, rightNode)) {
-            matches.removeMatchBi(rightNode, leastPreferredNode);
-            matches.addMatchBi(leftNode, rightNode);
-            queue.add(leastPreferredNode);
-            break;
+
+        // if left is full and left does not like current right more: continue
+        if (leftIsFull) {
+          int leastPreferredLeftMatch = nodePreference.getLeastNode(UNUSED_VAL, rightNode, currentMatchesOfLeftNode);
+          if (leastPreferredLeftMatch == rightNode) {
+            continue;
           }
+        }
+
+        // if right is full and right does not like left more: continue
+        if (rightIsFull) {
+          TwoSetPreferenceList rightNodePreference = (TwoSetPreferenceList) preferenceLists.get(rightNode);
+          int leastPreferredRightMatch = rightNodePreference.getLeastNode(UNUSED_VAL, leftNode, currentMatchesOfRightNode);
+          if (leastPreferredRightMatch == leftNode) {
+            continue;
+          }
+        }
+
+        //  left prefer new right more: match
+        if (leftIsFull) {
+          int leastPreferredLeftMatch = nodePreference.getLeastNode(UNUSED_VAL, rightNode, currentMatchesOfLeftNode);
+          matches.removeMatchBi(leftNode, leastPreferredLeftMatch);
+          matches.addMatchBi(leftNode, rightNode);
+          queue.add(leastPreferredLeftMatch);
+        }
+
+        //  right prefer new left more: match
+        if (rightIsFull) {
+          TwoSetPreferenceList rightNodePreference = (TwoSetPreferenceList) preferenceLists.get(rightNode);
+          int leastPreferredRightMatch = rightNodePreference.getLeastNode(UNUSED_VAL, leftNode, currentMatchesOfRightNode);
+          matches.removeMatchBi(rightNode, leastPreferredRightMatch);
+          matches.addMatchBi(leftNode, rightNode);
+          queue.add(leastPreferredRightMatch);
         }
       }
     }
