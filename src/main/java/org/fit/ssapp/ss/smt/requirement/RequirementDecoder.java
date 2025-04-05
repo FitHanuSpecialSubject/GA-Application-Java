@@ -66,23 +66,20 @@ public class RequirementDecoder {
     item = item.trim();
     String[] result = new String[2];
 
-    Pattern intPattern = Pattern.compile("^-?\\d+$");
-    Pattern doublePattern = Pattern.compile("^-?\\d+\\.\\d+$");
-    Pattern operatorPattern = Pattern.compile("^(-?\\d+(?:\\.\\d+)?)(:|\\+\\+|--)(.*)$");
-
-    Matcher integerMatcher = intPattern.matcher(item);
-    Matcher doubleMatcher = doublePattern.matcher(item);
-    Matcher operatorMatcher = operatorPattern.matcher(item);
-    if (integerMatcher.matches()) {
+    if (item.matches("^-?\\d+$")) {
       try {
         int num = Integer.parseInt(item);
         result[0] = item;
         result[1] = (num >= 0 && num <= 10) ? null : "++";
       } catch (NumberFormatException e) {
+        System.out.println("error parsing integer");
         result[0] = "-1";
         result[1] = "++";
       }
-    } else if (doubleMatcher.matches()) {
+      return result;
+    }
+
+    if (item.matches("^-?\\d+\\.\\d+$")) {
       try {
         Double.parseDouble(item);
         result[0] = item;
@@ -91,18 +88,26 @@ public class RequirementDecoder {
         result[0] = "-3";
         result[1] = null;
       }
-    } else if (operatorMatcher.matches()) {
-      result[0] = operatorMatcher.group(1);
-      String operator = operatorMatcher.group(2);
-      if (operator.equals(":")) {
-        result[1] = operatorMatcher.group(3).trim();
-      } else {
-        result[1] = operator;
-      }
+      return result;
+    }
+
+    if (item.contains(":")) {
+      String[] parts = item.split(":", 2);
+      result[0] = parts[0].trim();
+      result[1] = parts[1].trim();
+    } else if (item.contains("++")) {
+      String[] parts = item.split("\\+\\+", 2);
+      result[0] = parts[0].trim();
+      result[1] = "++";
+    } else if (item.contains("--")) {
+      String[] parts = item.split("--", 2);
+      result[0] = parts[0].trim();
+      result[1] = "--";
     } else {
       result[0] = "-2";
       result[1] = "++";
     }
+
     return result;
   }
 
