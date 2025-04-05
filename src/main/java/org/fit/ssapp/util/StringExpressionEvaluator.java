@@ -222,12 +222,12 @@ public class StringExpressionEvaluator {
   }
 
   private static boolean checkIfIsDefaultFunction(String function) {
-    if (function == null) {
+    if (function == null || function.trim().isEmpty()) {
       return false;
     }
     return Arrays
             .stream(DefaultFunction.values())
-            .anyMatch(f -> f.name().equalsIgnoreCase(function));
+            .anyMatch(f -> f.name().equalsIgnoreCase(function.trim()));
   }
 
   private static double calSum(List<Double> values) {
