@@ -182,7 +182,7 @@ In this system, preference lists are created based on the properties of the indi
 
 The structure of a preference list typically involves a mapping where each entity is associated with an ordered list of other entities, ranked according to its preference.
 
-Here's a code snippet illustrating a basic structure for a `PreferenceList`:
+Here's a code snippet illustrating a basic structure for a `PreferenceList` (For illustrating purposes only):
 
 ```java
 public class PreferenceList {
@@ -236,6 +236,9 @@ Here's the code snippet for the `evaluate()` method:
     // Check Exclude Pairs
     // This section handles constraints on the matching
     int[][] excludedPairs = this.matchingData.getExcludedPairs();
+    
+    // If any excluded pair is found, the solution is immediately penalized 
+    // by setting its objective value to Double.MAX_VALUE — the worst possible score.
     if (Objects.nonNull(excludedPairs)) {
       for (int[] excludedPair : excludedPairs) {
         if (result.isMatched(excludedPair[0], excludedPair[1])) {
@@ -312,4 +315,3 @@ In the context of the provided API endpoint, the `StableMatchingService` likely 
 6.  Return the `Response` to the client.
 
 This abstraction allows the API to handle different types of Stable Matching problems using the power of the MOEA Framework for optimization.
-```
