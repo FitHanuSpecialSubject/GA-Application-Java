@@ -3,9 +3,12 @@ package org.fit.ssapp.service;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.Arguments;
 import java.math.BigDecimal;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.fit.ssapp.util.StringExpressionEvaluator.evaluateFitnessValue;
+import java.util.stream.Stream;
 
 /**
  * This class contains unit tests for fitness calculation in game theory.
@@ -14,6 +17,13 @@ import static org.fit.ssapp.util.StringExpressionEvaluator.evaluateFitnessValue;
  */
 public class GTUnitTestFitness {
 
+  /**
+   * Test the fitness calculation for various fitness functions and maximizing scenarios.
+   *
+   * @param fitnessFunction The fitness function to be evaluated .
+   * @param isMaximizing    Indicates whether the fitness value should be negated .
+   * @param expected        The expected result of the fitness calculation.
+   */
   @ParameterizedTest
   @CsvSource({
           "SUM, false, 12.0",
@@ -33,6 +43,7 @@ public class GTUnitTestFitness {
     double[] payoffs = {3.0, 4.0, 5.0};
 
     BigDecimal result = evaluateFitnessValue(payoffs, fitnessFunction);
+
     // Apply maximizing
     if (isMaximizing) {
       result = result.negate();
@@ -41,6 +52,9 @@ public class GTUnitTestFitness {
     assertEquals(expected, result.doubleValue(), 0.0001);
   }
 
+  /**
+   * Tests the fitness calculation for empty payoff scenarios.
+   */
   @Test
   public void testFitnessValueWithEmptyPayoffs() {
     double[] emptyPayoffs = {};
@@ -48,6 +62,9 @@ public class GTUnitTestFitness {
     assertEquals(0.0, result.doubleValue(), 0.0001);
   }
 
+  /**
+   * Tests the fitness calculation for null fitness.
+   */
   @Test
   public void testFitnessValueWithNullFunction() {
     double[] payoffs = {3.0, 4.0, 5.0};
@@ -55,19 +72,10 @@ public class GTUnitTestFitness {
     // Default should be SUM
     assertEquals(12.0, result.doubleValue(), 0.0001);
   }
-  
+
   @ParameterizedTest
-  @CsvSource({
-    "'', '3.0,4.0,5.0', 12.0, 'Empty string should default to sum of payoffs'",
-    "'   ', '3.0,4.0,5.0', 12.0, 'Blank string should default to sum of payoffs'",
-    "'SUM', '3.0,4.0,5.0', 12.0, 'Explicit SUM function should match default behavior'",
-    "'SUM', '-3.0,-4.0,-5.0', -12.0, 'Sum of negative numbers'", //different payoff values
-    "'SUM', '1.5,2.5,3.5', 7.5, 'Sum of decimal numbers'",
-    "'SUM', '1000000.0,2000000.0,3000000.0', 6000000.0, 'Sum of large numbers'",
-    "'SUM', '1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0', 55.0, 'Sum of array with 10 elements'", //different array sizes
-    "'SUM', '', 0.0, 'Sum of empty array'"
-  })
-  public void testFitnessValueWithDifferentInputs(String fitnessFunction, String payoffsStr, double expected, String testDescription) {
+  @MethodSource("provideDefaultFitnessTestData")
+  public void testFitnessValueWithDefaultInput(String fitnessFunction, String payoffsStr, double expected, String testDescription) {
     double[] payoffs;
     if (payoffsStr.isEmpty()) {
       payoffs = new double[0];
@@ -78,9 +86,37 @@ public class GTUnitTestFitness {
         payoffs[i] = Double.parseDouble(payoffStrings[i].trim());
       }
     }
-    
+
     BigDecimal result = evaluateFitnessValue(payoffs, fitnessFunction);
     assertEquals(expected, result.doubleValue(), 0.0001, testDescription);
+  }
+
+  private static Stream<Arguments> provideDefaultFitnessTestData() {
+    return Stream.of(
+      // Empty/blank/null fitness function cases
+      Arguments.of("", "3.0,4.0,5.0", 12.0, "Empty string should default to sum of payoffs"),
+      Arguments.of("   ", "3.0,4.0,5.0", 12.0, "Blank string should default to sum of payoffs"),
+      Arguments.of(null, "3.0,4.0,5.0", 12.0, "Null should default to sum of payoffs"),
+
+      // Default functions with standard input
+      Arguments.of("SUM", "3.0,4.0,5.0", 12.0, "SUM function"),
+      Arguments.of("AVERAGE", "3.0,4.0,5.0", 4.0, "AVERAGE function"),
+      Arguments.of("MIN", "3.0,4.0,5.0", 3.0, "MIN function"),
+      Arguments.of("MAX", "3.0,4.0,5.0", 5.0, "MAX function"),
+      Arguments.of("PRODUCT", "3.0,4.0,5.0", 60.0, "PRODUCT function"),
+      Arguments.of("MEDIAN", "3.0,4.0,5.0", 4.0, "MEDIAN function"),
+      Arguments.of("RANGE", "3.0,4.0,5.0", 2.0, "RANGE function"),
+
+      // Case insensitive tests
+      Arguments.of("sum", "3.0,4.0,5.0", 12.0, "sum function (lowercase)"),
+      Arguments.of("Sum", "3.0,4.0,5.0", 12.0, "Sum function (mixed case)"),
+      Arguments.of("AVERAGE", "3.0,4.0,5.0", 4.0, "AVERAGE function (uppercase)"),
+
+      // Empty array with different default functions
+      Arguments.of("SUM", "", 0.0, "Empty array with SUM"),
+      Arguments.of("PRODUCT", "", 1.0, "Empty array with PRODUCT"),
+      Arguments.of("AVERAGE", "", 0.0, "Empty array with AVERAGE")
+    );
   }
 
   @ParameterizedTest
@@ -93,7 +129,7 @@ public class GTUnitTestFitness {
   public void testFitnessValueWithInvalidFunction(String fitnessFunction) {
     double[] payoffs = {3.0, 4.0, 5.0};
 
-    assertThrows(ArithmeticException.class, () -> 
+    assertThrows(ArithmeticException.class, () ->
         evaluateFitnessValue(payoffs, fitnessFunction));
   }
 }
