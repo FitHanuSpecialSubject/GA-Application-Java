@@ -59,19 +59,19 @@ class MatchesTest {
     @MethodSource("provideTestDataForGetLeastNode")
     void testGetLeastNode(int set, int newNode, Set<Integer> currentNodes, int expected) {
         // Tạo một đối tượng TwoSetPreferenceList với padding = 0
-        TwoSetPreferenceList preferenceList = new TwoSetPreferenceList(10, 0);
+        TwoSetPreferenceList preferenceList = new TwoSetPreferenceList(10);
 
         // Thêm các score vào preferenceList
-        preferenceList.add(1.0); // Node 0
-        preferenceList.add(0.8); // Node 1
-        preferenceList.add(0.5); // Node 2
-        preferenceList.add(0.3); // Node 3
-        preferenceList.add(0.2); // Node 4
-        preferenceList.add(0.1); // Node 5
-        preferenceList.add(0.05); // Node 6
-        preferenceList.add(0.01); // Node 7
-        preferenceList.add(0.005); // Node 8
-        preferenceList.add(0.001); // Node 9
+        preferenceList.add(0,1.0); // Node 0
+        preferenceList.add(1,0.8); // Node 1
+        preferenceList.add(2,0.5); // Node 2
+        preferenceList.add(3,0.3); // Node 3
+        preferenceList.add(4,0.2); // Node 4
+        preferenceList.add(5,0.1); // Node 5
+        preferenceList.add(6,0.05); // Node 6
+        preferenceList.add(7,0.01); // Node 7
+        preferenceList.add(8,0.005); // Node 8
+        preferenceList.add(9,0.001); // Node 9
 
         // Gọi phương thức getLeastNode và kiểm tra kết quả
         int result = preferenceList.getLeastNode(set, newNode, currentNodes);

@@ -40,10 +40,6 @@ public class TripletPreferenceList implements PreferenceList {
     return positions.length;
   }
 
-  @Override
-  public int getNumberOfOtherSets() {
-    return 2;
-  }
 
   @Override
   public int getLeastNode(int set, int newNode, Set<Integer> currentNodes) {
@@ -65,7 +61,6 @@ public class TripletPreferenceList implements PreferenceList {
     }
   }
 
-  @Override
   public int getPositionByRank(int set, int rank) throws ArrayIndexOutOfBoundsException {
     try {
       return positions[rank] + this.padding;
@@ -73,11 +68,6 @@ public class TripletPreferenceList implements PreferenceList {
       log.error("Position {} not found:", rank, e);
       return -1;
     }
-  }
-
-  @Override
-  public int getLastOption(int set) {
-    return 0;
   }
 
   /**

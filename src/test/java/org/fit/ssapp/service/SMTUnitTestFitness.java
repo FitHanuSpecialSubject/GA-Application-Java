@@ -99,7 +99,7 @@ public class SMTUnitTestFitness {
   // @ParameterizedTest
   @CsvSource({
           "SIGMA{*S1}",
-          "M1 *+ M2",
+          "M1 +* M2",
           "SIGMA{S1} - M1 / 0",
           "INVALID_FUNCTION{S1}",
           "SIGMA{S1 + M2",

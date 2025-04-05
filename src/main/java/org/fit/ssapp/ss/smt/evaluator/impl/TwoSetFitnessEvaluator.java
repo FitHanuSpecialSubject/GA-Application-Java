@@ -7,11 +7,15 @@ import static org.fit.ssapp.util.StringExpressionEvaluator.isNumericValue;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.DoubleUnaryOperator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
+import net.objecthunter.exp4j.ValidationResult;
 import org.fit.ssapp.ss.smt.MatchingData;
 import org.fit.ssapp.ss.smt.evaluator.FitnessEvaluator;
 import org.fit.ssapp.util.EvaluatorUtils;
@@ -110,9 +114,24 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
       }
     }
     System.out.println(tmpSB);
-    return new ExpressionBuilder(tmpSB.toString())
-        .build()
-        .evaluate();
+    String finalExpression = tmpSB.toString();
+
+    ExpressionBuilder expressionBuilder = new ExpressionBuilder(finalExpression);
+
+    // Validate expression
+    Expression expression = expressionBuilder.build();
+    ValidationResult validationResult = expression.validate();
+
+    if (!validationResult.isValid()) {
+      throw new IllegalArgumentException("Invalid fitness expression: "
+              + finalExpression + ". Errors: "
+              + validationResult.getErrors().stream()
+                      .map(Object::toString)
+                      .collect(Collectors.joining(", ")));
+    }
+
+    // If validation passes, evaluate the expression
+    return expression.evaluate();
   }
 
   private double sigmaCalculate(double[] satisfactions, String expression) {
@@ -167,4 +186,5 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
     }
     return result;
   }
+
 }
