@@ -33,7 +33,7 @@ public class StableMatchingIntegrationTest {
   @Autowired
   private ObjectMapper objectMapper;
 
-  // @ParameterizedTest
+  @ParameterizedTest
   @MethodSource("stableMatchingAlgorithms")
   void stableMatching_BaseCase(String algorithm) throws Exception {
     StableMatchingProblemDto dto = createBaseCaseDto(algorithm);
