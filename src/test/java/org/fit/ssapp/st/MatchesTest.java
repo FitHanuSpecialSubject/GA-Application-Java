@@ -39,13 +39,13 @@ class MatchesTest {
     @CsvSource({
             "0,2,1,false",
             "1,2,2,true",
-            "2,3,3,false",
+            "2,4,3,false",
             "3,4,4,true",
             "4,5,5,true",
             "5,6,6,true",
             "6,7,7,true"
     })
-    void testCheckFull(int targetNode, int targetNodeCapacity, int matchesToAdd, boolean expected) {
+    void isFull(int targetNode, int targetNodeCapacity, int matchesToAdd, boolean expected) {
         Matches matches = new Matches(10);
         for (int i = 0; i < matchesToAdd; i++) {
             matches.addMatch(targetNode, i + 10);  // Adding unique nodes to avoid duplication
