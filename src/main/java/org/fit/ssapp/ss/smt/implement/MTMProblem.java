@@ -183,16 +183,16 @@ public class MTMProblem implements MatchingProblem {
         }
 
         // if left is full and left does not like right more: continue
-        if (leftIsFull) {
+        if (leftIsFull) {  // may be leftFull and rightNotFull
           int leastPreferredLeftMatch = nodePreference.getLeastNode(UNUSED_VAL, rightNode, currentMatchesOfLeftNode);
           if (leastPreferredLeftMatch == rightNode) {
             continue;
           }
         }
 
+        TwoSetPreferenceList rightNodePreference = (TwoSetPreferenceList) preferenceLists.get(rightNode);
         // if right is full and right does not like left more: continue
-        if (rightIsFull) {
-          TwoSetPreferenceList rightNodePreference = (TwoSetPreferenceList) preferenceLists.get(rightNode);
+        if (rightIsFull) { // may be rightFull and leftNotFull
           int leastPreferredRightMatch = rightNodePreference.getLeastNode(UNUSED_VAL, leftNode, currentMatchesOfRightNode);
           if (leastPreferredRightMatch == leftNode) {
             continue;
@@ -203,18 +203,17 @@ public class MTMProblem implements MatchingProblem {
         if (leftIsFull) {
           int leastPreferredLeftMatch = nodePreference.getLeastNode(UNUSED_VAL, rightNode, currentMatchesOfLeftNode);
           matches.removeMatchBi(leftNode, leastPreferredLeftMatch);
-          matches.addMatchBi(leftNode, rightNode);
-          queue.add(leastPreferredLeftMatch);
+          queue.add(leastPreferredLeftMatch); // Đưa node bị loại vào queue
         }
 
         //  right prefer new left more: match
         if (rightIsFull) {
-          TwoSetPreferenceList rightNodePreference = (TwoSetPreferenceList) preferenceLists.get(rightNode);
           int leastPreferredRightMatch = rightNodePreference.getLeastNode(UNUSED_VAL, leftNode, currentMatchesOfRightNode);
           matches.removeMatchBi(rightNode, leastPreferredRightMatch);
-          matches.addMatchBi(leftNode, rightNode);
           queue.add(leastPreferredRightMatch);
         }
+
+        matches.addMatchBi(leftNode, rightNode);
       }
     }
     return matches;

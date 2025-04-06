@@ -66,6 +66,23 @@ public class RequirementDecoder {
     item = item.trim();
     String[] result = new String[2];
 
+    if (item.contains(":")) {
+      String[] parts = item.split(":", 2);
+      result[0] = parts[0].trim();
+      result[1] = parts[1].trim();
+    } else if (item.endsWith("++")) {
+      String[] parts = item.split("\\+\\+", 2);
+      result[0] = parts[0].trim();
+      result[1] = "++";
+    } else if (item.endsWith("--")) {
+      String[] parts = item.split("--", 2);
+      result[0] = parts[0].trim();
+      result[1] = "--";
+    } else {
+      result[0] = "-2";
+      result[1] = "++";
+    }
+
     if (item.matches("^-?\\d+$")) {
       try {
         int num = Integer.parseInt(item);
@@ -89,23 +106,6 @@ public class RequirementDecoder {
         result[1] = null;
       }
       return result;
-    }
-
-    if (item.contains(":")) {
-      String[] parts = item.split(":", 2);
-      result[0] = parts[0].trim();
-      result[1] = parts[1].trim();
-    } else if (item.contains("++")) {
-      String[] parts = item.split("\\+\\+", 2);
-      result[0] = parts[0].trim();
-      result[1] = "++";
-    } else if (item.contains("--")) {
-      String[] parts = item.split("--", 2);
-      result[0] = parts[0].trim();
-      result[1] = "--";
-    } else {
-      result[0] = "-2";
-      result[1] = "++";
     }
 
     return result;
