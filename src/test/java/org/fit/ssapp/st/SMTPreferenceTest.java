@@ -1,4 +1,4 @@
-package org.fit.ssapp.service;
+package org.fit.ssapp.st;
 
 import java.util.stream.Stream;
 

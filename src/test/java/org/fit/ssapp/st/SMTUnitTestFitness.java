@@ -1,4 +1,4 @@
-package org.fit.ssapp.service;
+package org.fit.ssapp.st;
 
 import org.fit.ssapp.ss.smt.evaluator.impl.TwoSetFitnessEvaluator;
 import org.fit.ssapp.ss.smt.MatchingData;
