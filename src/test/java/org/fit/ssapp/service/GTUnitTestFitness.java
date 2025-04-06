@@ -55,6 +55,26 @@ public class GTUnitTestFitness {
     assertEquals(expected, result.doubleValue(), 0.0001);
   }
 
+  private static Stream<Arguments> provideDefaultFunction() {
+    return Stream.of(
+        // Empty/blank/null fitness function cases
+        Arguments.of("", new double[] { 3.0, 4.0, 5.0 }, 12.0, "Empty string should default to sum of payoffs"),
+        Arguments.of("   ", new double[] { 3.0, 4.0, 5.0 }, 12.0, "Blank string should default to sum of payoffs"),
+        Arguments.of(null, new double[] { 3.0, 4.0, 5.0, 100.001 }, 112.001, "Null should default to sum of payoffs"),
+        Arguments.of(null, new double[] { 3.0, 4.0, 5.0, 200.020 }, 212.020, "Null should default to sum of payoffs"),
+        Arguments.of(null, new double[] { 3.0, 4.0, 5.0, 123.123 }, 135.123, "Null should default to sum of payoffs"));
+  }
+
+  /**
+   * Tests the fitness calculation for empty payoff scenarios.
+   */
+  @ParameterizedTest
+  @MethodSource("provideDefaultFunction")
+  public void defaultFunction(String function, double[] payoffs, double expected, String message) {
+    BigDecimal result = evaluateFitnessValue(payoffs, function);
+    assertEquals(expected, result.doubleValue(), 0.0001, message);
+  }
+
   /**
    * Tests the fitness calculation for empty payoff scenarios.
    */
@@ -66,20 +86,15 @@ public class GTUnitTestFitness {
   }
 
   @ParameterizedTest
-  @MethodSource("provideDefaultFitnessTestData")
-  public void testFitnessValueWithDefaultInput(String fitnessFunction, double[] payoffs, double expected,
+  @MethodSource("provideCustomFunction")
+  public void customFunction(String fitnessFunction, double[] payoffs, double expected,
       String testDescription) {
     BigDecimal result = evaluateFitnessValue(payoffs, fitnessFunction);
     assertEquals(expected, result.doubleValue(), 0.0001, testDescription);
   }
 
-  private static Stream<Arguments> provideDefaultFitnessTestData() {
+  private static Stream<Arguments> provideCustomFunction() {
     return Stream.of(
-        // Empty/blank/null fitness function cases
-        Arguments.of("", new double[] { 3.0, 4.0, 5.0 }, 12.0, "Empty string should default to sum of payoffs"),
-        Arguments.of("   ", new double[] { 3.0, 4.0, 5.0 }, 12.0, "Blank string should default to sum of payoffs"),
-        Arguments.of(null, new double[] { 3.0, 4.0, 5.0 }, 12.0, "Null should default to sum of payoffs"),
-
         // Default functions with standard input
         Arguments.of("SUM", new double[] { 3.0, 4.0, 5.0 }, 12.0, "SUM function"),
         Arguments.of("AVERAGE", new double[] { 3.0, 4.0, 5.0 }, 4.0, "AVERAGE function"),
