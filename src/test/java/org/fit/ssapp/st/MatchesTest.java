@@ -57,7 +57,7 @@ class MatchesTest {
     // Unit Test cho getLeastNode
     // @ParameterizedTest
     @MethodSource("provideTestDataForGetLeastNode")
-    void testGetLeastNode(int set, int newNode, Set<Integer> currentNodes, int expected) {
+    void getLeastNode(int set, int newNode, Set<Integer> currentNodes, int expected) {
         // Tạo một đối tượng TwoSetPreferenceList với padding = 0
         TwoSetPreferenceList preferenceList = new TwoSetPreferenceList(10);
 
@@ -81,13 +81,13 @@ class MatchesTest {
     // Phương thức cung cấp dữ liệu test cho testGetLeastNode
     private static Stream<Arguments> provideTestDataForGetLeastNode() {
         return Stream.of(
-                Arguments.of(0, 5, new HashSet<>(Arrays.asList(1, 2, 3)), 1),
-                Arguments.of(0, 5, new HashSet<>(Arrays.asList(2, 3, 4)), 2),
-                Arguments.of(0, 5, new HashSet<>(Arrays.asList(3, 4, 5)), 3),
-                Arguments.of(0, 5, new HashSet<>(Arrays.asList(4, 5, 6)), 4),
-                Arguments.of(0, 5, new HashSet<>(Arrays.asList(5, 6, 7)), 5),
-                Arguments.of(0, 5, new HashSet<>(Arrays.asList(6, 7, 8)), 6),
-                Arguments.of(0, 5, new HashSet<>(Arrays.asList(7, 8, 9)), 7)
+                Arguments.of(0, 5, new HashSet<>(Arrays.asList(1, 2, 3)), 5),
+                Arguments.of(0, 5, new HashSet<>(Arrays.asList(2, 3, 4)), 5),
+                Arguments.of(0, 9, new HashSet<>(Arrays.asList(3, 4, 5)), 9),
+                Arguments.of(0, 5, new HashSet<>(Arrays.asList(4, 5, 6)), 6),
+                Arguments.of(0, 5, new HashSet<>(Arrays.asList(5, 6, 7)), 7),
+                Arguments.of(0, 5, new HashSet<>(Arrays.asList(6, 7, 8)), 8),
+                Arguments.of(0, 5, new HashSet<>(Arrays.asList(7, 8, 9)), 9)
         );
     }
 }
