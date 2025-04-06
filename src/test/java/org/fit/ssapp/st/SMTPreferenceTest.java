@@ -62,8 +62,7 @@ public class SMTPreferenceTest {
   /**
    * Tests the default preference calculation using TwoSetPreferenceProvider.
    *
-   * @param expectedScore0to1 Expected score from individual 0 to 1.
-   * @param expectedScore1to0 Expected score from individual 1 to 0.
+   * @param expected Expected score from individual 0 to 1 and reverse.
    */
   @ParameterizedTest
   @MethodSource("defaultPreferenceTestCases")
@@ -108,9 +107,7 @@ public class SMTPreferenceTest {
   /**
    * Tests the custom preference calculation using TwoSetPreferenceProvider.
    *
-   * @param expectedScore0to1 Expected score from individual 0 to 1.
-   * @param expected1         Expected score from individual 1 to 0.
-   * @param expected2         Expected score from individual 0 to 1.
+   * @param expected Expected score from individual 0 to 1 and reverse.
    */
   @ParameterizedTest
   @MethodSource("customPreferenceTestCases")
@@ -119,8 +116,7 @@ public class SMTPreferenceTest {
       String[] requirements,
       double[] properties,
       double[] weights,
-      double expected1,
-      double expected2) {
+      double expected) {
 
     StableMatchingProblemDto dto = genSampleDto();
     dto.setIndividualRequirements(new String[][] {
@@ -150,8 +146,8 @@ public class SMTPreferenceTest {
     double score0to1 = preferenceList0.getScore(1);
     double score1to0 = preferenceList1.getScore(0);
 
-    Assertions.assertEquals(expected1, score0to1, 0.001);
-    Assertions.assertEquals(expected2, score1to0, 0.001);
+    Assertions.assertEquals(expected, score0to1, 0.001);
+    Assertions.assertEquals(expected, score1to0, 0.001);
   }
 
   private static Stream<Arguments> defaultPreferenceTestCases() {
@@ -197,7 +193,7 @@ public class SMTPreferenceTest {
             new String[] { "1--", "2:3", "3++" },
             new double[] { 4.0, 5.0, 6.0 }, // property
             new double[] { 1.0, 2.0, 3.0 }, // weight
-            6, 25.5),
+            25.5),
 
         // floor
         Arguments.of(
@@ -205,7 +201,7 @@ public class SMTPreferenceTest {
             new String[] { "4", "5", "6" },
             new double[] { 7.0, 8.0, 9.0 }, // property
             new double[] { 4.0, 5.0, 6.0 }, // weight
-            25.5, 230),
+            230),
 
         // cbrt
         Arguments.of(
@@ -213,7 +209,7 @@ public class SMTPreferenceTest {
             new String[] { "4", "5", "6" },
             new double[] { 7.0, 8.0, 9.0 }, // property
             new double[] { 4.0, 5.0, 6.0 }, // weight
-            25.5, 27.442249570307407),
+            27.442249570307407),
 
         // abs
         Arguments.of(
@@ -221,7 +217,7 @@ public class SMTPreferenceTest {
             new String[] { "4", "5", "6" },
             new double[] { 7.0, 8.0, 9.0 }, // property
             new double[] { 4.0, 5.0, 6.0 }, // weight
-            25.5, 2),
+            2),
 
         // sqrt
         Arguments.of(
@@ -229,7 +225,7 @@ public class SMTPreferenceTest {
             new String[] { "4", "5", "6" },
             new double[] { 7.0, 8.0, 9.0 }, // property
             new double[] { 4.0, 5.0, 6.0 }, // weight
-            25.5, 19),
+            19),
 
         // log
         Arguments.of(
@@ -237,6 +233,6 @@ public class SMTPreferenceTest {
             new String[] { "1.5", "2.5", "3.5" },
             new double[] { 4.5, 5.5, 6.5 }, // property
             new double[] { 1.0, 2.0, 3.0 }, // weight
-            12.971428571428572, 153.32459298648675));
+            153.32459298648675));
   }
 }

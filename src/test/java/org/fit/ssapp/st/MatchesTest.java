@@ -21,10 +21,10 @@ class MatchesTest {
   @ParameterizedTest
   @CsvSource({
       "0,1",
+          "4,5",
       "1,2",
       "2,3",
       "3,4",
-      "4,5",
       "5,6",
       "6,7"
   })
