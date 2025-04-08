@@ -228,4 +228,16 @@ public class TwoSetPreferenceList implements PreferenceList {
     }
   }
 
+  @Override
+  public boolean isUniformPreference() {
+    double first = scores[0];
+    for (int i = 1; i < scores.length; i++) {
+      if (scores[i] != first) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+
 }

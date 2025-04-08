@@ -122,4 +122,10 @@ public class PreferenceListWrapper {
     return pref.getPositionByRank(set, pref.size(set) - 1);
   }
 
+  /**
+   * get the list of preference lists
+   * */
+  public List<PreferenceList> getLists() {
+    return lists;
+  }
 }

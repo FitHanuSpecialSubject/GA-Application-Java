@@ -109,4 +109,22 @@ public class TripletPreferenceList implements PreferenceList {
     }
   }
 
+  /**
+   * Checks whether all scores in the preference list are identical.
+   *
+   * @return true if all scores are equal, false otherwise.
+   */
+  @Override
+  public boolean isUniformPreference() {
+    if (scores.length == 0) return true; // Empty is considered uniform
+
+    double first = scores[0];
+    for (int i = 1; i < scores.length; i++) {
+      if (scores[i] != first) {
+        return false;
+      }
+    }
+    return true;
+  }
+
 }
