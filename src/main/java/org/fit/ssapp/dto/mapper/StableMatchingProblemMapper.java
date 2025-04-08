@@ -24,6 +24,7 @@ import org.fit.ssapp.util.EvaluatorUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Mapper layer, xử lý các công việc sau đối với từng loại matching problem: 1. map problem data từ
@@ -55,7 +56,7 @@ public class StableMatchingProblemMapper {
             dto.getEvaluateFunctions()
     );
     PreferenceListWrapper preferenceLists = builder.toListWrapper();
-    validateUniformPreferences(preferenceLists);
+    validateUniformPreferences(preferenceLists, dto.getAlgorithm());
 
     FitnessEvaluator fitnessEvaluator = new TwoSetFitnessEvaluator(data);
     return new OTOProblem(
@@ -87,7 +88,7 @@ public class StableMatchingProblemMapper {
     PreferenceBuilder builder = new TwoSetPreferenceProvider(data,
             request.getEvaluateFunctions());
     PreferenceListWrapper preferenceLists = builder.toListWrapper();
-    validateUniformPreferences(preferenceLists);
+    validateUniformPreferences(preferenceLists, request.getAlgorithm());
     FitnessEvaluator fitnessEvaluator = new TwoSetFitnessEvaluator(data);
 
     return new OTMProblem(
@@ -121,7 +122,7 @@ public class StableMatchingProblemMapper {
             request.getEvaluateFunctions());
 
     PreferenceListWrapper preferenceLists = builder.toListWrapper();
-    validateUniformPreferences(preferenceLists);
+    validateUniformPreferences(preferenceLists, request.getAlgorithm());
 
     FitnessEvaluator fitnessEvaluator = new TwoSetFitnessEvaluator(data);
     String fitnessFunction = EvaluatorUtils.getValidFitnessFunction(request.getFitnessFunction());
@@ -153,7 +154,7 @@ public class StableMatchingProblemMapper {
     PreferenceBuilder builder = new TripletPreferenceProvider(data,
             request.getEvaluateFunctions());
     PreferenceListWrapper preferenceLists = builder.toListWrapper();
-    validateUniformPreferences(preferenceLists);
+    validateUniformPreferences(preferenceLists, request.getAlgorithm());
 
     FitnessEvaluator fitnessEvaluator = new TwoSetFitnessEvaluator(data);
     return new TripletOTOProblem(request.getProblemName(),
@@ -190,13 +191,13 @@ public class StableMatchingProblemMapper {
         fitnessEvaluator);
   }
 
-  private static void validateUniformPreferences(PreferenceListWrapper wrapper) {
+  private static void validateUniformPreferences(PreferenceListWrapper wrapper, String algorithm) {
     List<Integer> invalidAgents = new ArrayList<>();
 
     int i = 0;
     for (PreferenceList list : wrapper.getLists()) {
-      if ((list instanceof TwoSetPreferenceList twoSet && twoSet.isUniformPreference()) ||
-              (list instanceof TripletPreferenceList triplet && triplet.isUniformPreference())) {
+      if ((list instanceof TwoSetPreferenceList twoSet && twoSet.isUniformPreference() && Objects.equals(algorithm, "IBEA")) ||
+              (list instanceof TripletPreferenceList triplet && triplet.isUniformPreference() && Objects.equals(algorithm, "IBEA"))) {
         invalidAgents.add(i);
       }
       i++;
