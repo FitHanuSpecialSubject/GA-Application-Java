@@ -151,13 +151,13 @@ public class StableMatchingIntegrationTest {
   }
 
   private void assertNoDuplication(JsonNode matches) {
-    for (JsonNode match : matches) {
+   for (JsonNode match : matches) {
       int[] indices = getIndices(match);
       Set<Integer> set = new TreeSet<>();
       for (int index : indices) {
           set.add(index);
       }
-      assertThat(set.size()).isEqualTo(indices.length).withFailMessage("Match have duplicated indices");
+      assertThat( set.size()).isEqualTo(indices.length).withFailMessage("Match have duplicated indices");
     }
   }
 
