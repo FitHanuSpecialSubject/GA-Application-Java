@@ -23,10 +23,10 @@ import org.fit.ssapp.util.EvaluatorUtils;
 @FieldDefaults(makeFinal = true, level = lombok.AccessLevel.PRIVATE)
 public class TwoSetFitnessEvaluator implements FitnessEvaluator {
 
-  private final MatchingData matchingData; // Dữ liệu matching từ input
+  private final MatchingData matchingData; // Matching data from input
 
   /**
-   * Tính fitness mặc định bằng tổng tất cả các satisfaction values
+   * Calculates the default fitness by summing all satisfaction values
    */
   @Override
   public double defaultFitnessEvaluation(double[] satisfactions) {
@@ -34,9 +34,9 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
   }
 
   /**
-   * Tính fitness với công thức tùy chỉnh
-   * 1. Thay thế tất cả các hàm custom (SIGMA, S(index), M) bằng giá trị số
-   * 2. Dùng exp4j để tính toán biểu thức toán học
+   * Calculates fitness with a custom formula
+   * 1. Replaces all custom functions (SIGMA, S(index), M) with numerical values
+   * 2. Uses exp4j to evaluate the mathematical expression
    */
   @Override
   public double withFitnessFunctionEvaluation(double[] satisfactions, String fitnessFunction) {
@@ -47,7 +47,7 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
   }
 
   /**
-   * Thay thế tất cả các hàm custom trong biểu thức bằng số
+   * Replaces all custom functions in the expression with numbers
    */
   private String replaceAllCustomFunctions(double[] satisfactions, String originalExpression) {
     StringBuilder result = new StringBuilder();
@@ -55,15 +55,15 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
     for (int i = 0; i < originalExpression.length(); i++) {
       char c = originalExpression.charAt(i);
 
-      // Xử lý các hàm bắt đầu bằng chữ 'S' (SIGMA hoặc S(index))
+      // Handles functions starting with 'S' (SIGMA or S(index))
       if (c == 'S') {
-        // Xử lý SIGMA{expression}
+        // Handles SIGMA{expression}
         if (i + 5 <= originalExpression.length() && originalExpression.startsWith("SIGMA", i)) {
           i = replaceSigmaFunction(satisfactions, originalExpression, i, result);
           continue;
         }
 
-        // Xử lý S(index) - tính tổng satisfaction của 1 set
+        // Handles S(index) - calculates the sum of satisfaction for a set
         if (i + 3 < originalExpression.length()
                 && originalExpression.charAt(i + 1) == '('
                 && Character.isDigit(originalExpression.charAt(i + 2))
@@ -71,17 +71,17 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
           int setIndex = Character.getNumericValue(originalExpression.charAt(i + 2));
           double sum = calculateSetSum(satisfactions, setIndex);
           result.append(sum);
-          i += 3; // Bỏ qua phần (x)
+          i += 3; // Skips the (x) part
           continue;
         }
       }
-      // Xử lý biến M (reference tới satisfaction value tại vị trí cụ thể)
+      // Handles the M variable (reference to satisfaction value at a specific position)
       else if (c == 'M') {
         i = replaceMVariable(satisfactions, originalExpression, i, result);
         continue;
       }
 
-      // Giữ lại các ký tự thông thường không phải hàm custom
+      // Keeps regular characters that are not custom functions
       result.append(c);
     }
 
@@ -89,28 +89,28 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
   }
 
   /**
-   * Thay thế hàm SIGMA{expression} bằng giá trị số
-   * @return vị trí sau dấu '}' cuối cùng
+   * Replaces the SIGMA{expression} function with a numerical value
+   * @return the position after the last '}'
    */
   private int replaceSigmaFunction(double[] satisfactions, String expr, int startIdx, StringBuilder output) {
     int openBrace = expr.indexOf('{', startIdx);
     if (openBrace == -1) {
-      throw new IllegalArgumentException("Thiếu dấu '{' trong hàm SIGMA");
+      throw new IllegalArgumentException("Missing '{' in the SIGMA function");
     }
 
-    // Tìm dấu '}' tương ứng
+    // Finds the corresponding '}'
     int closeBrace = findMatchingClosingBrace(expr, openBrace);
     String innerExpr = expr.substring(openBrace + 1, closeBrace);
 
-    // Tính giá trị SIGMA
+    // Calculates the SIGMA value
     double sigmaValue = sigmaCalculate(satisfactions, innerExpr);
     output.append(convertToStringWithoutScientificNotation(sigmaValue));
 
-    return closeBrace; // Trả về vị trí sau dấu '}'
+    return closeBrace; // Returns the position after '}'
   }
 
   /**
-   * Tìm dấu '}' đóng tương ứng với '{' mở
+   * Finds the closing '}' corresponding to the opening '{'
    */
   private int findMatchingClosingBrace(String expr, int openBracePos) {
     int balance = 1;
@@ -125,35 +125,35 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
         }
       }
     }
-    throw new IllegalArgumentException("Không tìm thấy dấu '}' đóng tương ứng");
+    throw new IllegalArgumentException("No matching '}' found");
   }
 
   /**
-   * Thay thế biến Mx bằng giá trị satisfaction tại vị trí x
-   * @return vị trí cuối cùng đã xử lý
+   * Replaces the Mx variable with the satisfaction value at position x
+   * @return the last processed position
    */
   private int replaceMVariable(double[] satisfactions, String expr, int startIdx, StringBuilder output) {
-    // Tìm tất cả chữ số sau M
+    // Finds all digits after M
     int numEnd = startIdx + 1;
     while (numEnd < expr.length() && Character.isDigit(expr.charAt(numEnd))) {
       numEnd++;
     }
 
     if (numEnd == startIdx + 1) {
-      throw new IllegalArgumentException("Thiếu số sau M");
+      throw new IllegalArgumentException("Missing number after M");
     }
 
     int position = Integer.parseInt(expr.substring(startIdx + 1, numEnd));
     if (position < 1 || position > matchingData.getSize()) {
-      throw new IllegalArgumentException("Vị trí M ngoài phạm vi: " + position);
+      throw new IllegalArgumentException("M position out of bounds: " + position);
     }
 
     output.append(satisfactions[position - 1]);
-    return numEnd - 1; // Trả về vị trí cuối cùng đã xử lý
+    return numEnd - 1; // Returns the last processed position
   }
 
   /**
-   * Tính tổng satisfaction của một set
+   * Calculates the sum of satisfaction for a set
    */
   private double calculateSetSum(double[] satisfactions, int setIndex) {
     return Arrays.stream(getSatisfactoryOfASetByDefault(satisfactions, setIndex))
@@ -161,13 +161,13 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
   }
 
   /**
-   * Tính toán giá trị cho hàm SIGMA
+   * Calculates the value for the SIGMA function
    */
   private double sigmaCalculate(double[] satisfactions, String expression) {
     double[] streamValue = null;
     String regex = null;
 
-    // Tìm các biến S1, S2 trong expression
+    // Finds the variables S1, S2 in the expression
     for (int i = 0; i < expression.length() - 1; i++) {
       char ch = expression.charAt(i);
       if (ch == 'S') {
@@ -182,7 +182,7 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
             yield "S2";
           }
           default -> throw new IllegalArgumentException(
-                  "Giá trị không hợp lệ sau S: " + expression);
+                  "Invalid value after S: " + expression);
         };
       }
     }
@@ -191,7 +191,7 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
       return 0;
     }
 
-    // Tạo biểu thức con và tính toán
+    // Creates a sub-expression and calculates it
     Expression exp = new ExpressionBuilder(expression)
             .variables(regex)
             .build();
@@ -208,7 +208,7 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
   }
 
   /**
-   * Lấy satisfaction values của một set cụ thể
+   * Gets the satisfaction values of a specific set
    */
   private double[] getSatisfactoryOfASetByDefault(double[] satisfactions, int set) {
     int setTotal = this.matchingData.getTotalIndividualOfSet(set);
@@ -226,7 +226,7 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
   }
 
   /**
-   * Chuyển số sang string không dùng scientific notation
+   * Converts a number to a string without using scientific notation
    */
   private String convertToStringWithoutScientificNotation(double value) {
     if (value % 1 == 0) {
@@ -236,7 +236,7 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
   }
 
   /**
-   * Helper method xác định độ dài số sau ký tự M
+   * Helper method to determine the length of the number after the M character
    */
   private int afterTokenLength(String str, int start) {
     int length = 0;
