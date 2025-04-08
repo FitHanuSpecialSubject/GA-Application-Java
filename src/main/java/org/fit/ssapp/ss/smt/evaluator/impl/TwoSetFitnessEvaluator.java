@@ -36,7 +36,7 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
   /**
    * Tính fitness với công thức tùy chỉnh
    * 1. Thay thế tất cả các hàm custom (SIGMA, S(index), M) bằng giá trị số
-   * 2. Dùng exp4j để tính toán biểu thức toán học thuần túy
+   * 2. Dùng exp4j để tính toán biểu thức toán học
    */
   @Override
   public double withFitnessFunctionEvaluation(double[] satisfactions, String fitnessFunction) {
@@ -47,7 +47,7 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
   }
 
   /**
-   * Thay thế tất cả các hàm custom trong biểu thức bằng giá trị số
+   * Thay thế tất cả các hàm custom trong biểu thức bằng số
    */
   private String replaceAllCustomFunctions(double[] satisfactions, String originalExpression) {
     StringBuilder result = new StringBuilder();
