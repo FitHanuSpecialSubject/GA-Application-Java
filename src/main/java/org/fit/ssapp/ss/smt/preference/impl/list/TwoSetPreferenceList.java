@@ -111,7 +111,30 @@ public class TwoSetPreferenceList implements PreferenceList {
     return result.toString();
   }
 
-  public Set<Integer> getAllNodeId() {
-    return Collections.unmodifiableSet(scores.keySet());
+  /**
+   * getScore.
+   *
+   * @param position int
+   */
+  public double getScore(int position) {
+    try {
+      return scores[position - this.padding];
+    } catch (ArrayIndexOutOfBoundsException e) {
+      log.error("Position {} not found:", position, e);
+      return 0;
+    }
   }
+
+  @Override
+  public boolean isUniformPreference() {
+    double first = scores[0];
+    for (int i = 1; i < scores.length; i++) {
+      if (scores[i] != first) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+
 }
