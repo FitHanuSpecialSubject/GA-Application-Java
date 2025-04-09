@@ -48,9 +48,18 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
   @Override
   public double withFitnessFunctionEvaluation(double[] satisfactions, String fitnessFunction) {
     String processedExpression = processCustomFunctions(satisfactions, fitnessFunction);
-    return new ExpressionBuilder(processedExpression)
-            .build()
-            .evaluate();
+    try {
+      Expression expression = new ExpressionBuilder(processedExpression)
+              .build();
+      // Evaluation có thể throw ArithmeticException (vd: chia cho 0)
+      return expression.evaluate();
+    } catch (IllegalArgumentException | ArithmeticException e) {
+      throw new IllegalArgumentException(
+              "Invalid expression after processing: '" + processedExpression
+                      + "'. Original: '" + fitnessFunction + "'. Error: " + e.getMessage(),
+              e
+      );
+    }
   }
 
   /**
@@ -207,9 +216,6 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
    * Converts double to String without scientific notation
    */
   private String convertToStringWithoutScientificNotation(double value) {
-    if (value % 1 == 0) {
-      return String.format("%.0f", value); // Integer values as whole numbers
-    }
     return String.valueOf(value); // Decimal values as-is
   }
 }
