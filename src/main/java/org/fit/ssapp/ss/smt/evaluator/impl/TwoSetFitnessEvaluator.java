@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
+import net.objecthunter.exp4j.ValidationResult;
 import org.fit.ssapp.ss.smt.MatchingData;
 import org.fit.ssapp.ss.smt.evaluator.FitnessEvaluator;
 
@@ -48,15 +49,24 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
   @Override
   public double withFitnessFunctionEvaluation(double[] satisfactions, String fitnessFunction) {
     String processedExpression = processCustomFunctions(satisfactions, fitnessFunction);
+
     try {
-      Expression expression = new ExpressionBuilder(processedExpression)
-              .build();
-      // Evaluation có thể throw ArithmeticException (vd: chia cho 0)
+      Expression expression = new ExpressionBuilder(processedExpression).build();
+
+      ValidationResult validation = expression.validate(false);
+      if (!validation.isValid()) {
+        throw new IllegalArgumentException(
+                "Invalid expression: '" + processedExpression + "'. "
+                        + "Validation errors: " + validation.getErrors()
+                        + " Original expression: '" + fitnessFunction + "'"
+        );
+      }
       return expression.evaluate();
+
     } catch (IllegalArgumentException | ArithmeticException e) {
       throw new IllegalArgumentException(
-              "Invalid expression after processing: '" + processedExpression
-                      + "'. Original: '" + fitnessFunction + "'. Error: " + e.getMessage(),
+              "Evaluation failed for expression: '" + processedExpression
+                     + "'. Original: '" + fitnessFunction + "'. Error: " + e.getMessage(),
               e
       );
     }
