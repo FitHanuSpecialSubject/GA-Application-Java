@@ -1,29 +1,36 @@
 package org.fit.ssapp.ss.smt.evaluator.impl;
 
-import static org.fit.ssapp.util.StringExpressionEvaluator.afterTokenLength;
-import static org.fit.ssapp.util.StringExpressionEvaluator.convertToStringWithoutScientificNotation;
-import static org.fit.ssapp.util.StringExpressionEvaluator.isNumericValue;
-
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.DoubleUnaryOperator;
-import java.util.stream.DoubleStream;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 import org.fit.ssapp.ss.smt.MatchingData;
 import org.fit.ssapp.ss.smt.evaluator.FitnessEvaluator;
-import org.fit.ssapp.util.EvaluatorUtils;
 
 /**
- * Compatible with Two Set Matching Problems only.
+ * Evaluates fitness functions for Two-Set Matching Problems.
+ * Handles custom functions (SIGMA, S(index), M variables) by replacing them
+ * with numerical values before final evaluation using exp4j.
  */
 @AllArgsConstructor
 @FieldDefaults(makeFinal = true, level = lombok.AccessLevel.PRIVATE)
 public class TwoSetFitnessEvaluator implements FitnessEvaluator {
 
   private final MatchingData matchingData; // Matching data from input
+
+  // Regex pattern for SIGMA{expression} functions
+  private static final Pattern SIGMA_PATTERN = Pattern.compile("SIGMA\\{([^}]+)\\}");
+
+  // Regex pattern for S(index) set references
+  private static final Pattern S_INDEX_PATTERN = Pattern.compile("S\\((\\d)\\)");
+
+  // Regex pattern for M(position) variables
+  private static final Pattern M_VAR_PATTERN = Pattern.compile("M(\\d+)");
 
   /**
    * Calculates the default fitness by summing all satisfaction values
@@ -34,140 +41,103 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
   }
 
   /**
-   * Calculates fitness with a custom formula
-   * 1. Replaces all custom functions (SIGMA, S(index), M) with numerical values
-   * 2. Uses exp4j to evaluate the mathematical expression
+   * Evaluates custom fitness function by:
+   * 1. Replacing all custom functions with their numerical values
+   * 2. Evaluating the resulting mathematical expression
    */
   @Override
   public double withFitnessFunctionEvaluation(double[] satisfactions, String fitnessFunction) {
-    String processedExpression = replaceAllCustomFunctions(satisfactions, fitnessFunction);
+    String processedExpression = processCustomFunctions(satisfactions, fitnessFunction);
     return new ExpressionBuilder(processedExpression)
             .build()
             .evaluate();
   }
 
   /**
-   * Replaces all custom functions in the expression with numbers
+   * Processes all custom functions in the expression by replacing them with values
    */
-  private String replaceAllCustomFunctions(double[] satisfactions, String originalExpression) {
-    StringBuilder result = new StringBuilder();
+  private String processCustomFunctions(double[] satisfactions, String expression) {
+    // Processing order matters - handle most complex functions first
+    String processed = replaceSigmaFunctions(satisfactions, expression);
+    processed = replaceSIndexFunctions(satisfactions, processed);
+    processed = replaceMVariables(satisfactions, processed);
+    return processed;
+  }
 
-    for (int i = 0; i < originalExpression.length(); i++) {
-      char c = originalExpression.charAt(i);
+  /**
+   * Replaces all SIGMA{expression} occurrences with their calculated values
+   */
+  private String replaceSigmaFunctions(double[] satisfactions, String expression) {
+    Matcher matcher = SIGMA_PATTERN.matcher(expression);
+    StringBuffer sb = new StringBuffer();
 
-      // Handles functions starting with 'S' (SIGMA or S(index))
-      if (c == 'S') {
-        // Handles SIGMA{expression}
-        if (i + 5 <= originalExpression.length() && originalExpression.startsWith("SIGMA", i)) {
-          i = replaceSigmaFunction(satisfactions, originalExpression, i, result);
-          continue;
-        }
+    while (matcher.find()) {
+      // Extract the inner expression between { and }
+      String innerExpr = matcher.group(1);
 
-        // Handles S(index) - calculates the sum of satisfaction for a set
-        if (i + 3 < originalExpression.length()
-                && originalExpression.charAt(i + 1) == '('
-                && Character.isDigit(originalExpression.charAt(i + 2))
-                && originalExpression.charAt(i + 3) == ')') {
-          int setIndex = Character.getNumericValue(originalExpression.charAt(i + 2));
-          double sum = calculateSetSum(satisfactions, setIndex);
-          result.append(sum);
-          i += 3; // Skips the (x) part
-          continue;
-        }
+      // Calculate the sigma value
+      double value = sigmaCalculate(satisfactions, innerExpr);
+
+      // Replace with calculated value (handling scientific notation)
+      matcher.appendReplacement(sb, Matcher.quoteReplacement(
+              convertToStringWithoutScientificNotation(value)));
+    }
+    matcher.appendTail(sb);
+
+    return sb.toString();
+  }
+
+  /**
+   * Replaces all S(index) occurrences with their set sums
+   */
+  private String replaceSIndexFunctions(double[] satisfactions, String expression) {
+    Matcher matcher = S_INDEX_PATTERN.matcher(expression);
+    StringBuffer sb = new StringBuffer();
+
+    while (matcher.find()) {
+      int setIndex = Integer.parseInt(matcher.group(1));
+      double sum = calculateSetSum(satisfactions, setIndex);
+      matcher.appendReplacement(sb, Matcher.quoteReplacement(
+              convertToStringWithoutScientificNotation(sum)));
+    }
+    matcher.appendTail(sb);
+
+    return sb.toString();
+  }
+
+  /**
+   * Replaces all M(position) variables with satisfaction values
+   */
+  private String replaceMVariables(double[] satisfactions, String expression) {
+    Matcher matcher = M_VAR_PATTERN.matcher(expression);
+    StringBuffer sb = new StringBuffer();
+
+    while (matcher.find()) {
+      int position = Integer.parseInt(matcher.group(1));
+
+      // Validate position bounds
+      if (position < 1 || position > matchingData.getSize()) {
+        throw new IllegalArgumentException(
+                "M position out of range [1-" + matchingData.getSize() + "]: " + position);
       }
-      // Handles the M variable (reference to satisfaction value at a specific position)
-      else if (c == 'M') {
-        i = replaceMVariable(satisfactions, originalExpression, i, result);
-        continue;
-      }
 
-      // Keeps regular characters that are not custom functions
-      result.append(c);
+      double value = satisfactions[position - 1];
+      matcher.appendReplacement(sb, Matcher.quoteReplacement(
+              convertToStringWithoutScientificNotation(value)));
     }
+    matcher.appendTail(sb);
 
-    return result.toString();
+    return sb.toString();
   }
 
   /**
-   * Replaces the SIGMA{expression} function with a numerical value
-   * @return the position after the last '}'
-   */
-  private int replaceSigmaFunction(double[] satisfactions, String expr, int startIdx, StringBuilder output) {
-    int openBrace = expr.indexOf('{', startIdx);
-    if (openBrace == -1) {
-      throw new IllegalArgumentException("Missing '{' in the SIGMA function");
-    }
-
-    // Finds the corresponding '}'
-    int closeBrace = findMatchingClosingBrace(expr, openBrace);
-    String innerExpr = expr.substring(openBrace + 1, closeBrace);
-
-    // Calculates the SIGMA value
-    double sigmaValue = sigmaCalculate(satisfactions, innerExpr);
-    output.append(convertToStringWithoutScientificNotation(sigmaValue));
-
-    return closeBrace; // Returns the position after '}'
-  }
-
-  /**
-   * Finds the closing '}' corresponding to the opening '{'
-   */
-  private int findMatchingClosingBrace(String expr, int openBracePos) {
-    int balance = 1;
-    for (int i = openBracePos + 1; i < expr.length(); i++) {
-      char c = expr.charAt(i);
-      if (c == '{') {
-        balance++;
-      } else if (c == '}') {
-        balance--;
-        if (balance == 0) {
-          return i;
-        }
-      }
-    }
-    throw new IllegalArgumentException("No matching '}' found");
-  }
-
-  /**
-   * Replaces the Mx variable with the satisfaction value at position x
-   * @return the last processed position
-   */
-  private int replaceMVariable(double[] satisfactions, String expr, int startIdx, StringBuilder output) {
-    // Finds all digits after M
-    int numEnd = startIdx + 1;
-    while (numEnd < expr.length() && Character.isDigit(expr.charAt(numEnd))) {
-      numEnd++;
-    }
-
-    if (numEnd == startIdx + 1) {
-      throw new IllegalArgumentException("Missing number after M");
-    }
-
-    int position = Integer.parseInt(expr.substring(startIdx + 1, numEnd));
-    if (position < 1 || position > matchingData.getSize()) {
-      throw new IllegalArgumentException("M position out of bounds: " + position);
-    }
-
-    output.append(satisfactions[position - 1]);
-    return numEnd - 1; // Returns the last processed position
-  }
-
-  /**
-   * Calculates the sum of satisfaction for a set
-   */
-  private double calculateSetSum(double[] satisfactions, int setIndex) {
-    return Arrays.stream(getSatisfactoryOfASetByDefault(satisfactions, setIndex))
-            .sum();
-  }
-
-  /**
-   * Calculates the value for the SIGMA function
+   * Calculates the value of a SIGMA function expression
    */
   private double sigmaCalculate(double[] satisfactions, String expression) {
     double[] streamValue = null;
     String regex = null;
 
-    // Finds the variables S1, S2 in the expression
+    // Identify which set (S1/S2) is referenced in the expression
     for (int i = 0; i < expression.length() - 1; i++) {
       char ch = expression.charAt(i);
       if (ch == 'S') {
@@ -182,16 +152,16 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
             yield "S2";
           }
           default -> throw new IllegalArgumentException(
-                  "Invalid value after S: " + expression);
+                  "Invalid set reference after S: " + expression);
         };
       }
     }
 
     if (regex == null) {
-      return 0;
+      return 0; // No valid set reference found
     }
 
-    // Creates a sub-expression and calculates it
+    // Build and evaluate the sub-expression
     Expression exp = new ExpressionBuilder(expression)
             .variables(regex)
             .build();
@@ -208,7 +178,15 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
   }
 
   /**
-   * Gets the satisfaction values of a specific set
+   * Calculates the sum of satisfaction values for a specific set
+   */
+  private double calculateSetSum(double[] satisfactions, int setIndex) {
+    return Arrays.stream(getSatisfactoryOfASetByDefault(satisfactions, setIndex))
+            .sum();
+  }
+
+  /**
+   * Extracts satisfaction values for a specific set
    */
   private double[] getSatisfactoryOfASetByDefault(double[] satisfactions, int set) {
     int setTotal = this.matchingData.getTotalIndividualOfSet(set);
@@ -226,24 +204,12 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
   }
 
   /**
-   * Converts a number to a string without using scientific notation
+   * Converts double to String without scientific notation
    */
   private String convertToStringWithoutScientificNotation(double value) {
     if (value % 1 == 0) {
-      return String.format("%.0f", value);
+      return String.format("%.0f", value); // Integer values as whole numbers
     }
-    return String.valueOf(value);
-  }
-
-  /**
-   * Helper method to determine the length of the number after the M character
-   */
-  private int afterTokenLength(String str, int start) {
-    int length = 0;
-    while (start + 1 + length < str.length()
-            && Character.isDigit(str.charAt(start + 1 + length))) {
-      length++;
-    }
-    return length;
+    return String.valueOf(value); // Decimal values as-is
   }
 }
