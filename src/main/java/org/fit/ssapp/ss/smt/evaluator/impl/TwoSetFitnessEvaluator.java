@@ -49,8 +49,6 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
   @Override
   public double withFitnessFunctionEvaluation(double[] satisfactions, String fitnessFunction) {
     String processedExpression = processCustomFunctions(satisfactions, fitnessFunction);
-
-    try {
       Expression expression = new ExpressionBuilder(processedExpression).build();
 
       ValidationResult validation = expression.validate(false);
@@ -62,14 +60,6 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
         );
       }
       return expression.evaluate();
-
-    } catch (IllegalArgumentException | ArithmeticException e) {
-      throw new IllegalArgumentException(
-              "Evaluation failed for expression: '" + processedExpression
-                     + "'. Original: '" + fitnessFunction + "'. Error: " + e.getMessage(),
-              e
-      );
-    }
   }
 
   /**
