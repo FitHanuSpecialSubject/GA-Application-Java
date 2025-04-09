@@ -17,10 +17,12 @@ import org.fit.ssapp.constants.StableMatchingConst;
  * - **M{number}** → Represents matching-related variables.
  * - **S{number}** → Represents satisfaction-related variables.
  * - **SIGMA{expression}** → Represents a summation expression inside `{}`.
+ * - Simple function names: SUM, AVERAGE, MIN, MAX, PRODUCT, MEDIAN, RANGE
  */
 public class FitnessFunctionValidator implements ConstraintValidator<ValidFitnessFunction, String> {
 
-  private static final Pattern VARIABLE_PATTERN = Pattern.compile("(M\\d+|S\\d+|SIGMA\\{[^}]+\\})");
+  private static final Pattern VARIABLE_PATTERN = Pattern.compile("(u[1-9]\\d*|M\\d+|S\\d+|SIGMA\\{[^}]+\\})");
+  private static final Set<String> VALID_FUNCTIONS = Set.of("SUM", "AVERAGE", "MIN", "MAX", "PRODUCT", "MEDIAN", "RANGE");
 
   /**
    * Validates the fitness function by checking its syntax and allowed variables.
@@ -34,9 +36,29 @@ public class FitnessFunctionValidator implements ConstraintValidator<ValidFitnes
     if (value.equalsIgnoreCase(StableMatchingConst.DEFAULT_EVALUATE_FUNC)) {
       return true;
     }
+
+    // Check if it's a simple function name
+    if (VALID_FUNCTIONS.contains(value.toUpperCase())) {
+      return true;
+    }
+
     String cleanFunc = value.replaceAll("\\s+", "");
     try {
       Set<String> variables = extractVariables(cleanFunc);
+
+      // Validate fitness variables
+      for (String var : variables) {
+        if (var.startsWith("u")) {
+          int index = Integer.parseInt(var.substring(1));
+          if (index <= 0) {
+            context.disableDefaultConstraintViolation();
+            context.buildConstraintViolationWithTemplate(
+                    "Invalid fitness variable index: " + var)
+                    .addConstraintViolation();
+            return false;
+          }
+        }
+      }
 
       for (String var : variables) {
         if (var.startsWith("SIGMA{") && var.endsWith("}")) {

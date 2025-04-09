@@ -26,6 +26,7 @@ import org.moeaframework.core.Variable;
 import org.moeaframework.core.variable.BinaryIntegerVariable;
 import org.moeaframework.core.variable.EncodingUtils;
 import org.moeaframework.core.variable.RealVariable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -51,7 +52,6 @@ public class GameTheoryService {
    * @return a ResponseEntity containing the solution or an error message
    */
   public ResponseEntity<Response> solveGameTheory(GameTheoryProblemDto request) {
-
     try {
       log.info("Received request: {}", request);
       GameTheoryProblem problem = GameTheoryProblemMapper.toProblem(request);
@@ -82,10 +82,15 @@ public class GameTheoryService {
           .message("Solve game theory problem successfully!")
           .data(gameSolution)
           .build());
+    } catch (IllegalArgumentException e) {
+      log.error("Validation error: {}", e.getMessage());
+      return ResponseEntity
+          .status(HttpStatus.BAD_REQUEST)
+          .body(Response.builder().status(400).message(e.getMessage()).build());
     } catch (Exception e) {
       log.error("Error ", e);
       return ResponseEntity
-          .ok()
+          .status(HttpStatus.INTERNAL_SERVER_ERROR)
           .body(Response.builder().status(500).message(e.getMessage()).build());
     }
   }

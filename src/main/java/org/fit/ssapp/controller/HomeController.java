@@ -20,6 +20,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import java.util.stream.Collectors;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 
 /**
  * Main Controller.
@@ -115,8 +121,8 @@ public class HomeController {
   @Async("taskExecutor")
   @PostMapping("/game-theory-solver")
   public CompletableFuture<ResponseEntity<Response>> solveGameTheory(
-      @RequestBody GameTheoryProblemDto gameTheoryProblem) {
-    return CompletableFuture.completedFuture(gameTheoryService.solveGameTheory(gameTheoryProblem));
+      @RequestBody @Valid GameTheoryProblemDto request) {
+    return CompletableFuture.completedFuture(gameTheoryService.solveGameTheory(request));
   }
 
   /**
@@ -227,6 +233,5 @@ public class HomeController {
         object,
         sessionCode));
   }
-
 
 }

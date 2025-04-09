@@ -22,7 +22,7 @@ import org.fit.ssapp.ss.gt.Strategy;
 public class StringExpressionEvaluator {
 
   public static Pattern nonRelativePattern = Pattern.compile("p[0-9]+");
-  public static Pattern fitnessPattern = Pattern.compile("u[0-9]+");
+  public static Pattern fitnessPattern = Pattern.compile("u([1-9]\\d*)");
 //  public static Pattern fitnessPattern = Pattern.compile("u[0-9]+");
 
   /**
@@ -47,35 +47,88 @@ public class StringExpressionEvaluator {
                                                                             String payoffFunction,
                                                                             List<NormalPlayer> normalPlayers,
                                                                             int[] chosenStrategyIndices) {
+    if (payoffFunction == null || payoffFunction.isBlank() || payoffFunction.equalsIgnoreCase("DEFAULT")) {
+      // the payoff function is the sum function of all properties by default
+      return calculateByDefault(strategy.getProperties(), "SUM");
+    }
+
+    if (checkIfIsDefaultFunction(payoffFunction)) {
+      return calculateByDefault(strategy.getProperties(), payoffFunction);
+    }
+
+    // Validate payoff function syntax
+    try {
+      String expression = payoffFunction;
+      Pattern generalPattern = Pattern.compile("(P[0-9]+)?" + nonRelativePattern.pattern());
+      Matcher generalMatcher = generalPattern.matcher(expression);
+      
+      while (generalMatcher.find()) {
+        String placeholder = generalMatcher.group();
+        if (placeholder.contains("P")) {
+          // relative variables - syntax Pjpi with j the player index, and i the property index
+          int[] ji = Arrays.stream(placeholder
+                          .substring(1) // remove P
+                          .split("p")) // split at p
+                  .mapToInt(Integer::parseInt)
+                  .map(x -> x - 1)
+                  .toArray(); // [j, i]
+          
+          // Validate player index
+          if (ji[0] < 0 || ji[0] >= normalPlayers.size()) {
+            throw new IllegalArgumentException("Invalid player index: " + (ji[0] + 1));
+          }
+          
+          NormalPlayer otherPlayer = normalPlayers.get(ji[0]);
+          Strategy otherPlayerStrategy = otherPlayer.getStrategyAt(chosenStrategyIndices[ji[0]]);
+          
+          // Validate property index
+          if (ji[1] < 0 || ji[1] >= otherPlayerStrategy.getProperties().size()) {
+            throw new IllegalArgumentException("Invalid property index: " + (ji[1] + 1) + " for player " + (ji[0] + 1));
+          }
+          
+          double propertyValue = otherPlayerStrategy.getProperties().get(ji[1]);
+          expression = expression.replaceAll(placeholder, formatDouble(propertyValue));
+        } else {
+          // non-relative variables
+          int index = Integer.parseInt(placeholder.substring(1)) - 1;
+          if (index < 0 || index >= strategy.getProperties().size()) {
+            throw new IllegalArgumentException("Invalid property index: " + (index + 1));
+          }
+          double propertyValue = strategy.getProperties().get(index);
+          expression = expression.replaceAll(placeholder, formatDouble(propertyValue));
+        }
+      }
+
+      // Try to evaluate the expression to validate syntax
+      evaluateExpression(expression);
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Invalid payoff function: " + payoffFunction, e);
+    }
+
     String expression = payoffFunction;
-
     Pattern generalPattern = Pattern.compile("(P[0-9]+)?" + nonRelativePattern.pattern());
-
     Matcher generalMatcher = generalPattern.matcher(expression);
+    
     while (generalMatcher.find()) {
       String placeholder = generalMatcher.group();
-      // indices should account for offset from base 1 index of variables
       if (placeholder.contains("P")) {
-        // relative variables - syntax Pjpi with j the player index, and i the property index
         int[] ji = Arrays.stream(placeholder
-                        .substring(1) // remove P
-                        .split("p")) // split at p
+                        .substring(1)
+                        .split("p"))
                 .mapToInt(Integer::parseInt)
                 .map(x -> x - 1)
-                .toArray(); // [j, i]
+                .toArray();
         NormalPlayer otherPlayer = normalPlayers.get(ji[0]);
         Strategy otherPlayerStrategy = otherPlayer.getStrategyAt(chosenStrategyIndices[ji[0]]);
         double propertyValue = otherPlayerStrategy.getProperties().get(ji[1]);
         expression = expression.replaceAll(placeholder, formatDouble(propertyValue));
       } else {
-        // non-relative variables
         int index = Integer.parseInt(placeholder.substring(1)) - 1;
         double propertyValue = strategy.getProperties().get(index);
         expression = expression.replaceAll(placeholder, formatDouble(propertyValue));
       }
     }
 
-    // evaluate this string expression to get the result using exp4j
     double val = evaluateExpression(expression);
     return new BigDecimal(val).setScale(10, RoundingMode.HALF_UP);
   }
@@ -91,31 +144,43 @@ public class StringExpressionEvaluator {
   public static BigDecimal evaluatePayoffFunctionNoRelative(Strategy strategy,
                                                             String payoffFunction) {
 
-    String expression = payoffFunction;
-
-    if (payoffFunction.isBlank()) {
+    if (payoffFunction == null || payoffFunction.isBlank() || payoffFunction.equalsIgnoreCase("DEFAULT")) {
       // the payoff function is the sum function of all properties by default
-      return calculateByDefault(strategy.getProperties(), null);
-    } else {
+      return calculateByDefault(strategy.getProperties(), "SUM");
+    }
 
-      if (checkIfIsDefaultFunction(payoffFunction)) {
-        return calculateByDefault(strategy.getProperties(), payoffFunction);
-      }
+    if (checkIfIsDefaultFunction(payoffFunction)) {
+      return calculateByDefault(strategy.getProperties(), payoffFunction);
+    }
 
+    // Validate payoff function syntax
+    try {
+      String expression = payoffFunction;
+      
       Matcher nonRelativeMatcher = nonRelativePattern.matcher(expression);
-      // replace non-relative variables with value
       while (nonRelativeMatcher.find()) {
         String placeholder = nonRelativeMatcher.group();
-        // indices should account for offset from base 1 index of variables
         int index = Integer.parseInt(placeholder.substring(1)) - 1;
+        if (index < 0 || index >= strategy.getProperties().size()) {
+          throw new IllegalArgumentException("Invalid property index: " + (index + 1));
+        }
         double propertyValue = strategy.getProperties().get(index);
         expression = expression.replaceAll(placeholder, formatDouble(propertyValue));
       }
 
-      // evaluate this string expression to get the result using exp4j
-      double val = evaluateExpression(expression);
-      return new BigDecimal(val).setScale(10, RoundingMode.HALF_UP);
+      // Handle relative variables
+      Matcher relativeMatcher = Pattern.compile("P([0-9]+)p([0-9]+)").matcher(expression);
+      while (relativeMatcher.find()) {
+        String placeholder = relativeMatcher.group();
+        expression = expression.replaceAll(placeholder, "1.0");
+      }
+
+      evaluateExpression(expression);
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Invalid payoff function: " + payoffFunction, e);
     }
+
+    return BigDecimal.ONE; // Return a dummy value for validation
   }
 
 
@@ -128,36 +193,43 @@ public class StringExpressionEvaluator {
    * @throws IllegalArgumentException If the function contains invalid variables.
    */
   public static BigDecimal evaluateFitnessValue(double[] payoffs, String fitnessFunction) {
-    String expression = fitnessFunction;
-    List<Double> payoffList = new ArrayList<>();
-    for (double payoff : payoffs) {
-      payoffList.add(payoff);
+    if (fitnessFunction == null || fitnessFunction.isBlank() || fitnessFunction.equalsIgnoreCase("DEFAULT")) {
+      // if the fitnessFunction is absent or DEFAULT,
+      // the fitness value is the average of all payoffs of all chosen strategies by default
+      List<Double> payoffList = new ArrayList<>();
+      for (double payoff : payoffs) {
+        payoffList.add(payoff);
+      }
+      return calculateByDefault(payoffList, "AVERAGE");
     }
 
-    if (fitnessFunction.isBlank()) {
-      // if the fitnessFunction is absent,
-      // the fitness value is the average of all payoffs of all chosen strategies by default
-      return calculateByDefault(payoffList, null);
-    } else {
-      // replace placeholders for players' payoffs with the actual values
-
-      if (checkIfIsDefaultFunction(fitnessFunction)) {
-        return calculateByDefault(payoffList, fitnessFunction);
+    if (checkIfIsDefaultFunction(fitnessFunction)) {
+      List<Double> payoffList = new ArrayList<>();
+      for (double payoff : payoffs) {
+        payoffList.add(payoff);
       }
+      return calculateByDefault(payoffList, fitnessFunction);
+    }
+
+    try {
+      String expression = fitnessFunction;
       Matcher fitnessMatcher = fitnessPattern.matcher(expression);
       while (fitnessMatcher.find()) {
         String placeholder = fitnessMatcher.group();
         // indices should account for offset from base 1 index of variables
         int index = Integer.parseInt(placeholder.substring(1)) - 1;
+        if (index >= payoffs.length) {
+          throw new IllegalArgumentException("Invalid payoff index: " + (index + 1) + ". Maximum allowed index is " + payoffs.length);
+        }
         double propertyValue = payoffs[index];
         expression = expression.replaceAll(placeholder, formatDouble(propertyValue));
       }
 
       double val = evaluateExpression(expression);
       return new BigDecimal(val).setScale(10, RoundingMode.HALF_UP);
-
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Invalid fitness function: " + fitnessFunction, e);
     }
-
   }
 
   /**
@@ -262,7 +334,7 @@ public class StringExpressionEvaluator {
 
   public static BigDecimal calculateByDefault(List<Double> values, String defaultFunction) {
     DefaultFunction function = (!StringUtils.isEmptyOrNull(defaultFunction))
-            ? DefaultFunction.valueOf(defaultFunction.toUpperCase()) : DefaultFunction.SUM;
+            ? DefaultFunction.valueOf(defaultFunction.toUpperCase()) : DefaultFunction.AVERAGE;
     double val = switch (function) {
       case PRODUCT -> calProduct(values);
       case MAX -> calMax(values);
@@ -283,20 +355,24 @@ public class StringExpressionEvaluator {
    * @return The computed result as a double.
    */
   private static double evaluateExpression(String expression) {
-    // Replace NaN with 0
-    String formattedExpression = expression.replaceAll("NaN", "0")
-            .replaceAll("\\s+", "") // Remove all whitespace characters
-            .replaceAll(",", ".");  // Replace , to . (default double decimal separator)
-    Expression expr = getExpression(formattedExpression);
+    try {
+      // Replace NaN with 0
+      String formattedExpression = expression.replaceAll("NaN", "0")
+              .replaceAll("\\s+", "") // Remove all whitespace characters
+              .replaceAll(",", ".");  // Replace , to . (default double decimal separator)
+      Expression expr = getExpression(formattedExpression);
 
-    // Validate the expression
-    ValidationResult validationResult = expr.validate();
-    if (!validationResult.isValid()) {
-      throw new RuntimeException("Invalid expression: " + validationResult.getErrors().toString());
+      // validate the expression
+      ValidationResult validationResult = expr.validate();
+      if (!validationResult.isValid()) {
+        throw new RuntimeException("Invalid expression: " + validationResult.getErrors().toString());
+      }
+
+      // eva the expression
+      return expr.evaluate();
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Invalid expression: " + expression, e);
     }
-
-    // Evaluate the expression
-    return expr.evaluate();
   }
 
   private static Expression getExpression(String formattedExpression) {
@@ -325,5 +401,131 @@ public class StringExpressionEvaluator {
    */
   public static void main(String[] args) {
     System.out.println(convertToStringWithoutScientificNotation(222222222222.2222222222222));
+  }
+
+  /**
+   * Validates a payoff function containing both relative and non-relative variables.
+   * This method only checks the syntax without evaluating the actual values.
+   *
+   * @param payoffFunction The payoff function to validate
+   * @return true if the function is valid, false otherwise
+   */
+  public static Pattern relativePattern = Pattern.compile("P[0-9]+p[0-9]+");
+
+  public static boolean validatePayoffFunction(String payoffFunction) {
+    // Check for null, blank or DEFAULT
+    if (payoffFunction == null || payoffFunction.isBlank() || payoffFunction.equals("DEFAULT")) {
+      return true;
+    }
+
+    payoffFunction = payoffFunction.trim();
+    String modifiedExpression = payoffFunction;
+    System.out.println("Validating payoff function: " + payoffFunction);
+
+    // check invalid characters
+    if (!payoffFunction.matches("^[a-zA-Z0-9\\s+\\-*/%().,P\\[\\]^]+$")) {
+      System.out.println("Invalid characters in payoff function: " + payoffFunction);
+      return false;
+    }
+
+    // First replace all relative variables (P1p1, P2p2, etc.)
+    Matcher relativeMatcher = relativePattern.matcher(modifiedExpression);
+    while (relativeMatcher.find()) {
+      String placeholder = relativeMatcher.group();
+      System.out.println("Found relative variable: " + placeholder);
+      modifiedExpression = modifiedExpression.replace(placeholder, "1.0");
+    }
+
+    // Then replace all non-relative variables (p1, p2, etc.)
+    Pattern nonRelativePattern = Pattern.compile("p[0-9]+");
+    Matcher nonRelativeMatcher = nonRelativePattern.matcher(modifiedExpression);
+    while (nonRelativeMatcher.find()) {
+      String placeholder = nonRelativeMatcher.group();
+      System.out.println("Found non-relative variable: " + placeholder);
+      modifiedExpression = modifiedExpression.replace(placeholder, "1.0");
+    }
+
+    System.out.println("Modified expression: " + modifiedExpression);
+
+    // Check for any remaining invalid variables
+    if (modifiedExpression.matches(".*[pP][0-9].*")) {
+      System.out.println("Remaining invalid variables found");
+      return false;
+    }
+
+    // Check for balanced parentheses
+    int openCount = 0;
+    for (int i = 0; i < modifiedExpression.length(); i++) {
+      char c = modifiedExpression.charAt(i);
+      if (c == '(') {
+        openCount++;
+      } else if (c == ')') {
+        openCount--;
+        if (openCount < 0) {
+          System.out.println("Unbalanced parentheses");
+          return false;
+        }
+      }
+    }
+    
+    if (openCount != 0) {
+      System.out.println("Unbalanced parentheses");
+      return false;
+    }
+
+    // Check for consecutive operators
+    if (modifiedExpression.matches(".*[+\\-*/%][+\\-*/%].*")) {
+      System.out.println("Consecutive operators found");
+      return false;
+    }
+
+    // Check for empty operations
+    if (modifiedExpression.matches(".*[+\\-*/%]\\s*[)].*") || 
+        modifiedExpression.matches(".*[(]\\s*[+\\-*/%].*") ||
+        modifiedExpression.matches(".*[+\\-*/%]\\s*$")) {
+      System.out.println("Empty operations found");
+      return false;
+    }
+
+    // Try to evaluate the expression
+    try {
+      // Replace any remaining whitespace
+      modifiedExpression = modifiedExpression.replaceAll("\\s+", "");
+      
+      // Create expression builder
+      ExpressionBuilder builder = new ExpressionBuilder(modifiedExpression);
+      
+      // Add basic functions
+      builder.function(new Function("max", 2) {
+        @Override
+        public double apply(double... args) {
+          return Math.max(args[0], args[1]);
+        }
+      });
+      
+      builder.function(new Function("min", 2) {
+        @Override
+        public double apply(double... args) {
+          return Math.min(args[0], args[1]);
+        }
+      });
+
+      // Build and validate expression
+      Expression expr = builder.build();
+      ValidationResult result = expr.validate();
+      
+      if (!result.isValid()) {
+        System.out.println("Expression validation failed: " + result.getErrors());
+        return false;
+      }
+
+      // Try to evaluate
+      double evalResult = expr.evaluate();
+      System.out.println("Expression evaluated successfully with result: " + evalResult);
+      return true;
+    } catch (Exception e) {
+      System.out.println("Expression evaluation failed: " + e.getMessage());
+      return false;
+    }
   }
 }
