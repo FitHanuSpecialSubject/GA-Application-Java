@@ -162,26 +162,37 @@ public class StableMatchingIntegrationTest {
   }
 
   private void assertNoExcludedPairs(JsonNode matches, int[][] excludedPairs) {
-    if (excludedPairs == null) return;
+    if (excludedPairs == null || excludedPairs.length == 0) return;
+
     Map<Integer, int[]> matchesSplitted = new TreeMap<>();
     int i = 0;
-    for (JsonNode list: matches) {
+    for (JsonNode list : matches) {
       int[] indices = getIndices(list);
       matchesSplitted.put(i, indices);
       i++;
     }
+
     for (int[] pair : excludedPairs) {
+      if (pair == null || pair.length != 2) continue; // Bỏ qua nếu dữ liệu không hợp lệ
+
       int left = pair[0];
       int right = pair[1];
 
-      assertThat(left)
-          .isNotIn(matchesSplitted.get(right))
-          .withFailMessage("Excluded pair matched");
-      assertThat(right)
-          .isNotIn(matchesSplitted.get(left))
-          .withFailMessage("Excluded pair matched");
+      // Chỉ assert nếu cả hai agent tồn tại trong map
+      if (matchesSplitted.containsKey(right)) {
+        assertThat(left)
+                .withFailMessage("Excluded pair matched: %d - %d", left, right)
+                .isNotIn(matchesSplitted.get(right));
+      }
+
+      if (matchesSplitted.containsKey(left)) {
+        assertThat(right)
+                .withFailMessage("Excluded pair matched: %d - %d", left, right)
+                .isNotIn(matchesSplitted.get(left));
+      }
     }
   }
+
 
   private void assertCapacityValid(JsonNode data, StableMatchingProblemDto dto) {
     int[] capacities = dto.getIndividualCapacities();

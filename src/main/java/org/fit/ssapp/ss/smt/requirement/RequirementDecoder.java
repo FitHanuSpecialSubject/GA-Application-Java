@@ -6,6 +6,9 @@ import static org.fit.ssapp.util.StringUtils.findFirstNonNumericCharIndex;
 
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.fit.ssapp.ss.smt.requirement.impl.OneBound;
 import org.fit.ssapp.ss.smt.requirement.impl.ScaleTarget;
 import org.fit.ssapp.ss.smt.requirement.impl.TwoBound;
@@ -62,47 +65,49 @@ public class RequirementDecoder {
   private static String[] decodeInputRequirement(String item) {
     item = item.trim();
     String[] result = new String[2];
-    int index = findFirstNonNumericCharIndex(item);
-    if (index == -1) {
-      if (isInteger(item)) {
-        try {
-          int a = Integer.parseInt(item);
-          result[0] = item;
-          if (a >= 0 && a <= 10) {
-            result[1] = null;
-          } else {
-            result[1] = "++";
-          }
-        } catch (NumberFormatException e) {
-          System.out.println("error index - 1");
-          result[0] = "-1";
-          result[1] = "++";
-        }
-      } else if (isDouble(item)) {
-        result[0] = "-2";
+
+    if (item.contains(":")) {
+      String[] parts = item.split(":", 2);
+      result[0] = parts[0].trim();
+      result[1] = parts[1].trim();
+    } else if (item.endsWith("++")) {
+      String[] parts = item.split("\\+\\+", 2);
+      result[0] = parts[0].trim();
+      result[1] = "++";
+    } else if (item.endsWith("--")) {
+      String[] parts = item.split("--", 2);
+      result[0] = parts[0].trim();
+      result[1] = "--";
+    } else {
+      result[0] = "-2";
+      result[1] = "++";
+    }
+
+    if (item.matches("^-?\\d+$")) {
+      try {
+        int num = Integer.parseInt(item);
+        result[0] = item;
+        result[1] = (num >= 0 && num <= 10) ? null : "++";
+      } catch (NumberFormatException e) {
+        System.out.println("error parsing integer");
+        result[0] = "-1";
+        result[1] = "++";
+      }
+      return result;
+    }
+
+    if (item.matches("^-?\\d+\\.\\d+$")) {
+      try {
+        Double.parseDouble(item);
+        result[0] = item;
         result[1] = null;
-      } else {
+      } catch (NumberFormatException e) {
         result[0] = "-3";
         result[1] = null;
       }
-    } else {
-      if (item.contains(":")) {
-        String[] parts = item.split(":");
-        result[0] = parts[0].trim();
-        result[1] = parts[1].trim();
-      } else if (item.contains("++")) {
-        String[] parts = item.split("\\+\\+");
-        result[0] = parts[0].trim();
-        result[1] = "++";
-      } else if (item.contains("--")) {
-        String[] parts = item.split("--");
-        result[0] = parts[0].trim();
-        result[1] = "--";
-      } else {
-        result[0] = "-2";
-        result[1] = "++";
-      }
+      return result;
     }
+
     return result;
   }
 

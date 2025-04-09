@@ -42,14 +42,6 @@ public class StableMatchingSolverTest {
   }
 
 
-//  @Test
-//  public void testEvaluateFunctions() {
-//    stableMatchingProblemDto.setEvaluateFunctions(new String[]{"SUM", ""});
-//    Set<ConstraintViolation<StableMatchingProblemDto>> violations = validator.validate(
-//            stableMatchingProblemDto);
-//    assert (violations.isEmpty());
-//  }
-
   @Test
   public void testFitnessCalculation() {
     int testNumberOfIndividuals1 = 5;

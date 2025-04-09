@@ -7,44 +7,35 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.fit.ssapp.ss.smt.preference.PreferenceList;
 
+import java.util.*;
+
+import static org.fit.ssapp.util.NumberUtils.formatDouble;
+
 /**
- * Old implementation of Two Sided Stable Matching Problem's Preference List that contains only two
- * sets. In this implementation, set parameters of interface methods is ignored
+ * Rewrite implementation of Two Sided Stable Matching Problem's Preference List that contains only
+ * two sets. In this implementation, set parameters of interface methods is ignored
  */
 @Getter
 @Slf4j
 public class TwoSetPreferenceList implements PreferenceList {
-
-  private final double[] scores;
-  private final int[] positions;
-  private int current;
-  private final int padding;
+  /**
+   * Key for nodeId and value for its score
+   */
+  private final Map<Integer, Double> scores;
 
   /**
    * TwoSetPreferenceList.
    *
    * @param size    int
-   * @param padding int
    */
-  public TwoSetPreferenceList(int size, int padding) {
-    scores = new double[size];
-    positions = new int[size];
-    current = 0;
-    this.padding = padding;
+  public TwoSetPreferenceList(int size) {
+    scores = new HashMap<>(size, 0.9f);
   }
 
   @Override
   public int size(int set) {
-    // ignore set param
-    return positions.length;
+    return scores.size();
   }
-
-
-  @Override
-  public int getNumberOfOtherSets() {
-    return 0;
-  }
-
 
   /**
    * this method registers new competitor instance to the preference list.
@@ -52,10 +43,8 @@ public class TwoSetPreferenceList implements PreferenceList {
    * @param score score of the respective competitor
    *
    */
-  public void add(double score) {
-    this.scores[current] = score;
-    this.positions[current] = current;
-    this.current++;
+  public void add(int nodeId, double score) {
+    scores.put(nodeId, score);
   }
 
   /**
@@ -66,14 +55,17 @@ public class TwoSetPreferenceList implements PreferenceList {
    * @param currentNodes The set of currently matched nodes.
    * @return The least preferred node.
    */
+  @Override
   public int getLeastNode(int set, int newNode, Set<Integer> currentNodes) {
-    int leastNode = newNode - this.padding;
-    for (int currentNode : currentNodes) {
-      if (this.scores[leastNode] > this.scores[currentNode - this.padding]) {
-        leastNode = currentNode - this.padding;
-      }
-    }
-    return leastNode + this.padding;
+    Set<Integer> nodes = new HashSet<>(currentNodes);
+    nodes.add(newNode);
+
+    return nodes.stream()
+            .reduce(newNode, (node1, node2) -> {
+              double score1 = scores.getOrDefault(node1, 0.0);
+              double score2 = scores.getOrDefault(node2, 0.0);
+              return score1 <= score2 ? node1 : node2;
+            });
   }
 
   @Override
@@ -85,16 +77,9 @@ public class TwoSetPreferenceList implements PreferenceList {
     }
   }
 
-  /**
-   * Determines if one node is preferred over another.
-   *
-   * @param set The set identifier
-   * @param node The first node.
-   * @param nodeToCompare The second node.
-   * @return `true` if `node` is preferred over `nodeToCompare`, `false` otherwise.
-   */
-  public boolean isScoreGreater(int set, int node, int nodeToCompare) {
-    return this.scores[node - this.padding] > this.scores[nodeToCompare - this.padding];
+  @Override
+  public boolean isScoreGreater(int set, int proposeNode, int preferNodeCurrentNode) {
+    return scores.getOrDefault(proposeNode, 0.0) > scores.getOrDefault(preferNodeCurrentNode, 0.0);
   }
 
   /**
@@ -114,68 +99,13 @@ public class TwoSetPreferenceList implements PreferenceList {
   }
 
   /**
-   * getLastOption.
+   * getScore of a node ;
    *
-   * @param set int
+   * @param nodeId that matched with
    */
-  public int getLastOption(int set) {
-    return this.getPositionByRank(set, this.positions.length - 1);
-  }
-
-
-  /**
-   *sort.
-   */
-  public void sort() {
-    sortDescendingByScores();
-  }
-
-  /**
-   *sortDescendingByScores.
-   */
-  public void sortDescendingByScores() {
-    double[] cloneScores = scores.clone(); //copy to new array
-    int size = cloneScores.length;
-
-    // Build min heap
-    for (int i = size / 2 - 1; i >= 0; i--) {
-      heapify(cloneScores, size, i);
-    }
-
-    // Extract elements from heap one by one
-    for (int i = size - 1; i > 0; i--) {
-      // Move current root to end
-      double temp = cloneScores[0];
-      int tempPos = positions[0];
-
-      cloneScores[0] = cloneScores[i];
-      positions[0] = positions[i];
-
-      cloneScores[i] = temp;
-      positions[i] = tempPos;
-
-      // Call min heapify on the reduced heap
-      heapify(cloneScores, i, 0);
-    }
-  }
-
-  void heapify(double[] array, int heapSize, int rootIndex) {
-    int smallestIndex = getSmallestIndex(array, heapSize, rootIndex);
-
-    // If smallest is not root
-    if (smallestIndex != rootIndex) {
-      double swap = array[rootIndex];
-      int posSwap = positions[rootIndex];
-
-      array[rootIndex] = array[smallestIndex];
-      positions[rootIndex] = positions[smallestIndex];
-
-      array[smallestIndex] = swap;
-      positions[smallestIndex] = posSwap;
-
-      // Recursively heapify the affected sub-tree
-      heapify(array, heapSize, smallestIndex);
-    }
+  @Override
+  public double getScore(int nodeId) {
+    return scores.getOrDefault(nodeId,0.0);
   }
 
   private static int getSmallestIndex(double[] array, int heapSize, int rootIndex) {
@@ -198,15 +128,16 @@ public class TwoSetPreferenceList implements PreferenceList {
   @Override
   public String toString() {
     StringBuilder result = new StringBuilder("{");
-    for (int i = 0; i < scores.length; i++) {
-      int pos = positions[i];
-      result
-              .append("[")
-              .append(pos)
+    Iterator<Map.Entry<Integer, Double>> iterator = scores.entrySet().iterator();
+
+    while (iterator.hasNext()) {
+      Map.Entry<Integer, Double> entry = iterator.next();
+      result.append("[")
+              .append(entry.getKey())
               .append(" -> ")
-              .append(formatDouble(scores[pos]))
+              .append(formatDouble(entry.getValue()))
               .append("]");
-      if (i < scores.length - 1) {
+      if (iterator.hasNext()) {
         result.append(", ");
       }
     }
@@ -214,18 +145,8 @@ public class TwoSetPreferenceList implements PreferenceList {
     return result.toString();
   }
 
-  /**
-   * getScore.
-   *
-   * @param position int
-   */
-  public double getScore(int position) {
-    try {
-      return scores[position - this.padding];
-    } catch (ArrayIndexOutOfBoundsException e) {
-      log.error("Position {} not found:", position, e);
-      return 0;
-    }
+  public Set<Integer> getAllNodeId() {
+    return Collections.unmodifiableSet(scores.keySet());
   }
 
   @Override
