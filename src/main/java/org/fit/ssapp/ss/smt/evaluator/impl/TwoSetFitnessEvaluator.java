@@ -7,8 +7,6 @@ import static org.fit.ssapp.util.StringExpressionEvaluator.isNumericValue;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.DoubleUnaryOperator;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import lombok.AllArgsConstructor;
@@ -185,6 +183,26 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
       }
     }
     return result;
+  }
+
+  @Override
+  public boolean validateUniformFitness(String fitnessFunction) {
+    double[] satisfactions = new double[matchingData.getSize()];
+    Arrays.fill(satisfactions, 1.0); // Giả định toàn bộ đều đạt mức cao nhất
+
+    double baseFitness = withFitnessFunctionEvaluation(satisfactions, fitnessFunction);
+
+    for (int i = 0; i < satisfactions.length; i++) {
+      double[] testSatisfactions = Arrays.copyOf(satisfactions, satisfactions.length);
+      testSatisfactions[i] = 0.0; // Thay đổi một phần tử
+
+      double testFitness = withFitnessFunctionEvaluation(testSatisfactions, fitnessFunction);
+      if (testFitness != baseFitness) {
+        return false; // Có sự khác biệt → không đồng đều
+      }
+    }
+
+    return true; // Tất cả đều giống nhau → uniform
   }
 
 }

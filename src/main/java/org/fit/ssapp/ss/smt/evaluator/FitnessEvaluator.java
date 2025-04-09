@@ -16,4 +16,5 @@ public interface FitnessEvaluator {
   @SuppressWarnings("checkstyle:MissingJavadocMethod")
   double withFitnessFunctionEvaluation(double[] satisfactions, String fnf);
 
+  boolean validateUniformFitness(String fitnessFunction);
 }

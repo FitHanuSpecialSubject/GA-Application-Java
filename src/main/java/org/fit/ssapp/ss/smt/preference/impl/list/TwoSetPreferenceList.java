@@ -1,8 +1,5 @@
 package org.fit.ssapp.ss.smt.preference.impl.list;
 
-import static org.fit.ssapp.util.NumberUtils.formatDouble;
-
-import java.util.Set;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.fit.ssapp.ss.smt.preference.PreferenceList;
@@ -82,21 +79,6 @@ public class TwoSetPreferenceList implements PreferenceList {
     return scores.getOrDefault(proposeNode, 0.0) > scores.getOrDefault(preferNodeCurrentNode, 0.0);
   }
 
-  /**
-   * <i>THIS METHOD ONLY VALUABLE AFTER @method sortByValueDescending IS INVOKED </i>
-   *
-   * @param rank position (rank best <-- 0, 1, 2, 3, ... --> worst) on the preference list
-   * @return unique identifier of the competitor instance that holds the respective position on the
-   * list.
-   */
-  public int getPositionByRank(int set, int rank) throws ArrayIndexOutOfBoundsException {
-    try {
-      return positions[rank] + this.padding;
-    } catch (ArrayIndexOutOfBoundsException e) {
-      log.error("Position {} not found:", rank, e);
-      return -1;
-    }
-  }
 
   /**
    * getScore of a node ;
@@ -108,22 +90,24 @@ public class TwoSetPreferenceList implements PreferenceList {
     return scores.getOrDefault(nodeId,0.0);
   }
 
-  private static int getSmallestIndex(double[] array, int heapSize, int rootIndex) {
-    int smallestIndex = rootIndex; // Initialize smallest as root
-    int leftChildIndex = 2 * rootIndex + 1; // left = 2*rootIndex + 1
-    int rightChildIndex = 2 * rootIndex + 2; // right = 2*rootIndex + 2
+  @Override
+  public boolean isUniformPreference() {
+    if (scores.isEmpty()) return true;
 
-    // If left child is smaller than root
-    if (leftChildIndex < heapSize && array[leftChildIndex] < array[smallestIndex]) {
-      smallestIndex = leftChildIndex;
+    Iterator<Double> it = scores.values().iterator();
+    double first = it.next();
+    final double EPSILON = 1e-6;
+
+    while (it.hasNext()) {
+      double next = it.next();
+      if (Math.abs(next - first) > EPSILON) {
+        return false;
+      }
     }
 
-    // If right child is smaller than smallest so far
-    if (rightChildIndex < heapSize && array[rightChildIndex] < array[smallestIndex]) {
-      smallestIndex = rightChildIndex;
-    }
-    return smallestIndex;
+    return true;
   }
+
 
   @Override
   public String toString() {
@@ -148,17 +132,4 @@ public class TwoSetPreferenceList implements PreferenceList {
   public Set<Integer> getAllNodeId() {
     return Collections.unmodifiableSet(scores.keySet());
   }
-
-  @Override
-  public boolean isUniformPreference() {
-    double first = scores[0];
-    for (int i = 1; i < scores.length; i++) {
-      if (scores[i] != first) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-
 }
