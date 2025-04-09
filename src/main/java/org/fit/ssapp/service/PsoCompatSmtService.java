@@ -69,19 +69,14 @@ public class PsoCompatSmtService {
                 .builder()
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .message("Error solving stable matching problem.")
-                .data(null)
+                .data(request)
                 .build());
       }
-      //            Testing tester = new Testing((Matches) results.get(0).getAttribute("matches"),
-      //            problem.getMatchingData().getSize(), problem.getMatchingData().getCapacities());
-      //            System.out.println("[Testing] Solution has duplicate: " + tester.hasDuplicate())
       long endTime = System.currentTimeMillis();
 
       double runtime = ((double) (endTime - startTime) / 1000);
       runtime = (runtime * 1000.0);
       log.info("Runtime: {} Millisecond(s).", runtime);
-      //problem.printIndividuals();
-      //System.out.println(problem.printPreferenceLists());
       String algorithm = request.getAlgorithm();
 
       MatchingSolution matchingSolution = formatSolution(algorithm, results, runtime);
@@ -154,33 +149,31 @@ public class PsoCompatSmtService {
     if (distributedCores == null) {
       distributedCores = "all";
     }
-    TypedProperties properties = new TypedProperties();
-    properties.setInt("populationSize", populationSize);
-    properties.setInt("maxTime", maxTime);
-    TerminationCondition maxEval = new MaxFunctionEvaluations(generation * populationSize);
+
+
+      TerminationCondition maxEval = new MaxFunctionEvaluations(generation * populationSize);
+
+      TypedProperties properties = new TypedProperties();
+      properties.setInt("populationSize", populationSize);
+      properties.setInt("maxTime", maxTime);
+
+      Executor executor = new Executor()
+          .withProblem(problem)
+          .withAlgorithm(algorithm)
+          .withMaxEvaluations(generation * populationSize)
+          .withProperties(properties)
+          .withTerminationCondition(maxEval) ;
+
+      if (distributedCores.equals("all")) {
+        executor
+            .distributeOnAllCores();
+      } else {
+
+        executor.distributeOn(Integer.parseInt(distributedCores));
+      }
 
     try {
-      if (distributedCores.equals("all")) {
-        result = new Executor()
-
-            .withProblem(problem)
-            .withAlgorithm(algorithm)
-            .withMaxEvaluations(generation * populationSize)
-            .withTerminationCondition(maxEval)
-            .withProperties(properties)
-            .distributeOnAllCores()
-            .run();
-      } else {
-        int numberOfCores = Integer.parseInt(distributedCores);
-        result = new Executor()
-            .withProblem(problem)
-            .withAlgorithm(algorithm)
-            .withMaxEvaluations(generation * populationSize)
-            .withTerminationCondition(maxEval)
-            .withProperties(properties)
-            .distributeOn(numberOfCores)
-            .run();
-      }
+      result = executor.run();
       log.info("Problem {} solved successfully!", problem.getName());
       return result;
     } catch (Exception e) {
@@ -192,7 +185,7 @@ public class PsoCompatSmtService {
   /**
    * getInsights.
    *
-   * @param request StableMatchingProblemDto
+   * @param request     StableMatchingProblemDto
    * @param sessionCode string
    */
   public ResponseEntity<Response> getInsights(StableMatchingProblemDto request,
@@ -201,7 +194,7 @@ public class PsoCompatSmtService {
     simpMessagingTemplate.convertAndSendToUser(sessionCode,
         "/progress",
         createProgressMessage("Initializing the problem..."));
-      MatchingProblem problem = StableMatchingProblemMapper.toPsoCompat(request);
+    MatchingProblem problem = StableMatchingProblemMapper.toPsoCompat(request);
 
     log.info("Start benchmarking {} session code {}", problem.getName(), sessionCode);
 
@@ -211,7 +204,7 @@ public class PsoCompatSmtService {
     int maxRunCount = algorithms.length * RUN_COUNT_PER_ALGORITHM;
     // solve the problem with different algorithms and then evaluate the performance
     // of the algorithms
-    //        log.info("Start benchmarking the algorithms...");
+    // log.info("Start benchmarking the algorithms...");
     simpMessagingTemplate.convertAndSendToUser(sessionCode,
         "/progress",
         createProgressMessage("Start benchmarking the algorithms..."));
@@ -227,16 +220,25 @@ public class PsoCompatSmtService {
             request.getPopulationSize(),
             request.getMaxTime(),
             request.getDistributedCores());
+        
+            if (results == null) {
+              return ResponseEntity
+                  .internalServerError()
+                  .body(
+                      Response.builder()
+                          .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                          .data(request)
+                          .message("Error Solving Problem")
+                          .build());
+            }
 
         long end = System.currentTimeMillis();
-        assert results != null;
         double runtime = (double) (end - start) / 1000;
         double fitnessValue = getFitnessValue(results);
 
         // send the progress to the client
-        String message =
-            "Algorithm " + algorithm + " finished iteration: #" + (i + 1) + "/"
-                + RUN_COUNT_PER_ALGORITHM;
+        String message = "Algorithm " + algorithm + " finished iteration: #" + (i + 1) + "/"
+            + RUN_COUNT_PER_ALGORITHM;
         Progress progress = createProgress(message, runtime, runCount, maxRunCount);
         System.out.println(progress);
         simpMessagingTemplate.convertAndSendToUser(sessionCode, "/progress", progress);
