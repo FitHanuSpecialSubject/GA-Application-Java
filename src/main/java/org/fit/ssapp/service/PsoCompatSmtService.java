@@ -191,10 +191,11 @@ public class PsoCompatSmtService {
   public ResponseEntity<Response> getInsights(StableMatchingProblemDto request,
       String sessionCode) {
     String[] algorithms = StableMatchingConst.PSO_ALLOWED;
+    String[] algorithms = StableMatchingConst.PSO_ALLOWED;
     simpMessagingTemplate.convertAndSendToUser(sessionCode,
         "/progress",
         createProgressMessage("Initializing the problem..."));
-    MatchingProblem problem = StableMatchingProblemMapper.toPsoCompat(request);
+      MatchingProblem problem = StableMatchingProblemMapper.toPsoCompat(request);
 
     log.info("Start benchmarking {} session code {}", problem.getName(), sessionCode);
 
