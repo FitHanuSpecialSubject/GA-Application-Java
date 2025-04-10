@@ -220,7 +220,6 @@ public class StableMatchingService implements ProblemService {
     if (algorithm == null) {
       algorithm = "PESA2";
     }
-    validateUniformPreferences(problem.getMatchingData(), algorithm, request);
 
     if (distributedCores == null) {
       distributedCores = "all";
@@ -229,6 +228,25 @@ public class StableMatchingService implements ProblemService {
     properties.setInt("populationSize", populationSize);
     properties.setInt("maxTime", maxTime);
     TerminationCondition maxEval = new MaxFunctionEvaluations(generation * populationSize);
+
+    validateUniformPreferences(problem.getMatchingData(), algorithm, request);
+
+    // check for IBEA or eMOEA, if true do test run with minimal configuration
+
+    if (algorithm.equals("IBEA") || algorithm.equals("eMOEA")) {
+      try {
+        new Executor()
+                .withProblem(problem)
+                .withAlgorithm(algorithm)
+                .withMaxEvaluations(100)
+                .withTerminationCondition(new MaxFunctionEvaluations(100))
+                .withProperties(properties)
+                .distributeOn(1)
+                .run();
+      } catch (Exception e) {
+        throw new AlgorithmsUniformException("uniform preferences found");
+      }
+    }
 
     try {
       if (distributedCores.equals("all")) {
@@ -381,16 +399,15 @@ public class StableMatchingService implements ProblemService {
   }
 
 
-  // PreferenceListWrapper wrapper, String algorithm, String fitnessFunction, FitnessEvaluator fitnessEvaluator
   public static void validateUniformPreferences(MatchingData data, String algorithm, StableMatchingProblemDto request) {
     if (!Objects.equals(algorithm, "IBEA") || !Objects.equals(algorithm, "eMOEA")) {
       return;
     }
+
     PreferenceBuilder builder = new TwoSetPreferenceProvider(data, request.getEvaluateFunctions());
     PreferenceListWrapper preferenceLists = builder.toListWrapper();
     FitnessEvaluator fitnessEvaluator = new TwoSetFitnessEvaluator(data);
     List<PreferenceList> lists = preferenceLists.getLists();
-
     List<Integer> invalidAgents = new ArrayList<>();
 
     for (int i = 0; i < lists.size(); i++) {
@@ -404,8 +421,7 @@ public class StableMatchingService implements ProblemService {
     // Step 3: If uniform preferences found, throw error
     if (!invalidAgents.isEmpty()) {
       throw new AlgorithmsUniformException("uniform preferences found");
-    } else if (request.getFitnessFunction() != null) {
-      fitnessEvaluator.validateUniformFitness(request.getFitnessFunction());
+
     }
   }
 
