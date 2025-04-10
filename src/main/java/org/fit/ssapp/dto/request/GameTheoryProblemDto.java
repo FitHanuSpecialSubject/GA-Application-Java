@@ -7,6 +7,7 @@ import org.fit.ssapp.ss.gt.Conflict;
 import org.fit.ssapp.ss.gt.NormalPlayer;
 import org.fit.ssapp.ss.gt.SpecialPlayer;
 import org.fit.ssapp.dto.validator.ValidFitnessFunction;
+import org.fit.ssapp.dto.validator.ValidFitnessFunctionGT;
 import org.fit.ssapp.dto.validator.ValidPayoffFunction;
 
 import jakarta.validation.Valid;
@@ -34,6 +35,8 @@ public class GameTheoryProblemDto implements ProblemRequestDto {
   private List<Conflict> conflictSet = new ArrayList<>();
   
   @NotNull(message = "Fitness function cannot be null")
+
+  //@ValidFitnessFunctionGT
   private String fitnessFunction;
   
   @ValidPayoffFunction
