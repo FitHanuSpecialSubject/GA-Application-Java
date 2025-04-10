@@ -1,7 +1,6 @@
 package org.fit.ssapp.dto.mapper;
 
 import org.fit.ssapp.dto.request.StableMatchingProblemDto;
-import org.fit.ssapp.exception.BadRequestException;
 import org.fit.ssapp.ss.smt.MatchingData;
 import org.fit.ssapp.ss.smt.MatchingProblem;
 import org.fit.ssapp.ss.smt.evaluator.FitnessEvaluator;
@@ -26,11 +25,13 @@ import org.jfree.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Mapper layer, xử lý các công việc sau đối với từng loại matching problem: 1. map problem data từ
  * dto vào StableMatchingProblem 2. tính toán các preference list và set vào StableMatchingProblem
  */
+@Slf4j
 public class StableMatchingProblemMapper {
 
 
@@ -155,8 +156,6 @@ public class StableMatchingProblemMapper {
     PreferenceBuilder builder = new TripletPreferenceProvider(data,
             request.getEvaluateFunctions());
     PreferenceListWrapper preferenceLists = builder.toListWrapper();
-//    validateUniformPreferences(preferenceLists, request.getAlgorithm());
-
     FitnessEvaluator fitnessEvaluator = new TwoSetFitnessEvaluator(data);
     validateUniformPreferences(preferenceLists, request.getAlgorithm(), request.getFitnessFunction(), fitnessEvaluator);
 
@@ -212,11 +211,10 @@ public class StableMatchingProblemMapper {
 
     // Step 3: If uniform preferences found, throw error
     if (!invalidAgents.isEmpty()) {
-      Log.warn("Uniform preference detected for agents: " + invalidAgents);
-//      throw new BadRequestException(msg);
+        log.warn("Uniform preference detected for agents: {}", invalidAgents);
     } else if (fitnessFunction != null) {
       fitnessEvaluator.validateUniformFitness(fitnessFunction);
-      Log.warn("Uniform Fitness detected for agents: " + invalidAgents);
+      log.warn("Uniform Fitness detected for agents: {}", invalidAgents);
     }
   }
 
