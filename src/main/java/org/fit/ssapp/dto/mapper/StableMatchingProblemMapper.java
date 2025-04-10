@@ -60,7 +60,6 @@ public class StableMatchingProblemMapper {
     );
     PreferenceListWrapper preferenceLists = builder.toListWrapper();
     FitnessEvaluator fitnessEvaluator = new TwoSetFitnessEvaluator(data);
-    validateUniformPreferences(preferenceLists, dto.getAlgorithm(), dto.getFitnessFunction(), fitnessEvaluator);
 
     return new OTOProblem(
             dto.getProblemName(),
@@ -92,7 +91,6 @@ public class StableMatchingProblemMapper {
             request.getEvaluateFunctions());
     PreferenceListWrapper preferenceLists = builder.toListWrapper();
     FitnessEvaluator fitnessEvaluator = new TwoSetFitnessEvaluator(data);
-    validateUniformPreferences(preferenceLists, request.getAlgorithm(), request.getFitnessFunction(), fitnessEvaluator);
 
     return new OTMProblem(
             request.getProblemName(),
@@ -126,7 +124,6 @@ public class StableMatchingProblemMapper {
 
     PreferenceListWrapper preferenceLists = builder.toListWrapper();
     FitnessEvaluator fitnessEvaluator = new TwoSetFitnessEvaluator(data);
-    validateUniformPreferences(preferenceLists, request.getAlgorithm(), request.getFitnessFunction(), fitnessEvaluator);
 
     String fitnessFunction = EvaluatorUtils.getValidFitnessFunction(request.getFitnessFunction());
     return new MTMProblem(request.getProblemName(),
@@ -158,7 +155,6 @@ public class StableMatchingProblemMapper {
             request.getEvaluateFunctions());
     PreferenceListWrapper preferenceLists = builder.toListWrapper();
     FitnessEvaluator fitnessEvaluator = new TwoSetFitnessEvaluator(data);
-    validateUniformPreferences(preferenceLists, request.getAlgorithm(), request.getFitnessFunction(), fitnessEvaluator);
 
     return new TripletOTOProblem(request.getProblemName(),
             request.getNumberOfIndividuals(),
@@ -193,31 +189,6 @@ public class StableMatchingProblemMapper {
         fitnessFunction,
         fitnessEvaluator);
   }
-
-  public static void validateUniformPreferences(PreferenceListWrapper wrapper, String algorithm, String fitnessFunction, FitnessEvaluator fitnessEvaluator) {
-    if (!Objects.equals(algorithm, "IBEA")) {
-      return;
-    }
-
-    List<Integer> invalidAgents = new ArrayList<>();
-    List<PreferenceList> lists = wrapper.getLists();
-
-    for (int i = 0; i < lists.size(); i++) {
-      PreferenceList list = lists.get(i);
-      if ((list instanceof TwoSetPreferenceList twoSet && twoSet.isUniformPreference()) ||
-              (list instanceof TripletPreferenceList triplet && triplet.isUniformPreference())) {
-        invalidAgents.add(i);
-      }
-    }
-
-    // Step 3: If uniform preferences found, throw error
-    if (!invalidAgents.isEmpty()) {
-        throw new IBEAUniformException("uniform preferences found");
-    } else if (fitnessFunction != null) {
-      fitnessEvaluator.validateUniformFitness(fitnessFunction);
-    }
-  }
-
 
 
 }
