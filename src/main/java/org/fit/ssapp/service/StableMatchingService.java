@@ -12,9 +12,19 @@ import org.fit.ssapp.dto.mapper.StableMatchingProblemMapper;
 import org.fit.ssapp.dto.request.StableMatchingProblemDto;
 import org.fit.ssapp.dto.response.Progress;
 import org.fit.ssapp.dto.response.Response;
+import org.fit.ssapp.exception.IBEAUniformException;
 import org.fit.ssapp.ss.smt.Matches;
+import org.fit.ssapp.ss.smt.MatchingData;
 import org.fit.ssapp.ss.smt.MatchingProblem;
+import org.fit.ssapp.ss.smt.evaluator.FitnessEvaluator;
+import org.fit.ssapp.ss.smt.evaluator.impl.TwoSetFitnessEvaluator;
 import org.fit.ssapp.ss.smt.implement.MTMProblem;
+import org.fit.ssapp.ss.smt.preference.PreferenceBuilder;
+import org.fit.ssapp.ss.smt.preference.PreferenceList;
+import org.fit.ssapp.ss.smt.preference.PreferenceListWrapper;
+import org.fit.ssapp.ss.smt.preference.impl.list.TripletPreferenceList;
+import org.fit.ssapp.ss.smt.preference.impl.list.TwoSetPreferenceList;
+import org.fit.ssapp.ss.smt.preference.impl.provider.TwoSetPreferenceProvider;
 import org.fit.ssapp.ss.smt.result.MatchingSolution;
 import org.fit.ssapp.ss.smt.result.MatchingSolutionInsights;
 import org.fit.ssapp.util.ComputerSpecsUtil;
@@ -106,7 +116,7 @@ public class StableMatchingService implements ProblemService {
           request.getPopulationSize(),
           request.getGeneration(),
           request.getMaxTime(),
-          request.getDistributedCores());
+          request.getDistributedCores(), request);
 
       if (Objects.isNull(results)) {
         return ResponseEntity
@@ -142,6 +152,8 @@ public class StableMatchingService implements ProblemService {
               "[Service] Stable Matching: Solve stable matching problem successfully!")
           .data(matchingSolution)
           .build());
+    } catch (IBEAUniformException nullEx) {
+      return ResponseEntity.badRequest().build();
     } catch (Exception e) {
       log.error("[Service] Stable Matching: Error solving stable matching problem: {}",
           e.getMessage(),
@@ -193,16 +205,19 @@ public class StableMatchingService implements ProblemService {
    * @param distributedCores The number of computing cores used for execution.
    * @return A `NondominatedPopulation` containing the solutions.
    */
-  private NondominatedPopulation solveProblem(Problem problem,
+  private NondominatedPopulation solveProblem(MatchingProblem problem,
                                               String algorithm,
                                               int populationSize,
                                               int generation,
                                               int maxTime,
-                                              String distributedCores) {
+                                              String distributedCores,
+                                              StableMatchingProblemDto request) {
     NondominatedPopulation result;
     if (algorithm == null) {
       algorithm = "PESA2";
     }
+    validateUniformPreferences(problem.getMatchingData(), algorithm, request);
+
     if (distributedCores == null) {
       distributedCores = "all";
     }
@@ -214,7 +229,6 @@ public class StableMatchingService implements ProblemService {
     try {
       if (distributedCores.equals("all")) {
         result = new Executor()
-
             .withProblem(problem)
             .withAlgorithm(algorithm)
             .withMaxEvaluations(generation * populationSize)
@@ -278,7 +292,7 @@ public class StableMatchingService implements ProblemService {
             request.getGeneration(),
             request.getPopulationSize(),
             request.getMaxTime(),
-            request.getDistributedCores());
+            request.getDistributedCores(), request);
 
         long end = System.currentTimeMillis();
         assert results != null;
@@ -360,6 +374,35 @@ public class StableMatchingService implements ProblemService {
   private double getFitnessValue(NondominatedPopulation result) {
     Solution solution = result.get(0);
     return solution.getObjective(0);
+  }
+
+
+  // PreferenceListWrapper wrapper, String algorithm, String fitnessFunction, FitnessEvaluator fitnessEvaluator
+  public static void validateUniformPreferences(MatchingData data, String algorithm, StableMatchingProblemDto request) {
+    if (!Objects.equals(algorithm, "IBEA")) {
+      return;
+    }
+    PreferenceBuilder builder = new TwoSetPreferenceProvider(data, request.getEvaluateFunctions());
+    PreferenceListWrapper preferenceLists = builder.toListWrapper();
+    FitnessEvaluator fitnessEvaluator = new TwoSetFitnessEvaluator(data);
+    List<PreferenceList> lists = preferenceLists.getLists();
+
+    List<Integer> invalidAgents = new ArrayList<>();
+
+    for (int i = 0; i < lists.size(); i++) {
+      PreferenceList list = lists.get(i);
+      if ((list instanceof TwoSetPreferenceList twoSet && twoSet.isUniformPreference()) ||
+              (list instanceof TripletPreferenceList triplet && triplet.isUniformPreference())) {
+        invalidAgents.add(i);
+      }
+    }
+
+    // Step 3: If uniform preferences found, throw error
+    if (!invalidAgents.isEmpty()) {
+      throw new IBEAUniformException("uniform preferences found");
+    } else if (request.getFitnessFunction() != null) {
+      fitnessEvaluator.validateUniformFitness(request.getFitnessFunction());
+    }
   }
 
 }
