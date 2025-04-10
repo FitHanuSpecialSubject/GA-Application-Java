@@ -228,13 +228,13 @@ public class GTPayoffUnitTest {
             Arguments.of(List.of(1.0, 2.0, 3.0), List.of(), "floor(p2 + 0.9)", "", false, 2.0, 0.00001),
             Arguments.of(List.of(1.7, 2.7), List.of(3.7, 4.7), "", "floor(P1p1)", true, 1.0, 0.00001),
 
-            Arguments.of(List.of(1.0, 2.0, 3.0), List.of(), "log(p3)", "", false, 1.0986, 0.0001),
-            Arguments.of(List.of(1.0, 2.0), List.of(3.0, 4.0), "", "log(P2p1)", true, 1.0986, 0.0001),
+            Arguments.of(List.of(1.0, 2.0, 3.0), List.of(), "log(p3)", "", false, 1.0986122887, 0.0001),
+            Arguments.of(List.of(1.0, 2.0), List.of(3.0, 4.0), "", "log(P2p1)", true, 1.0986122887, 0.0001),
 
             Arguments.of(List.of(1.0, 2.0, 3.0), List.of(), "sqrt(p2^2)", "", false, 2.0, 0.00001),
             Arguments.of(List.of(4.0, 5.0), List.of(9.0, 16.0), "", "sqrt(P1p1)", true, 2.0, 0.00001),
 
-            Arguments.of(List.of(2.0, 4.0, 8.0), List.of(), "sqrt(p1) + cbrt(p3)", "", false, 3.4142, 0.0001), //non-relative
+            Arguments.of(List.of(2.0, 4.0, 8.0), List.of(), "sqrt(p1) + cbrt(p3)", "", false, 3.4142135624, 0.0001), //non-relative
             Arguments.of(List.of(4.0, 5.0), List.of(9.0, 16.0), "", "sqrt(P1p1) + sqrt(P2p1)", true, 5.0, 0.00001) //relative
         );
     }
