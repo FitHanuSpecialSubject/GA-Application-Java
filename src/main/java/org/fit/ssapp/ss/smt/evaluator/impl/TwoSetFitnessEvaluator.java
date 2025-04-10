@@ -2,6 +2,7 @@ package org.fit.ssapp.ss.smt.evaluator.impl;
 
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.Random;
 import java.util.function.DoubleUnaryOperator;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -218,22 +219,30 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
   }
   @Override
   public boolean validateUniformFitness(String fitnessFunction) {
-    double[] satisfactions = new double[matchingData.getSize()];
-    Arrays.fill(satisfactions, 1.0); // Giả định toàn bộ đều đạt mức cao nhất
+    int size = matchingData.getSize();
+    double[] satisfactions = new double[size];
+
+    // Random hóa giá trị satisfaction (giá trị từ 0.0 đến 1.0)
+    Random random = new Random();
+    for (int i = 0; i < size; i++) {
+      satisfactions[i] = random.nextDouble();
+    }
 
     double baseFitness = withFitnessFunctionEvaluation(satisfactions, fitnessFunction);
 
-    for (int i = 0; i < satisfactions.length; i++) {
-      double[] testSatisfactions = Arrays.copyOf(satisfactions, satisfactions.length);
-      testSatisfactions[i] = 0.0; // Thay đổi một phần tử
+    // Kiểm tra xem từng phần tử khi thay đổi có ảnh hưởng đến fitness không
+    for (int i = 0; i < size; i++) {
+      double[] testSatisfactions = Arrays.copyOf(satisfactions, size);
+      testSatisfactions[i] = 1.0 - testSatisfactions[i]; // Lật ngược giá trị (nếu 0.7 → 0.3)
 
       double testFitness = withFitnessFunctionEvaluation(testSatisfactions, fitnessFunction);
-      if (testFitness != baseFitness) {
-        return false; // Có sự khác biệt → không đồng đều
+      if (Double.compare(testFitness, baseFitness) != 0) {
+        return false; // Fitness thay đổi → không đồng đều
       }
     }
 
-    return true; // Tất cả đều giống nhau → uniform
+    return true; // Mọi thay đổi đều không ảnh hưởng → đồng đều
   }
+
 
 }
