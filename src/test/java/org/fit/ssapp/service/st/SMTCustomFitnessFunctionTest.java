@@ -35,20 +35,7 @@ public class SMTCustomFitnessFunctionTest {
     MatchingData matchingData;
     TwoSetFitnessEvaluator evaluator;
 
-    @BeforeEach
-    public void setUp() {
-        int testNumberOfIndividuals1 = 5;
-        int testNumberOfIndividuals2 = 1;  //or any positive number
-        int testNumberOfProperties = 3;
-
-        sampleData = new SampleDataGenerator(
-            MatchingProblemType.MTM,
-            testNumberOfIndividuals1, testNumberOfIndividuals2,
-            testNumberOfProperties
-        );
-        matchingData = sampleData.generateProblem().getMatchingData();
-        evaluator = new TwoSetFitnessEvaluator(matchingData);
-
+    private StableMatchingProblemDto setUp() {
         StableMatchingProblemDto dto = new StableMatchingProblemDto();
         dto.setProblemName("Stable Matching Problem");
         dto.setNumberOfSets(2);
@@ -57,7 +44,7 @@ public class SMTCustomFitnessFunctionTest {
         dto.setIndividualSetIndices(new int[]{1, 1, 0});
         dto.setIndividualCapacities(new int[]{1, 2, 1});
         dto.setIndividualRequirements(new String[][] {
-                {"1", "1.1", "1--"},
+                {"1", "1.1", "1++"},
                 {"1++", "1.1", "1.1"},
                 {"1", "1", "2"}
         });
@@ -82,9 +69,10 @@ public class SMTCustomFitnessFunctionTest {
         dto.setAlgorithm("NSGAII");
         dto.setDistributedCores("4");
 
-        sampleDTO = dto;
         // Clear excluded pairs
-        sampleDTO.setExcludedPairs(new int[0][0]);
+        dto.setExcludedPairs(new int[0][0]);
+
+        return dto;
     }
 
     @ParameterizedTest
@@ -96,11 +84,12 @@ public class SMTCustomFitnessFunctionTest {
         "code qua chien"
     })
     void invalidSyntax(String function) throws Exception {
-        sampleDTO.setFitnessFunction(function);
+        StableMatchingProblemDto dto  = setUp();
+        dto.setFitnessFunction(function);
 
         _mock.perform(post("/api/stable-matching-solver")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(sampleDTO)))
+                .content(objectMapper.writeValueAsString(dto)))
             .andDo(print())
             .andExpect(status().isBadRequest())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON));
@@ -116,7 +105,7 @@ public class SMTCustomFitnessFunctionTest {
         "IBEA, SIGMA{S1} + SIGMA{S2}"
     })
     void customFunction(String algorithm, String function) throws Exception {
-        StableMatchingProblemDto dto = sampleDTO;
+        StableMatchingProblemDto dto = setUp();
 
         dto.setFitnessFunction(function);
         dto.setAlgorithm(algorithm);
@@ -140,7 +129,7 @@ public class SMTCustomFitnessFunctionTest {
         final JsonNode jsonNode = objectMapper.readTree(response);
         assertTrue(jsonNode.has("data"));
         final JsonNode data = jsonNode.get("data");
-        assertTrue(data.has("matching"));
+        assertTrue(data.has("matches"));
         assertTrue(data.has("fitnessValue"));
         assertTrue(data.has("setSatisfactions"));
     }
