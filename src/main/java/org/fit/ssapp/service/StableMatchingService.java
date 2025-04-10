@@ -152,8 +152,13 @@ public class StableMatchingService implements ProblemService {
               "[Service] Stable Matching: Solve stable matching problem successfully!")
           .data(matchingSolution)
           .build());
-    } catch (IBEAUniformException nullEx) {
-      return ResponseEntity.badRequest().build();
+    } catch (IBEAUniformException e) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+              Response.builder()
+                      .data(null)
+                      .message("[Service] Stable Matching: BAD REQUEST")
+                      .status(HttpStatus.BAD_REQUEST.value()).build()
+      );
     } catch (Exception e) {
       log.error("[Service] Stable Matching: Error solving stable matching problem: {}",
           e.getMessage(),
