@@ -18,17 +18,12 @@ import org.fit.ssapp.ss.gt.Strategy;
 /**
  * A utility class to evaluate mathematical expressions in string format. Supports variable
  * replacement, basic arithmetic operations, and trigonometric functions.
- * 
- * Note on decimal precision:
- * This class uses a standard precision of 4 decimal places for all calculations.
- * This precision is chosen to provide sufficient accuracy for most game theory calculations
- * while avoiding excessive precision that could lead to floating-point errors.
- * All BigDecimal results are rounded using HALF_UP rounding mode.
  */
 public class StringExpressionEvaluator {
 
   public static Pattern nonRelativePattern = Pattern.compile("p[0-9]+");
-  public static Pattern fitnessPattern = Pattern.compile("u[0-9]+");
+  public static Pattern fitnessPattern = Pattern.compile("u([1-9]\\d*)");
+
 //  public static Pattern fitnessPattern = Pattern.compile("u[0-9]+");
 
   /**
@@ -38,11 +33,7 @@ public class StringExpressionEvaluator {
     SUM, AVERAGE, MIN, MAX, PRODUCT, MEDIAN, RANGE
   }
 
-  // Standard decimal format with 4 decimal places
-  static DecimalFormat decimalFormat = new DecimalFormat("#.####");
-  
-  // Standard scale for all calculations (4 decimal places)
-  private static final int STANDARD_SCALE = 4;
+  static DecimalFormat decimalFormat = new DecimalFormat("#.##############");
 
   /**
    * Evaluates a payoff function relative to other players.
@@ -51,43 +42,96 @@ public class StringExpressionEvaluator {
    * @param payoffFunction        The payoff function as a string.
    * @param normalPlayers         List of all normal players.
    * @param chosenStrategyIndices Indices of chosen strategies.
-   * @return The calculated payoff as a {@code BigDecimal} with 4 decimal places precision.
+   * @return The calculated payoff as a {@code BigDecimal}.
    */
   public static BigDecimal evaluatePayoffFunctionWithRelativeToOtherPlayers(Strategy strategy,
-                                                                            String payoffFunction,
-                                                                            List<NormalPlayer> normalPlayers,
-                                                                            int[] chosenStrategyIndices) {
+      String payoffFunction,
+      List<NormalPlayer> normalPlayers,
+      int[] chosenStrategyIndices) {
+    if (payoffFunction == null || payoffFunction.isBlank() || payoffFunction.equalsIgnoreCase("DEFAULT")) {
+      // the payoff function is the sum function of all properties by default
+      return calculateByDefault(strategy.getProperties(), "SUM");
+    }
+
+    if (checkIfIsDefaultFunction(payoffFunction)) {
+      return calculateByDefault(strategy.getProperties(), payoffFunction);
+    }
+
+    // Validate payoff function syntax
+    try {
+      String expression = payoffFunction;
+      Pattern generalPattern = Pattern.compile("(P[0-9]+)?" + nonRelativePattern.pattern());
+      Matcher generalMatcher = generalPattern.matcher(expression);
+
+      while (generalMatcher.find()) {
+        String placeholder = generalMatcher.group();
+        if (placeholder.contains("P")) {
+          // relative variables - syntax Pjpi with j the player index, and i the property index
+          int[] ji = Arrays.stream(placeholder
+                  .substring(1) // remove P
+                  .split("p")) // split at p
+              .mapToInt(Integer::parseInt)
+              .map(x -> x - 1)
+              .toArray(); // [j, i]
+
+          // Validate player index
+          if (ji[0] < 0 || ji[0] >= normalPlayers.size()) {
+            throw new IllegalArgumentException("Invalid player index: " + (ji[0] + 1));
+          }
+
+          NormalPlayer otherPlayer = normalPlayers.get(ji[0]);
+          Strategy otherPlayerStrategy = otherPlayer.getStrategyAt(chosenStrategyIndices[ji[0]]);
+
+          // Validate property index
+          if (ji[1] < 0 || ji[1] >= otherPlayerStrategy.getProperties().size()) {
+            throw new IllegalArgumentException("Invalid property index: " + (ji[1] + 1) + " for player " + (ji[0] + 1));
+          }
+
+          double propertyValue = otherPlayerStrategy.getProperties().get(ji[1]);
+          expression = expression.replaceAll(placeholder, formatDouble(propertyValue));
+        } else {
+          // non-relative variables
+          int index = Integer.parseInt(placeholder.substring(1)) - 1;
+          if (index < 0 || index >= strategy.getProperties().size()) {
+            throw new IllegalArgumentException("Invalid property index: " + (index + 1));
+          }
+          double propertyValue = strategy.getProperties().get(index);
+          expression = expression.replaceAll(placeholder, formatDouble(propertyValue));
+        }
+      }
+
+      // Try to evaluate the expression to validate syntax
+      evaluateExpression(expression);
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Invalid payoff function: " + payoffFunction, e);
+    }
+
     String expression = payoffFunction;
-
     Pattern generalPattern = Pattern.compile("(P[0-9]+)?" + nonRelativePattern.pattern());
-
     Matcher generalMatcher = generalPattern.matcher(expression);
+
     while (generalMatcher.find()) {
       String placeholder = generalMatcher.group();
-      // indices should account for offset from base 1 index of variables
       if (placeholder.contains("P")) {
-        // relative variables - syntax Pjpi with j the player index, and i the property index
         int[] ji = Arrays.stream(placeholder
-                        .substring(1) // remove P
-                        .split("p")) // split at p
-                .mapToInt(Integer::parseInt)
-                .map(x -> x - 1)
-                .toArray(); // [j, i]
+                .substring(1)
+                .split("p"))
+            .mapToInt(Integer::parseInt)
+            .map(x -> x - 1)
+            .toArray();
         NormalPlayer otherPlayer = normalPlayers.get(ji[0]);
         Strategy otherPlayerStrategy = otherPlayer.getStrategyAt(chosenStrategyIndices[ji[0]]);
         double propertyValue = otherPlayerStrategy.getProperties().get(ji[1]);
         expression = expression.replaceAll(placeholder, formatDouble(propertyValue));
       } else {
-        // non-relative variables
         int index = Integer.parseInt(placeholder.substring(1)) - 1;
         double propertyValue = strategy.getProperties().get(index);
         expression = expression.replaceAll(placeholder, formatDouble(propertyValue));
       }
     }
 
-    // evaluate this string expression to get the result using exp4j
     double val = evaluateExpression(expression);
-    return new BigDecimal(val).setScale(STANDARD_SCALE, RoundingMode.HALF_UP);
+    return new BigDecimal(val).setScale(10, RoundingMode.HALF_UP);
   }
 
   /**
@@ -95,37 +139,60 @@ public class StringExpressionEvaluator {
    *
    * @param strategy       The strategy containing properties used in the function.
    * @param payoffFunction The payoff function as a string.
-   * @return A {@code BigDecimal} result of the evaluated function with 4 decimal places precision.
+   * @return A {@code BigDecimal} result of the evaluated function.
    * @throws IllegalArgumentException If the function contains invalid variables.
    */
   public static BigDecimal evaluatePayoffFunctionNoRelative(Strategy strategy,
-                                                            String payoffFunction) {
+      String payoffFunction) {
 
-    String expression = payoffFunction;
-
-    if (payoffFunction.isBlank()) {
+    if (payoffFunction == null || payoffFunction.isBlank() || payoffFunction.equalsIgnoreCase("DEFAULT")) {
       // the payoff function is the sum function of all properties by default
-      return calculateByDefault(strategy.getProperties(), null);
-    } else {
+      return calculateByDefault(strategy.getProperties(), "SUM");
+    }
 
-      if (checkIfIsDefaultFunction(payoffFunction)) {
-        return calculateByDefault(strategy.getProperties(), payoffFunction);
-      }
+    if (checkIfIsDefaultFunction(payoffFunction)) {
+      return calculateByDefault(strategy.getProperties(), payoffFunction);
+    }
+
+    // Validate payoff function syntax
+    try {
+      String expression = payoffFunction;
 
       Matcher nonRelativeMatcher = nonRelativePattern.matcher(expression);
-      // replace non-relative variables with value
       while (nonRelativeMatcher.find()) {
         String placeholder = nonRelativeMatcher.group();
-        // indices should account for offset from base 1 index of variables
         int index = Integer.parseInt(placeholder.substring(1)) - 1;
+        if (index < 0 || index >= strategy.getProperties().size()) {
+          throw new IllegalArgumentException("Invalid property index: " + (index + 1));
+        }
         double propertyValue = strategy.getProperties().get(index);
         expression = expression.replaceAll(placeholder, formatDouble(propertyValue));
       }
 
-      // evaluate this string expression to get the result using exp4j
-      double val = evaluateExpression(expression);
-      return new BigDecimal(val).setScale(STANDARD_SCALE, RoundingMode.HALF_UP);
+      // Handle relative variables
+      Matcher relativeMatcher = Pattern.compile("P([0-9]+)p([0-9]+)").matcher(expression);
+      while (relativeMatcher.find()) {
+        String placeholder = relativeMatcher.group();
+        expression = expression.replaceAll(placeholder, "1.0");
+      }
+
+      evaluateExpression(expression);
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Invalid payoff function: " + payoffFunction, e);
     }
+
+    // If validation passed, evaluate the actual expression
+    String expression = payoffFunction;
+    Matcher nonRelativeMatcher = nonRelativePattern.matcher(expression);
+    while (nonRelativeMatcher.find()) {
+      String placeholder = nonRelativeMatcher.group();
+      int index = Integer.parseInt(placeholder.substring(1)) - 1;
+      double propertyValue = strategy.getProperties().get(index);
+      expression = expression.replaceAll(placeholder, formatDouble(propertyValue));
+    }
+
+    double val = evaluateExpression(expression);
+    return new BigDecimal(val).setScale(10, RoundingMode.HALF_UP);
   }
 
 
@@ -133,40 +200,47 @@ public class StringExpressionEvaluator {
    * Evaluates the fitness function based on given payoffs.
    *
    * @param payoffs         Array of payoff values.
-   * @param fitnessFunction The fitness function as a string. If null or blank, SUM is used as default.
-   * @return The computed fitness value as a {@code BigDecimal} with 4 decimal places precision.
-   * @throws ArithmeticException If the function contains invalid syntax or cannot be evaluated.
+   * @param fitnessFunction The fitness function as a string.
+   * @return The computed fitness value as a {@code BigDecimal}.
+   * @throws IllegalArgumentException If the function contains invalid variables.
    */
   public static BigDecimal evaluateFitnessValue(double[] payoffs, String fitnessFunction) {
-    List<Double> payoffList = new ArrayList<>();
-    for (double payoff : payoffs) {
-      payoffList.add(payoff);
+    if (fitnessFunction == null || fitnessFunction.isBlank() || fitnessFunction.equalsIgnoreCase("DEFAULT")) {
+      // if the fitnessFunction is absent or DEFAULT,
+      // the fitness value is the average of all payoffs of all chosen strategies by default
+      List<Double> payoffList = new ArrayList<>();
+      for (double payoff : payoffs) {
+        payoffList.add(payoff);
+      }
+      return calculateByDefault(payoffList, "SUM");
     }
 
-    if (fitnessFunction == null || fitnessFunction.isBlank()) {
-      return calculateByDefault(payoffList, null);
-    } else {
-      // replace placeholders for players' payoffs with the actual values
-      String expression = fitnessFunction;
-
-      if (checkIfIsDefaultFunction(fitnessFunction)) {
-        return calculateByDefault(payoffList, fitnessFunction);
+    if (checkIfIsDefaultFunction(fitnessFunction)) {
+      List<Double> payoffList = new ArrayList<>();
+      for (double payoff : payoffs) {
+        payoffList.add(payoff);
       }
+      return calculateByDefault(payoffList, fitnessFunction);
+    }
+
+    try {
+      String expression = fitnessFunction;
       Matcher fitnessMatcher = fitnessPattern.matcher(expression);
       while (fitnessMatcher.find()) {
         String placeholder = fitnessMatcher.group();
         // indices should account for offset from base 1 index of variables
         int index = Integer.parseInt(placeholder.substring(1)) - 1;
+        if (index >= payoffs.length) {
+          throw new IllegalArgumentException("Invalid payoff index: " + (index + 1) + ". Maximum allowed index is " + payoffs.length);
+        }
         double propertyValue = payoffs[index];
         expression = expression.replaceAll(placeholder, formatDouble(propertyValue));
       }
 
-      try {
-        double val = evaluateExpression(expression);
-        return new BigDecimal(val).setScale(STANDARD_SCALE, RoundingMode.HALF_UP);
-      } catch (Exception e) {
-        throw new ArithmeticException("Error evaluating fitness function: " + e.getMessage());
-      }
+      double val = evaluateExpression(expression);
+      return new BigDecimal(val).setScale(10, RoundingMode.HALF_UP);
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Invalid fitness function: " + fitnessFunction, e);
     }
   }
 
@@ -222,12 +296,9 @@ public class StringExpressionEvaluator {
   }
 
   private static boolean checkIfIsDefaultFunction(String function) {
-    if (function == null || function.trim().isEmpty()) {
-      return false;
-    }
     return Arrays
-            .stream(DefaultFunction.values())
-            .anyMatch(f -> f.name().equalsIgnoreCase(function.trim()));
+        .stream(DefaultFunction.values())
+        .anyMatch(f -> f.name().equalsIgnoreCase(function));
   }
 
   private static double calSum(List<Double> values) {
@@ -259,9 +330,6 @@ public class StringExpressionEvaluator {
   }
 
   private static double calMedian(List<Double> values) {
-    if (values.isEmpty()) {
-      return 0.0;
-    }
     double[] arr = values.stream().mapToDouble(Double::doubleValue).sorted().toArray();
     int n = arr.length;
     if (n % 2 == 0) {
@@ -272,16 +340,13 @@ public class StringExpressionEvaluator {
   }
 
   private static double calRange(List<Double> values) {
-    if (values.isEmpty()) {
-      return 0.0;
-    }
     double[] arr = values.stream().mapToDouble(Double::doubleValue).sorted().toArray();
     return arr[arr.length - 1] - arr[0];
   }
 
   public static BigDecimal calculateByDefault(List<Double> values, String defaultFunction) {
     DefaultFunction function = (!StringUtils.isEmptyOrNull(defaultFunction))
-            ? DefaultFunction.valueOf(defaultFunction.toUpperCase()) : DefaultFunction.SUM;
+        ? DefaultFunction.valueOf(defaultFunction.toUpperCase()) : DefaultFunction.SUM;
     double val = switch (function) {
       case PRODUCT -> calProduct(values);
       case MAX -> calMax(values);
@@ -291,31 +356,35 @@ public class StringExpressionEvaluator {
       case RANGE -> calRange(values);
       default -> calSum(values);
     };
-    return new BigDecimal(val).setScale(STANDARD_SCALE, RoundingMode.HALF_UP); // 4 decimal places
+
+    return new BigDecimal(val);
   }
 
   /**
    * Evaluates a mathematical string expression.
    *
    * @param expression The expression to evaluate.
-   * @return The computed result as a double with 4 decimal places precision.
-   * @throws RuntimeException If the expression is invalid or cannot be evaluated.
+   * @return The computed result as a double.
    */
   private static double evaluateExpression(String expression) {
-    // Replace NaN with 0
-    String formattedExpression = expression.replaceAll("NaN", "0")
-            .replaceAll("\\s+", "") // Remove all whitespace characters
-            .replaceAll(",", ".");  // Replace , to . (default double decimal separator)
-    Expression expr = getExpression(formattedExpression);
+    try {
+      // Replace NaN with 0
+      String formattedExpression = expression.replaceAll("NaN", "0")
+          .replaceAll("\\s+", "") // Remove all whitespace characters
+          .replaceAll(",", ".");  // Replace , to . (default double decimal separator)
+      Expression expr = getExpression(formattedExpression);
 
-    // Validate the expression
-    ValidationResult validationResult = expr.validate();
-    if (!validationResult.isValid()) {
-      throw new RuntimeException("Invalid expression: " + validationResult.getErrors().toString());
+      // validate the expression
+      ValidationResult validationResult = expr.validate();
+      if (!validationResult.isValid()) {
+        throw new RuntimeException("Invalid expression: " + validationResult.getErrors().toString());
+      }
+
+      // eva the expression
+      return expr.evaluate();
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Invalid expression: " + expression, e);
     }
-
-    // Evaluate the expression
-    return expr.evaluate();
   }
 
   private static Expression getExpression(String formattedExpression) {
@@ -337,12 +406,6 @@ public class StringExpressionEvaluator {
     return expr;
   }
 
-  /**
-   * Main method to demonstrate the conversion of a large number without scientific notation.
-   *
-   * @param args Command-line arguments (not used).
-   */
-  public static void main(String[] args) {
-    System.out.println(convertToStringWithoutScientificNotation(222222222222.2222222222222));
-  }
+
+
 }
