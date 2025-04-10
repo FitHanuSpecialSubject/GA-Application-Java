@@ -1,4 +1,4 @@
-package org.fit.ssapp.service;
+package org.fit.ssapp.service.gt;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -76,7 +76,7 @@ public class GTIntegrationTest {
    * @param algorithm allowed algorithm for gt system
    *
    */
-  // @ParameterizedTest
+  @ParameterizedTest
   @MethodSource("gameTheoryAlgorithms")
   void baseCaseTestWithConflict(String algorithm) throws Exception{
 
@@ -108,7 +108,7 @@ public class GTIntegrationTest {
    * Test case for base case with empty request .
    *
    */
-  // @Test
+  @Test
   void testEmptyRequestBody() throws Exception{
 
     MvcResult result = mockMvc

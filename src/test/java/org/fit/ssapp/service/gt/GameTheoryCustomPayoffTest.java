@@ -1,4 +1,4 @@
-package org.fit.ssapp.service;
+package org.fit.ssapp.service.gt;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.asyncDispatch;
@@ -29,14 +29,14 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 /**
- * Tests focused on custom fitness functions and algorithm validations in Game Theory.
- * <p>
- * Note: For payoff functions, the 'p' prefix is used (e.g., p1, p2).
- * For fitness functions, the 'u' prefix is used (e.g., u1, u2).
+ * Tests focused on custom payoff functions in Game Theory.
+ * 
+ * Note: For payoff functions, the 'p' prefix is used for the current player's properties (e.g., p1, p2),
+ * and the 'P' prefix with player index is used for other players (e.g., P1p2 - player 1's property 2).
  */
 @SpringBootTest
 @AutoConfigureMockMvc
-public class GameTheoryCustomFitnessTest {
+public class GameTheoryCustomPayoffTest {
 
   @Autowired
   private MockMvc mockMvc;
@@ -44,20 +44,20 @@ public class GameTheoryCustomFitnessTest {
   @Autowired
   private ObjectMapper objectMapper;
 
-  // @ParameterizedTest
+  @ParameterizedTest
   @CsvSource({
-      "NSGAII,(u2)^10 + 12",
-      "NSGAIII,abs(u1) / 100",
-      "eMOEA,ceil(100 / u3)",
-      "PESA2,log(4) - u1",
-      "VEGA,sqrt(u1) + sqrt(4)",
-      "OMOPSO,12 - 41  * u2 + u1",
-      "SMPSO,u2 + 21 / 13"
+      "NSGAII,(p1+p2+p3)/3-(p4+p5)/2", // Non-relative payoff function
+      "NSGAIII,abs(p1) / 100",
+      "eMOEA,ceil(100 / p3)",
+      "PESA2,log(4) - p1",
+      "VEGA,sqrt(p1) + sqrt(4)",
+      "OMOPSO,12 - 41 * p2 + p1",
+      "SMPSO,p2 + 21 / 13"
   })
   void exp4j(String algorithm, String function) throws Exception {
     GameTheoryProblemDto dto = setUpTestCase();
 
-    dto.setFitnessFunction(function);
+    dto.setDefaultPayoffFunction(function);
     dto.setAlgorithm(algorithm);
 
     MvcResult result = this.mockMvc
@@ -75,7 +75,6 @@ public class GameTheoryCustomFitnessTest {
         .getResponse()
         .getContentAsString();
 
-    // Verify response structure
     final JsonNode jsonNode = objectMapper.readTree(response);
     assertTrue(jsonNode.has("data"));
     final JsonNode data = jsonNode.get("data");
@@ -83,20 +82,20 @@ public class GameTheoryCustomFitnessTest {
     assertTrue(data.has("fitnessValue"));
   }
 
-  // @ParameterizedTest
+  @ParameterizedTest
   @CsvSource({
-      "NSGAII,SUM",
-      "NSGAIII,AVERAGE",
-      "eMOEA,MIN",
-      "PESA2,MAX",
-      "VEGA,PRODUCT",
-      "OMOPSO,MEDIAN",
-      "SMPSO,RANGE"
+      "NSGAII,(P1p1+P2p2)/(p3+1)", // Relative payoff function
+      "NSGAIII,P2p1*P1p2",
+      "eMOEA,max(P1p1,P2p1)",
+      "PESA2,min(p1,P1p2)",
+      "VEGA,(P1p1+P2p1)/2-p1",
+      "OMOPSO,P1p1+P2p2-P1p3",
+      "SMPSO,P1p1*p2/P2p3"
   })
   void customFunction(String algorithm, String function) throws Exception {
     GameTheoryProblemDto dto = setUpTestCase();
 
-    dto.setFitnessFunction(function);
+    dto.setDefaultPayoffFunction(function);
     dto.setAlgorithm(algorithm);
 
     MvcResult result = this.mockMvc
@@ -114,7 +113,6 @@ public class GameTheoryCustomFitnessTest {
         .getResponse()
         .getContentAsString();
 
-    // Verify response structure
     final JsonNode jsonNode = objectMapper.readTree(response);
     assertTrue(jsonNode.has("data"));
     final JsonNode data = jsonNode.get("data");
@@ -122,17 +120,53 @@ public class GameTheoryCustomFitnessTest {
     assertTrue(data.has("fitnessValue"));
   }
 
-  // @ParameterizedTest
+  @ParameterizedTest
+  @CsvSource({
+      "NSGAII,sin(p1) * cos(p2) + tan(p3/10)",
+      "eMOEA,pow(p1,2) + pow(p2,3) - sqrt(p3)",
+      "PESA2,max(p1,p2,p3) / min(p4,p5,1)",
+      "VEGA,exp(p1/10) - ln(p2+1)",
+      "OMOPSO,floor(p1) + ceil(p2) + round(p3)"
+  })
+  void complexPayoffFunction(String algorithm, String function) throws Exception {
+    GameTheoryProblemDto dto = setUpTestCase();
+
+    dto.setDefaultPayoffFunction(function);
+    dto.setAlgorithm(algorithm);
+
+    MvcResult result = this.mockMvc
+        .perform(post("/api/game-theory-solver")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(dto)))
+        .andExpect(request().asyncStarted())
+        .andReturn();
+
+    final String response = this.mockMvc.perform(asyncDispatch(result))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andReturn()
+        .getResponse()
+        .getContentAsString();
+
+    final JsonNode jsonNode = objectMapper.readTree(response);
+    assertTrue(jsonNode.has("data"));
+    final JsonNode data = jsonNode.get("data");
+    assertTrue(data.has("players"));
+    assertTrue(data.has("insights"));
+  }
+
+  @ParameterizedTest
   @ValueSource(strings = {
-      "(u1 + u2 + ) / 3 - (u4 + u5",
-      "u1 + u2 * / u3",
-      "u1 + u9",
-      "INVALID",
-      "code qua chien"
+      "(p1 + p2 + ) / 3 - (p4 + p5",
+      "p1 + p2 * / p3",
+      "(p1 + p2 +) * p3",
+      "p1 + p2 + @@",
+      "p1 + P9p9"  // Invalid player index
   })
   void invalidFunction(String function) throws Exception {
     GameTheoryProblemDto invalidDto = setUpTestCase();
-    invalidDto.setFitnessFunction(function);
+    invalidDto.setDefaultPayoffFunction(function);
 
     mockMvc
         .perform(post("/api/game-theory-solver")
@@ -143,11 +177,10 @@ public class GameTheoryCustomFitnessTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON));
   }
 
-  //
-  // @Test
+  @Test
   void InvalidDto() throws Exception {
     String invalidJson = "{" +
-        "\"fitnessFunction\": \"DEFAULT\"," +
+        "\"defaultPayoffFunction\": \"(p1+p2)/2\"," +
         "\"maxTime\": \"sixty\"," +
         "\"generation\": \"hundred\"" +
         "}";
@@ -176,15 +209,15 @@ public class GameTheoryCustomFitnessTest {
   }
 
   private List<NormalPlayer> getNormalPlayers() {
-    final List<Double> stratProps = new ArrayList<Double>(4);
-    stratProps.add(1.0d);
-    stratProps.add(2.0d);
-    stratProps.add(4.0d);
-    stratProps.add(3.0d);
-    final double payoff = 10d;
-
+    final List<Double> stratProps = new ArrayList<Double>(5);
+    stratProps.add(10.0d);
+    stratProps.add(5.0d);  
+    stratProps.add(8.0d);  
+    stratProps.add(4.0d); 
+    stratProps.add(2.0d);  
+    
     final Strategy strat = new Strategy();
-    strat.setPayoff(payoff);
+    strat.setPayoff(10d);
     strat.setProperties(stratProps);
 
     final List<Strategy> strats = new ArrayList<Strategy>(3);
@@ -193,6 +226,7 @@ public class GameTheoryCustomFitnessTest {
     strats.add(strat);
 
     final NormalPlayer player = new NormalPlayer();
+    player.setName("Player");
     player.setStrategies(strats);
     player.setPayoffFunction("default");
 
