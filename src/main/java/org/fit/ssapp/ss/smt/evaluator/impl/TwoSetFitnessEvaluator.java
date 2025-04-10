@@ -3,12 +3,16 @@ package org.fit.ssapp.ss.smt.evaluator.impl;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Random;
+import java.util.Random;
 import java.util.function.DoubleUnaryOperator;
+import java.util.stream.Collectors;
+import java.util.stream.DoubleStream;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 import net.objecthunter.exp4j.ValidationResult;
+import org.fit.ssapp.exception.IBEAUniformException;
 import org.fit.ssapp.exception.IBEAUniformException;
 import org.fit.ssapp.ss.smt.MatchingData;
 import org.fit.ssapp.ss.smt.evaluator.FitnessEvaluator;
@@ -211,6 +215,34 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
     }
     return result;
   }
+
+  @Override
+  public void validateUniformFitness(String fitnessFunction) throws IBEAUniformException {
+    int size =  matchingData.getSize();
+    double[] satisfactions = new double[size];
+
+    // Random hóa giá trị satisfaction (giá trị từ 0.0 đến 1.0)
+    Random random = new Random();
+    for (int i = 0; i < size; i++) {
+      satisfactions[i] = random.nextDouble();
+    }
+
+    double baseFitness = withFitnessFunctionEvaluation(satisfactions, fitnessFunction);
+
+    // Kiểm tra xem từng phần tử khi thay đổi có ảnh hưởng đến fitness không
+    for (int i = 0; i < size; i++) {
+      double[] testSatisfactions = Arrays.copyOf(satisfactions, size);
+      testSatisfactions[i] = 1.0 - testSatisfactions[i]; // Lật ngược giá trị (nếu 0.7 → 0.3)
+
+      double testFitness = withFitnessFunctionEvaluation(testSatisfactions, fitnessFunction);
+      if (Double.compare(testFitness, baseFitness) != 0) {
+        return; // Fitness thay đổi → không đồng đều
+      }
+    }
+
+    throw new IBEAUniformException("Fitness Uniform detected"); // Mọi thay đổi đều không ảnh hưởng → đồng đều
+  }
+
 
    /**
    * Converts double to String without scientific notation
