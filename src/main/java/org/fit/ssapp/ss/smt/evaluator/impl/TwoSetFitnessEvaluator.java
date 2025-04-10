@@ -11,7 +11,7 @@ import lombok.experimental.FieldDefaults;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 import net.objecthunter.exp4j.ValidationResult;
-import org.fit.ssapp.exception.IBEAUniformException;
+import org.fit.ssapp.exception.AlgorithmsUniformException;
 import org.fit.ssapp.ss.smt.MatchingData;
 import org.fit.ssapp.ss.smt.evaluator.FitnessEvaluator;
 
@@ -222,7 +222,7 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
   }
 
   @Override
-  public void validateUniformFitness(String fitnessFunction) throws IBEAUniformException {
+  public void validateUniformFitness(String fitnessFunction) throws AlgorithmsUniformException {
     int size =  matchingData.getSize();
     double[] satisfactions = new double[size];
 
@@ -245,6 +245,6 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
       }
     }
 
-    throw new IBEAUniformException("Fitness Uniform detected"); // Mọi thay đổi đều không ảnh hưởng → đồng đều
+    throw new AlgorithmsUniformException("Fitness Uniform detected"); // Mọi thay đổi đều không ảnh hưởng → đồng đều
   }
 }
