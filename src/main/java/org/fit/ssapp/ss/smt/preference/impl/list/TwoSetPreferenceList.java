@@ -90,24 +90,6 @@ public class TwoSetPreferenceList implements PreferenceList {
     return scores.getOrDefault(nodeId,0.0);
   }
 
-  @Override
-  public boolean isUniformPreference() {
-    if (scores.isEmpty()) return true;
-
-    Iterator<Double> it = scores.values().iterator();
-    double first = it.next();
-    final double EPSILON = 1e-6;
-
-    while (it.hasNext()) {
-      double next = it.next();
-      if (Math.abs(next - first) > EPSILON) {
-        return false;
-      }
-    }
-
-    return true;
-  }
-
 
   @Override
   public String toString() {
@@ -129,17 +111,25 @@ public class TwoSetPreferenceList implements PreferenceList {
     return result.toString();
   }
 
-  /**
-   * getScore.
-   *
-   * @param position int
-   */
-  public double getScore(int position) {
-    try {
-      return scores[position - this.padding];
-    } catch (ArrayIndexOutOfBoundsException e) {
-      log.error("Position {} not found:", position, e);
-      return 0;
+  public Set<Integer> getAllNodeId() {
+    return Collections.unmodifiableSet(scores.keySet());
+  }
+  @Override
+  public boolean isUniformPreference() {
+    if (scores.isEmpty()) return true;
+
+    Iterator<Double> it = scores.values().iterator();
+    double first = it.next();
+    final double EPSILON = 1e-6;
+
+    while (it.hasNext()) {
+      double next = it.next();
+      if (Math.abs(next - first) > EPSILON) {
+        return false;
+      }
     }
+
+    return true;
   }
 }
+
