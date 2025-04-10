@@ -1,6 +1,8 @@
 package org.fit.ssapp.ss.smt.evaluator.impl;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 import java.util.function.DoubleUnaryOperator;
@@ -51,21 +53,21 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
   @Override
   public double withFitnessFunctionEvaluation(double[] satisfactions, String fitnessFunction) {
     String processedExpression = processCustomFunctions(satisfactions, fitnessFunction);
-      Expression expression = new ExpressionBuilder(processedExpression).build();
+    Expression expression = new ExpressionBuilder(processedExpression).build();
 
-      ValidationResult validation = expression.validate(false);
-      if (!validation.isValid()) {
-        throw new IllegalArgumentException(
-                "Invalid expression: '" + processedExpression + "'. "
-                        + "Validation errors: " + validation.getErrors()
-                        + " Original expression: '" + fitnessFunction + "'"
-        );
-      }
-      return expression.evaluate();
+    ValidationResult validation = expression.validate(false);
+    if (!validation.isValid()) {
+      throw new IllegalArgumentException(
+          "Invalid expression: '" + processedExpression + "'. "
+              + "Validation errors: " + validation.getErrors()
+              + " Original expression: '" + fitnessFunction + "'");
+    }
+    return expression.evaluate();
   }
 
   /**
-   * Processes all custom functions in the expression by replacing them with values
+   * Processes all custom functions in the expression by replacing them with
+   * values
    */
   private String processCustomFunctions(double[] satisfactions, String expression) {
     // Processing order matters - handle most complex functions first
@@ -91,7 +93,7 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
 
       // Replace with calculated value (handling scientific notation)
       matcher.appendReplacement(sb, Matcher.quoteReplacement(
-              convertToStringWithoutScientificNotation(value)));
+          convertToStringWithoutScientificNotation(value)));
     }
     matcher.appendTail(sb);
 
@@ -109,7 +111,7 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
       int setIndex = Integer.parseInt(matcher.group(1));
       double sum = calculateSetSum(satisfactions, setIndex);
       matcher.appendReplacement(sb, Matcher.quoteReplacement(
-              convertToStringWithoutScientificNotation(sum)));
+          convertToStringWithoutScientificNotation(sum)));
     }
     matcher.appendTail(sb);
 
@@ -129,12 +131,12 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
       // Validate position bounds
       if (position < 1 || position > matchingData.getSize()) {
         throw new IllegalArgumentException(
-                "M position out of range [1-" + matchingData.getSize() + "]: " + position);
+            "M position out of range [1-" + matchingData.getSize() + "]: " + position);
       }
 
       double value = satisfactions[position - 1];
       matcher.appendReplacement(sb, Matcher.quoteReplacement(
-              convertToStringWithoutScientificNotation(value)));
+          convertToStringWithoutScientificNotation(value)));
     }
     matcher.appendTail(sb);
 
@@ -163,7 +165,7 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
             yield "S2";
           }
           default -> throw new IllegalArgumentException(
-                  "Invalid set reference after S: " + expression);
+              "Invalid set reference after S: " + expression);
         };
       }
     }
@@ -174,8 +176,8 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
 
     // Build and evaluate the sub-expression
     Expression exp = new ExpressionBuilder(expression)
-            .variables(regex)
-            .build();
+        .variables(regex)
+        .build();
 
     String finalRegex = regex;
     DoubleUnaryOperator calculator = x -> {
@@ -184,8 +186,8 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
     };
 
     return Arrays.stream(streamValue)
-            .map(calculator)
-            .sum();
+        .map(calculator)
+        .sum();
   }
 
   /**
@@ -193,25 +195,26 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
    */
   private double calculateSetSum(double[] satisfactions, int setIndex) {
     return Arrays.stream(getSatisfactoryOfASetByDefault(satisfactions, setIndex))
-            .sum();
+        .sum();
   }
 
   /**
    * Extracts satisfaction values for a specific set
    */
   private double[] getSatisfactoryOfASetByDefault(double[] satisfactions, int set) {
-    int setTotal = this.matchingData.getTotalIndividualOfSet(set);
-    double[] result = new double[setTotal];
+    List<Double> result = new ArrayList<>();
+
     for (int i = 0; i < matchingData.getSize(); i++) {
-      if (Objects.equals(matchingData.getSetNoOf(i), set)) {
-        setTotal--;
-        result[i] = satisfactions[i];
-      }
-      if (setTotal == 0) {
-        break;
-      }
+      result.add(satisfactions[i]);
     }
-    return result;
+
+    double[] temp = new double[result.size()];
+
+    for (int i = 0; i < result.size(); i++) {
+      temp[i] = result.get(i);
+    }
+
+    return temp;
   }
 
   /**
