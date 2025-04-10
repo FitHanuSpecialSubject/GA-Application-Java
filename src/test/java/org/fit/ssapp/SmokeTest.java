@@ -242,7 +242,7 @@ class SmokeTest {
       .andExpect(status().isBadRequest());
   }
   private static String[] stableMatchingAlgorithms() {
-    return StableMatchingConst.ALLOWED_INSIGHT_ALGORITHMS;
+    return new String[] {"NSGAII", "NSGAIII", "eMOEA", "PESA2", "VEGA"};
   }
 
   private static String[] gameTheoryAlgorithms() {
