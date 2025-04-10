@@ -164,31 +164,37 @@ public class StableMatchingIntegrationTest {
   private void assertNoExcludedPairs(JsonNode matches, int[][] excludedPairs) {
     if (excludedPairs == null || excludedPairs.length == 0) return;
 
-    Map<Integer, int[]> matchesSplitted = new TreeMap<>();
+    Map<Integer, List<Integer>> matchesSplitted = new TreeMap<>();
     int i = 0;
     for (JsonNode list : matches) {
       int[] indices = getIndices(list);
-      matchesSplitted.put(i, indices);
+      List<Integer> temp = new ArrayList<>(indices.length);
+      for (int num : indices) {
+          temp.add(num);
+      }
+      matchesSplitted.put(i, temp);
       i++;
     }
 
     for (int[] pair : excludedPairs) {
-      if (pair == null || pair.length != 2) continue; // Bỏ qua nếu dữ liệu không hợp lệ
+      if (pair.length < 1) {
+        continue; // Bỏ qua nếu dữ liệu không hợp lệ
+      }
 
       int left = pair[0];
       int right = pair[1];
 
       // Chỉ assert nếu cả hai agent tồn tại trong map
       if (matchesSplitted.containsKey(right)) {
-        assertThat(left)
-                .withFailMessage("Excluded pair matched: %d - %d", left, right)
-                .isNotIn(matchesSplitted.get(right));
+        assertThat(matchesSplitted.get(right).contains(left))
+          .isFalse()
+          .withFailMessage("Excluded pair matched: %d - %d", left, right);
       }
 
       if (matchesSplitted.containsKey(left)) {
-        assertThat(right)
-                .withFailMessage("Excluded pair matched: %d - %d", left, right)
-                .isNotIn(matchesSplitted.get(left));
+        assertThat(matchesSplitted.get(left).contains(right))
+                .isFalse()
+                .withFailMessage("Excluded pair matched: %d - %d", left, right);
       }
     }
   }
