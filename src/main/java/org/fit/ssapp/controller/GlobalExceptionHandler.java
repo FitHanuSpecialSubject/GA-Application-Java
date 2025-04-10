@@ -72,7 +72,7 @@ public class GlobalExceptionHandler {
         });
         
         return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
+                .badRequest()
                 .body(Response.builder()
                         .status(HttpStatus.BAD_REQUEST.value())
                         .message("Validation failed")

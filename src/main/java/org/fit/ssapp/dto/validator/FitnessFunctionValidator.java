@@ -21,7 +21,11 @@ import org.fit.ssapp.constants.StableMatchingConst;
  */
 public class FitnessFunctionValidator implements ConstraintValidator<ValidFitnessFunction, String> {
 
-  private static final Pattern VARIABLE_PATTERN = Pattern.compile("(u[1-9]\\d*|M\\d+|S\\d+|SIGMA\\{[^}]+\\})");
+  // Split into multiple patterns for easier debugging
+  private static final Pattern USER_VAR_PATTERN = Pattern.compile("u[1-9]\\d*");
+  private static final Pattern M_VAR_PATTERN = Pattern.compile("M\\d+");
+  private static final Pattern S_VAR_PATTERN = Pattern.compile("S\\d+");
+  
   private static final Set<String> VALID_FUNCTIONS = Set.of("SUM", "AVERAGE", "MIN", "MAX", "PRODUCT", "MEDIAN", "RANGE");
 
   /**
@@ -96,7 +100,7 @@ public class FitnessFunctionValidator implements ConstraintValidator<ValidFitnes
 
   /**
    * Extracts valid variable names from a mathematical function.
-   * - Uses **regex matching** to identify valid variables (`M#`, `S#`, `SIGMA{}` expressions).
+   * - Uses **multiple regex patterns** to identify valid variables (`M#`, `S#`, `SIGMA{}` expressions).
    * - Returns a **set of unique variable names** found in the function.
    *
    * @param func The mathematical function as a string.
@@ -104,10 +108,24 @@ public class FitnessFunctionValidator implements ConstraintValidator<ValidFitnes
    */
   private Set<String> extractVariables(String func) {
     Set<String> variables = new HashSet<>();
-    Matcher matcher = VARIABLE_PATTERN.matcher(func);
+    
+    // Check each pattern separately for better debugging
+    addMatchesToSet(USER_VAR_PATTERN.matcher(func), variables);
+    addMatchesToSet(M_VAR_PATTERN.matcher(func), variables);
+    addMatchesToSet(S_VAR_PATTERN.matcher(func), variables);
+    
+    return variables;
+  }
+  
+  /**
+   * Helper method to add all matches from a matcher to a set.
+   *
+   * @param matcher The regex matcher
+   * @param variables The set to add matches to
+   */
+  private void addMatchesToSet(Matcher matcher, Set<String> variables) {
     while (matcher.find()) {
       variables.add(matcher.group(0));
     }
-    return variables;
   }
 }

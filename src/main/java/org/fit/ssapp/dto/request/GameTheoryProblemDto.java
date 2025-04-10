@@ -8,6 +8,10 @@ import org.fit.ssapp.ss.gt.NormalPlayer;
 import org.fit.ssapp.ss.gt.SpecialPlayer;
 import org.fit.ssapp.dto.validator.ValidFitnessFunction;
 
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Min;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,7 +26,11 @@ import lombok.Setter;
 @AllArgsConstructor
 public class GameTheoryProblemDto implements ProblemRequestDto {
   private SpecialPlayer specialPlayer;
+  
+  @NotNull(message = "normalPlayers is required")
+  @NotEmpty(message = "normalPlayers cannot be empty")
   private List<NormalPlayer> normalPlayers;
+  
   private List<Conflict> conflictSet = new ArrayList<>();
   
   @ValidFitnessFunction
@@ -32,8 +40,14 @@ public class GameTheoryProblemDto implements ProblemRequestDto {
   private String algorithm;
   private boolean isMaximizing;
   private String distributedCores;
+  
+  @Min(value = 1, message = "maxTime must be at least 1")
   private Integer maxTime;
+  
+  @Min(value = 1, message = "generation must be at least 1")
   private Integer generation;
+  
+  @Min(value = 1, message = "populationSize must be at least 1")
   private Integer populationSize;
 
   @Override
