@@ -88,12 +88,12 @@ public class GameTheoryService {
                       .build());
     } catch (Exception e) {
       log.error("Error ", e);
-      return ResponseEntity
-              .status(HttpStatus.INTERNAL_SERVER_ERROR)
+      return ResponseEntity.internalServerError()
               .contentType(MediaType.APPLICATION_JSON)
               .body(Response.builder()
                       .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                      .message(e.getMessage()).build());
+                      .message(e.getMessage())
+                      .build());
     }
   }
 
@@ -324,11 +324,9 @@ public class GameTheoryService {
                       .build());
     } catch (Exception e) {
       log.error("Error ", e);
-      return ResponseEntity
-              .status(HttpStatus.INTERNAL_SERVER_ERROR)
+      return ResponseEntity.internalServerError()
               .contentType(MediaType.APPLICATION_JSON)
-              .body(Response
-                      .builder()
+              .body(Response.builder()
                       .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                       .message(e.getMessage())
                       .build());

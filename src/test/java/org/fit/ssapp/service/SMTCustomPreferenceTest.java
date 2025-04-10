@@ -123,19 +123,6 @@ public class SMTCustomPreferenceTest {
     assertCapacityValid(jsonNode.get("data"), dto);
   }
 
-  private String[][] parseCsvTo2DArray(String csv) {
-    return Arrays.stream(csv.split(";"))
-            .map(row -> row.split(","))
-            .toArray(String[][]::new);
-  }
-
-  private double[][] parseCsvTo2DDoubleArray(String csv) {
-    return Arrays.stream(csv.split(";"))
-            .map(row -> Arrays.stream(row.split(","))
-                    .mapToDouble(Double::parseDouble)
-                    .toArray())
-            .toArray(double[][]::new);
-  }
 
   private void assertCapacityValid(JsonNode data, StableMatchingProblemDto dto) {
     int[] capacities = dto.getIndividualCapacities();
