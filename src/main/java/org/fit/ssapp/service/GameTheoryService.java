@@ -30,6 +30,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import jakarta.validation.ValidationException;
+import org.fit.ssapp.util.StringExpressionEvaluator;
 
 /**
  * Service class for solving game theory problems and providing insights into algorithm performance.
@@ -53,7 +55,33 @@ public class GameTheoryService {
    */
   public ResponseEntity<Response> solveGameTheory(GameTheoryProblemDto request) {
     try {
+      // Validate request is not null and has required fields
+      if (request == null) {
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(Response.builder()
+                .status(400)
+                .message("Request body is required")
+                .build());
+      }
+
+      if (request.getNormalPlayers() == null || request.getNormalPlayers().isEmpty()) {
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(Response.builder()
+                .status(400)
+                .message("Request body is invalid: normalPlayers is required")
+                .build());
+      }
+
       log.info("Received request: {}", request);
+      
+      // Validate payoff function syntax first
+      String payoffFunction = request.getDefaultPayoffFunction();
+      if (!StringExpressionEvaluator.validatePayoffFunction(payoffFunction)) {
+        throw new IllegalArgumentException("Invalid payoff function syntax: " + payoffFunction);
+      }
+      
       GameTheoryProblem problem = GameTheoryProblemMapper.toProblem(request);
 
       long startTime = System.currentTimeMillis();
@@ -82,7 +110,7 @@ public class GameTheoryService {
           .message("Solve game theory problem successfully!")
           .data(gameSolution)
           .build());
-    } catch (IllegalArgumentException e) {
+    } catch (IllegalArgumentException | ValidationException e) {
       log.error("Validation error: {}", e.getMessage());
       return ResponseEntity
           .status(HttpStatus.BAD_REQUEST)

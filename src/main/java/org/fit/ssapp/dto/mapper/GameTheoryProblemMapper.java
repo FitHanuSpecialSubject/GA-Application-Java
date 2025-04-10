@@ -7,22 +7,12 @@ import org.fit.ssapp.ss.gt.implement.PsoCompatibleGameTheoryProblem;
 import org.fit.ssapp.ss.gt.implement.StandardGameTheoryProblem;
 import org.fit.ssapp.util.EvaluatorUtils;
 import org.fit.ssapp.util.StringUtils;
-import org.fit.ssapp.util.StringExpressionEvaluator;
-import net.objecthunter.exp4j.Expression;
-import net.objecthunter.exp4j.ExpressionBuilder;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Mapper class for converting a GameTheoryProblemDto request into a GameTheoryProblem object. This
  * class helps in mapping data from DTO format to the appropriate game theory problem type.
  */
 public class GameTheoryProblemMapper {
-
-  private static final Pattern VARIABLE_PATTERN =  Pattern.compile("(u[1-9]\\d*|M\\d+|S\\d+|SIGMA\\{[^}]+\\}|P\\d+p\\d+)");
-  private static final String[] VALID_FUNCTIONS = {"AVERAGE", "SUM", "MIN", "MAX", "PRODUCT", "MEDIAN", "RANGE"};
 
   /**
    * Converts a GameTheoryProblemDto request to a GameTheoryProblem object. Depending on the
@@ -41,72 +31,16 @@ public class GameTheoryProblemMapper {
     } else {
       problem = new StandardGameTheoryProblem();
     }
-
-    // Validate payoff function
-    String payoffFunction = request.getDefaultPayoffFunction();
-    if (payoffFunction != null && !payoffFunction.equalsIgnoreCase("DEFAULT")) {
-      if (!StringExpressionEvaluator.validatePayoffFunction(payoffFunction)) {
-        throw new IllegalArgumentException("Invalid payoff function: " + payoffFunction);
-      }
-    }
-    
     problem.setDefaultPayoffFunction(EvaluatorUtils
-        .getIfDefaultFunction(payoffFunction));
-    String fitnessFunction = request.getFitnessFunction();
-    if (fitnessFunction == null || fitnessFunction.equalsIgnoreCase("DEFAULT")) {
-      fitnessFunction = "AVERAGE";
-    }
-    // Validate fitness function
-    if (!isValidFitnessFunction(fitnessFunction)) {
-      throw new IllegalArgumentException("Invalid fitness function: " + fitnessFunction);
-    }
-    problem.setFitnessFunction(fitnessFunction);
+        .getIfDefaultFunction(request.getDefaultPayoffFunction()));
+    problem.setFitnessFunction(EvaluatorUtils
+        .getValidFitnessFunction(request.getFitnessFunction()));
     problem.setSpecialPlayer(request.getSpecialPlayer());
     problem.setNormalPlayers(request.getNormalPlayers());
     problem.setConflictSet(request.getConflictSet());
     problem.setMaximizing(request.isMaximizing());
 
     return problem;
-  }
-
-  private static boolean isValidFitnessFunction(String function) {
-    if (function == null) return false;
-    for (String valid : VALID_FUNCTIONS) {
-      if (valid.equalsIgnoreCase(function)) {
-        return true;
-      }
-    }
-    
-    // check mathematical expression
-    try {
-      String cleanFunc = function.replaceAll("\\s+", "");
-      Matcher matcher = VARIABLE_PATTERN.matcher(cleanFunc);
-      Set<String> variables = new HashSet<>();
-      while (matcher.find()) {
-        variables.add(matcher.group(0));
-      }
-      
-      ExpressionBuilder builder = new ExpressionBuilder(cleanFunc);
-      for (String var : variables) {
-        String cleanVar = var.startsWith("SIGMA{") && var.endsWith("}")
-            ? var.substring(6, var.length() - 1)
-            : var;
-        builder.variable(cleanVar);
-      }
-      
-      Expression expression = builder.build();
-      for (String var : variables) {
-        String cleanVar = var.startsWith("SIGMA{") && var.endsWith("}")
-            ? var.substring(6, var.length() - 1)
-            : var;
-        expression.setVariable(cleanVar, 1.0);
-      }
-      
-      expression.evaluate();
-      return true;
-    } catch (Exception e) {
-      return false;
-    }
   }
 
   /**

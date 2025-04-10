@@ -59,6 +59,7 @@ public class GameTheoryCustomFitnessTest {
 
     dto.setFitnessFunction(function);
     dto.setAlgorithm(algorithm);
+    dto.setDefaultPayoffFunction("DEFAULT");
 
     MvcResult result = this.mockMvc
         .perform(post("/api/game-theory-solver")
@@ -98,6 +99,7 @@ public class GameTheoryCustomFitnessTest {
 
     dto.setFitnessFunction(function);
     dto.setAlgorithm(algorithm);
+    dto.setDefaultPayoffFunction("DEFAULT");
 
     MvcResult result = this.mockMvc
         .perform(post("/api/game-theory-solver")

@@ -163,23 +163,29 @@ public class GameTheoryCustomPayoffTest {
       "p1 + p2 + @@"
   })
   void invalidFunction(String function) throws Exception {
-    GameTheoryProblemDto invalidDto = setUpTestCase();
-    invalidDto.setDefaultPayoffFunction(function);
-    invalidDto.setAlgorithm("NSGAII");
+    GameTheoryProblemDto dto = setUpTestCase();
+    dto.setDefaultPayoffFunction(function);
+    dto.setAlgorithm("NSGAII");
 
     MvcResult result = this.mockMvc
         .perform(post("/api/game-theory-solver")
             .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(invalidDto)))
+            .content(objectMapper.writeValueAsString(dto)))
         .andExpect(request().asyncStarted())
         .andReturn();
 
-    this.mockMvc.perform(asyncDispatch(result))
+    final String response = this.mockMvc.perform(asyncDispatch(result))
         .andDo(print())
         .andExpect(status().isBadRequest())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON));
-  }
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andReturn()
+        .getResponse()
+        .getContentAsString();
 
+    final JsonNode jsonNode = objectMapper.readTree(response);
+    assertTrue(jsonNode.has("message"));
+  }
+  
   @Test
   void InvalidDto() throws Exception {
     String invalidJson = "{" +

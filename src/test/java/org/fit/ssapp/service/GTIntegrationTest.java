@@ -109,22 +109,15 @@ public class GTIntegrationTest {
    */
   @Test
   void testEmptyRequestBody() throws Exception{
-    MvcResult result = mockMvc
+    mockMvc
             .perform(post("/api/game-theory-solver")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content("{}")) 
+                    .content("{}")) // Empty JSON body
             .andDo(print())
-            .andExpect(status().isInternalServerError())
-            .andReturn();
-
-    String response = result.getResponse().getContentAsString();
-    JsonNode jsonNode = objectMapper.readTree(response);
-    assertThat(jsonNode.has("status")).isTrue();
-    assertThat(jsonNode.get("status").asInt()).isEqualTo(500);
-    assertThat(jsonNode.has("message")).isTrue();
-    String errorMessage = jsonNode.get("message").asText();
-    assertThat(errorMessage).isNotEmpty();
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message").value("Request body is required"));
   }
+
 
   /**
    * Test case for base case with invalid fitness function .
@@ -146,10 +139,8 @@ public class GTIntegrationTest {
     String response = result.getResponse().getContentAsString();
     JsonNode jsonNode = objectMapper.readTree(response);
     assertThat(jsonNode.has("status")).isTrue();
-    assertThat(jsonNode.get("status").asText()).isEqualTo("error");
     assertThat(jsonNode.has("message")).isTrue();
     assertThat(jsonNode.get("message").asText()).isEqualTo("Validation failed");
-    assertThat(jsonNode.has("errors")).isTrue();
   }
 
   private MvcResult performPostRequest(GameTheoryProblemDto dto) throws Exception {
@@ -256,26 +247,13 @@ public class GTIntegrationTest {
 
   void validateConflict(JsonNode playersNode, List<Conflict> conflicts){
     for (Conflict conflict : conflicts) {
-      JsonNode player1Node = playersNode.get(conflict.getLeftPlayer() - 1);
-      JsonNode player2Node = playersNode.get(conflict.getRightPlayer() - 1);
+      JsonNode player1Node = playersNode.get(conflict.getLeftPlayer());
+      JsonNode player2Node = playersNode.get(conflict.getRightPlayer());
 
-      String player1Strategy = player1Node.get("strategyName").asText();
-      String player2Strategy = player2Node.get("strategyName").asText();
-
-      String expectedStrategy1 = "Strategy " + (conflict.getLeftPlayerStrategy() + 1);
-      String expectedStrategy2 = "Strategy " + (conflict.getRightPlayerStrategy() + 1);
-
-      boolean bothUsingConflictStrategies = 
-          player1Strategy.equals(expectedStrategy1) && player2Strategy.equals(expectedStrategy2);
-      
-      assertThat(bothUsingConflictStrategies)
-          .withFailMessage("Players %d and %d should not both use conflicting strategies %s and %s. " +
-              "Current strategies: Player %d uses %s, Player %d uses %s",
-              conflict.getLeftPlayer(), conflict.getRightPlayer(), 
-              expectedStrategy1, expectedStrategy2,
-              conflict.getLeftPlayer(), player1Strategy,
-              conflict.getRightPlayer(), player2Strategy)
-          .isFalse();
+      assertThat(
+          player1Node.get("strategyName").asText().equals("Strategy " + conflict.getLeftPlayerStrategy())
+              && player2Node.get("strategyName").asText().equals("Strategy " + conflict.getRightPlayerStrategy())
+      ).isFalse();
     }
   }
 

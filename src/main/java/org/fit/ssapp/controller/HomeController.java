@@ -26,6 +26,8 @@ import org.springframework.http.MediaType;
 import java.util.stream.Collectors;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Main Controller.
@@ -34,6 +36,8 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 @RequestMapping("/api")
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class HomeController {
+
+  private static final Logger log = LoggerFactory.getLogger(HomeController.class);
 
   @Autowired
   private GameTheoryService gameTheoryService;
@@ -49,7 +53,6 @@ public class HomeController {
 
   @Autowired
   private PsoCompatSmtService psoCompatSmtService;
-
 
   /**
    * Status check serverside page.
@@ -121,8 +124,57 @@ public class HomeController {
   @Async("taskExecutor")
   @PostMapping("/game-theory-solver")
   public CompletableFuture<ResponseEntity<Response>> solveGameTheory(
-      @RequestBody @Valid GameTheoryProblemDto request) {
-    return CompletableFuture.completedFuture(gameTheoryService.solveGameTheory(request));
+      @RequestBody(required = true) @Valid GameTheoryProblemDto request) {
+    try {
+      // Empty JSON check - This will be processed synchronously with bad request
+      if (isEmptyRequest(request)) {
+        return CompletableFuture.completedFuture(
+            ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(Response.builder()
+                    .status(HttpStatus.BAD_REQUEST.value())
+                    .message("Request body is required")
+                    .build()));
+      }
+
+      if (request.getNormalPlayers() == null || request.getNormalPlayers().isEmpty()) {
+        return CompletableFuture.completedFuture(
+            ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(Response.builder()
+                    .status(HttpStatus.BAD_REQUEST.value())
+                    .message("Request body is invalid: normalPlayers is required")
+                    .build()));
+      }
+
+      return CompletableFuture.completedFuture(gameTheoryService.solveGameTheory(request));
+    } catch (Exception e) {
+      log.error("Error processing request: {}", e.getMessage());
+      return CompletableFuture.completedFuture(
+          ResponseEntity
+              .status(HttpStatus.BAD_REQUEST)
+              .body(Response.builder()
+                  .status(HttpStatus.BAD_REQUEST.value())
+                  .message(e.getMessage())
+                  .build()));
+    }
+  }
+
+  /**
+   * Helper method to check if a request is effectively empty
+   */
+  private boolean isEmptyRequest(GameTheoryProblemDto request) {
+    if (request == null) {
+      return true;
+    }
+    
+    // Check if it's an empty JSON object '{}'
+    // For an empty object, all these fields will be null
+    return request.getNormalPlayers() == null && 
+           request.getSpecialPlayer() == null && 
+           request.getDefaultPayoffFunction() == null && 
+           request.getFitnessFunction() == null &&
+           request.getAlgorithm() == null;
   }
 
   /**

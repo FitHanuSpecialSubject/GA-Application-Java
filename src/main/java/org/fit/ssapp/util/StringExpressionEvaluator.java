@@ -180,7 +180,18 @@ public class StringExpressionEvaluator {
       throw new IllegalArgumentException("Invalid payoff function: " + payoffFunction, e);
     }
 
-    return BigDecimal.ONE; // Return a dummy value for validation
+    // If validation passed, evaluate the actual expression
+    String expression = payoffFunction;
+    Matcher nonRelativeMatcher = nonRelativePattern.matcher(expression);
+    while (nonRelativeMatcher.find()) {
+      String placeholder = nonRelativeMatcher.group();
+      int index = Integer.parseInt(placeholder.substring(1)) - 1;
+      double propertyValue = strategy.getProperties().get(index);
+      expression = expression.replaceAll(placeholder, formatDouble(propertyValue));
+    }
+
+    double val = evaluateExpression(expression);
+    return new BigDecimal(val).setScale(10, RoundingMode.HALF_UP);
   }
 
 
