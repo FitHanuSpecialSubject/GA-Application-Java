@@ -26,6 +26,8 @@ import org.moeaframework.core.Variable;
 import org.moeaframework.core.variable.BinaryIntegerVariable;
 import org.moeaframework.core.variable.EncodingUtils;
 import org.moeaframework.core.variable.RealVariable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -76,17 +78,22 @@ public class GameTheoryService {
       GameSolution gameSolution = formatSolution(problem, results);
       gameSolution.setAlgorithm(request.getAlgorithm());
       gameSolution.setRuntime(runtime);
-      return ResponseEntity.ok(Response
-          .builder()
-          .status(200)
-          .message("Solve game theory problem successfully!")
-          .data(gameSolution)
-          .build());
+      return ResponseEntity.ok()
+              .contentType(MediaType.APPLICATION_JSON)
+              .body(Response
+                      .builder()
+                      .status(200)
+                      .message("Solve game theory problem successfully!")
+                      .data(gameSolution)
+                      .build());
     } catch (Exception e) {
       log.error("Error ", e);
-      return ResponseEntity
-          .ok()
-          .body(Response.builder().status(500).message(e.getMessage()).build());
+      return ResponseEntity.internalServerError()
+              .contentType(MediaType.APPLICATION_JSON)
+              .body(Response.builder()
+                      .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                      .message(e.getMessage())
+                      .build());
     }
   }
 
@@ -234,84 +241,96 @@ public class GameTheoryService {
    */
   public ResponseEntity<Response> getProblemResultInsights(GameTheoryProblemDto request,
       String sessionCode) {
-    log.info("Received request:.. {}", request);
-    String[] algorithms = GameTheoryConst.ALLOWED_INSIGHT_ALGORITHMS;
+    try {
+      log.info("Received request:.. {}", request);
+      String[] algorithms = GameTheoryConst.ALLOWED_INSIGHT_ALGORITHMS;
 
-    simpMessagingTemplate.convertAndSendToUser(sessionCode,
-        "/progress",
-        createProgressMessage("Initializing the problem..."));
+      simpMessagingTemplate.convertAndSendToUser(sessionCode,
+              "/progress",
+              createProgressMessage("Initializing the problem..."));
 
-    log.info("Mapping request to problem ...");
-    GameTheoryProblem problem = GameTheoryProblemMapper.toProblem(request);
-    GameSolutionInsights gameSolutionInsights = initGameSolutionInsights(algorithms);
-    int runCount = 1;
-    int maxRunCount = algorithms.length * RUN_COUNT_PER_ALGORITHM;
+      log.info("Mapping request to problem ...");
+      GameTheoryProblem problem = GameTheoryProblemMapper.toProblem(request);
+      GameSolutionInsights gameSolutionInsights = initGameSolutionInsights(algorithms);
+      int runCount = 1;
+      int maxRunCount = algorithms.length * RUN_COUNT_PER_ALGORITHM;
 
-    log.info("Start benchmarking the algorithms...");
-    simpMessagingTemplate.convertAndSendToUser(sessionCode,
-        "/progress",
-        createProgressMessage("Start benchmarking the algorithms..."));
+      log.info("Start benchmarking the algorithms...");
+      simpMessagingTemplate.convertAndSendToUser(sessionCode,
+              "/progress",
+              createProgressMessage("Start benchmarking the algorithms..."));
 
-    for (String algorithm : algorithms) {
-      log.info("Running algorithm: {}...", algorithm);
-      for (int i = 0; i < RUN_COUNT_PER_ALGORITHM; i++) {
-        System.out.println("Iteration: " + i);
-        long start = System.currentTimeMillis();
+      for (String algorithm : algorithms) {
+        log.info("Running algorithm: {}...", algorithm);
+        for (int i = 0; i < RUN_COUNT_PER_ALGORITHM; i++) {
+          System.out.println("Iteration: " + i);
+          long start = System.currentTimeMillis();
 
-        if (problem instanceof StandardGameTheoryProblem
-            && AppConst.PSO_BASED_ALGOS.contains(algorithm)) {
-          problem = GameTheoryProblemMapper
-              .toPsoProblem((StandardGameTheoryProblem) problem);
+          if (problem instanceof StandardGameTheoryProblem
+                  && AppConst.PSO_BASED_ALGOS.contains(algorithm)) {
+            problem = GameTheoryProblemMapper
+                    .toPsoProblem((StandardGameTheoryProblem) problem);
+          }
+
+          if (problem instanceof PsoCompatibleGameTheoryProblem
+                  && !AppConst.PSO_BASED_ALGOS.contains(algorithm)) {
+            problem = GameTheoryProblemMapper
+                    .toStandardProblem((PsoCompatibleGameTheoryProblem) problem);
+          }
+
+          NondominatedPopulation results = solveProblem(problem,
+                  algorithm,
+                  request.getGeneration(),
+                  request.getPopulationSize(),
+                  request.getDistributedCores(),
+                  request.getMaxTime());
+
+          long end = System.currentTimeMillis();
+
+          double runtime = (double) (end - start) / 1000;
+          double fitnessValue;
+          fitnessValue = getFitnessValue(results);
+
+          // send the progress to the client
+          String message =
+                  "Algorithm " + algorithm + " finished iteration: #" + (i + 1) + "/"
+                          +
+                          RUN_COUNT_PER_ALGORITHM;
+          Progress progress = createProgress(message, runtime, runCount, maxRunCount);
+          System.out.println(progress);
+          simpMessagingTemplate.convertAndSendToUser(sessionCode, "/progress", progress);
+          runCount++;
+
+          // add the fitness value and runtime to the insights
+          gameSolutionInsights.getFitnessValues().get(algorithm).add(fitnessValue);
+          gameSolutionInsights.getRuntimes().get(algorithm).add(runtime);
+
+
         }
-
-        if (problem instanceof PsoCompatibleGameTheoryProblem
-            && !AppConst.PSO_BASED_ALGOS.contains(algorithm)) {
-          problem = GameTheoryProblemMapper
-              .toStandardProblem((PsoCompatibleGameTheoryProblem) problem);
-        }
-
-        NondominatedPopulation results = solveProblem(problem,
-            algorithm,
-            request.getGeneration(),
-            request.getPopulationSize(),
-            request.getDistributedCores(),
-            request.getMaxTime());
-
-        long end = System.currentTimeMillis();
-
-        double runtime = (double) (end - start) / 1000;
-        double fitnessValue;
-        fitnessValue = getFitnessValue(results);
-
-        // send the progress to the client
-        String message =
-            "Algorithm " + algorithm + " finished iteration: #" + (i + 1) + "/"
-                +
-                RUN_COUNT_PER_ALGORITHM;
-        Progress progress = createProgress(message, runtime, runCount, maxRunCount);
-        System.out.println(progress);
-        simpMessagingTemplate.convertAndSendToUser(sessionCode, "/progress", progress);
-        runCount++;
-
-        // add the fitness value and runtime to the insights
-        gameSolutionInsights.getFitnessValues().get(algorithm).add(fitnessValue);
-        gameSolutionInsights.getRuntimes().get(algorithm).add(runtime);
-
 
       }
+      log.info("Benchmarking finished!");
+      simpMessagingTemplate.convertAndSendToUser(sessionCode,
+              "/progress",
+              createProgressMessage("Benchmarking finished!"));
 
+      return ResponseEntity.ok()
+              .contentType(MediaType.APPLICATION_JSON)
+              .body(Response
+                      .builder()
+                      .status(200)
+                      .message("Get problem result insights successfully!")
+                      .data(gameSolutionInsights)
+                      .build());
+    } catch (Exception e) {
+      log.error("Error ", e);
+      return ResponseEntity.internalServerError()
+              .contentType(MediaType.APPLICATION_JSON)
+              .body(Response.builder()
+                      .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                      .message(e.getMessage())
+                      .build());
     }
-    log.info("Benchmarking finished!");
-    simpMessagingTemplate.convertAndSendToUser(sessionCode,
-        "/progress",
-        createProgressMessage("Benchmarking finished!"));
-
-    return ResponseEntity.ok(Response
-        .builder()
-        .status(200)
-        .message("Get problem result insights successfully!")
-        .data(gameSolutionInsights)
-        .build());
   }
 
   /**
