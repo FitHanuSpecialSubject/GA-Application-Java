@@ -1,5 +1,7 @@
 package org.fit.ssapp.ss.smt.evaluator;
 
+import org.fit.ssapp.exception.IBEAUniformException;
+
 /**
  * Evaluates the default fitness function based on an array of satisfaction values.
  *
@@ -16,5 +18,5 @@ public interface FitnessEvaluator {
   @SuppressWarnings("checkstyle:MissingJavadocMethod")
   double withFitnessFunctionEvaluation(double[] satisfactions, String fnf);
 
-  boolean validateUniformFitness(String fitnessFunction);
+  void validateUniformFitness(String fitnessFunction);
 }

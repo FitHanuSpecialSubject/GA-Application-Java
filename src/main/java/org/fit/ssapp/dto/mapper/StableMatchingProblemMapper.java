@@ -1,6 +1,7 @@
 package org.fit.ssapp.dto.mapper;
 
 import org.fit.ssapp.dto.request.StableMatchingProblemDto;
+import org.fit.ssapp.exception.IBEAUniformException;
 import org.fit.ssapp.ss.smt.MatchingData;
 import org.fit.ssapp.ss.smt.MatchingProblem;
 import org.fit.ssapp.ss.smt.evaluator.FitnessEvaluator;
@@ -211,10 +212,9 @@ public class StableMatchingProblemMapper {
 
     // Step 3: If uniform preferences found, throw error
     if (!invalidAgents.isEmpty()) {
-        log.warn("Uniform preference detected for agents: {}", invalidAgents);
+        throw new IBEAUniformException("uniform preferences found");
     } else if (fitnessFunction != null) {
       fitnessEvaluator.validateUniformFitness(fitnessFunction);
-      log.warn("Uniform Fitness detected for agents: {}", invalidAgents);
     }
   }
 
