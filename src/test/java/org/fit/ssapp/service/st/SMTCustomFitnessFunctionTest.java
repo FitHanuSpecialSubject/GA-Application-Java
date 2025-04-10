@@ -1,4 +1,4 @@
-package org.fit.ssapp.service;
+package org.fit.ssapp.service.st;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -106,7 +106,7 @@ public class SMTCustomFitnessFunctionTest {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 
-    // @ParameterizedTest
+    @ParameterizedTest
     @CsvSource({
         "NSGAII, SIGMA{S1} + SIGMA{S2}",
         "NSGAIII, M1 + M2",
