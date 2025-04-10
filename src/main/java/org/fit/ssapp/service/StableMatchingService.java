@@ -229,11 +229,10 @@ public class StableMatchingService implements ProblemService {
     properties.setInt("maxTime", maxTime);
     TerminationCondition maxEval = new MaxFunctionEvaluations(generation * populationSize);
 
-    validateUniformPreferences(problem.getMatchingData(), algorithm, request);
 
-    // check for IBEA or eMOEA, if true do test run with minimal configuration
-
-    if (algorithm.equals("IBEA") || algorithm.equals("eMOEA")) {
+    // check for IBEA, if true do test run with minimal configuration
+    if (algorithm.equals("IBEA")) {
+      validateUniformPreferences(problem.getMatchingData(), request);
       try {
         new Executor()
                 .withProblem(problem)
@@ -399,14 +398,9 @@ public class StableMatchingService implements ProblemService {
   }
 
 
-  public static void validateUniformPreferences(MatchingData data, String algorithm, StableMatchingProblemDto request) {
-    if (!Objects.equals(algorithm, "IBEA") || !Objects.equals(algorithm, "eMOEA")) {
-      return;
-    }
-
+  public static void validateUniformPreferences(MatchingData data, StableMatchingProblemDto request) {
     PreferenceBuilder builder = new TwoSetPreferenceProvider(data, request.getEvaluateFunctions());
     PreferenceListWrapper preferenceLists = builder.toListWrapper();
-    FitnessEvaluator fitnessEvaluator = new TwoSetFitnessEvaluator(data);
     List<PreferenceList> lists = preferenceLists.getLists();
     List<Integer> invalidAgents = new ArrayList<>();
 

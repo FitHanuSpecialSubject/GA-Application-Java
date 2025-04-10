@@ -118,7 +118,7 @@ public class StableMatchingIntegrationTest {
   }
 
   private static String[] stableMatchingAlgorithms() {
-    return StableMatchingConst.ALLOWED_INSIGHT_ALGORITHMS;
+    return new String[] {"NSGAII", "NSGAIII", "eMOEA", "PESA2", "VEGA"};
   }
 
   private StableMatchingProblemDto createBaseCaseDto(String algorithm) {

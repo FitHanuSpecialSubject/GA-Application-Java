@@ -32,7 +32,7 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
   private static final Pattern SIGMA_PATTERN = Pattern.compile("SIGMA\\{([^}]+)\\}");
 
   // Regex pattern for S(index) set references
-  private static final Pattern S_INDEX_PATTERN = Pattern.compile("S\\((\\d)\\)");
+  private static final Pattern S_INDEX_PATTERN = Pattern.compile("S(\\d+)");
 
   // Regex pattern for M(position) variables
   private static final Pattern M_VAR_PATTERN = Pattern.compile("M(\\d+)");

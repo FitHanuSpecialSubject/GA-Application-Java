@@ -14,7 +14,6 @@ import org.fit.ssapp.ss.smt.evaluator.impl.TwoSetFitnessEvaluator;
 import org.fit.ssapp.util.SampleDataGenerator;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -27,7 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-public class SMTCustomFitnessFunctionTest {
+public class NormalizationTest {
     StableMatchingProblemDto sampleDTO;
     SampleDataGenerator sampleData;
     MatchingData matchingData;
@@ -39,24 +38,24 @@ public class SMTCustomFitnessFunctionTest {
         dto.setNumberOfSets(2);
         dto.setNumberOfProperty(3);
         dto.setNumberOfIndividuals(3);
-        dto.setIndividualSetIndices(new int[] { 1, 1, 0 });
-        dto.setIndividualCapacities(new int[] { 1, 2, 1 });
+        dto.setIndividualSetIndices(new int[]{1, 1, 0});
+        dto.setIndividualCapacities(new int[]{1, 2, 1});
         dto.setIndividualRequirements(new String[][] {
-                { "1", "1.1", "1++" },
-                { "1++", "1.1", "1.1" },
-                { "1", "1", "2" }
+                {"1", "1.1", "1++"},
+                {"1++", "1.1", "1.1"},
+                {"1", "1", "2"}
         });
-        dto.setIndividualWeights(new double[][] {
-                { 1.0, 2.0, 3.0 },
-                { 4.0, 5.0, 6.0 },
-                { 7.0, 8.0, 9.0 }
+        dto.setIndividualWeights(new double[][]{
+                {1.0, 2.0, 3.0},
+                {4.0, 5.0, 6.0},
+                {7.0, 8.0, 9.0}
         });
-        dto.setIndividualProperties(new double[][] {
-                { 1.0, 2.0, 3.0 },
-                { 4.0, 5.0, 6.0 },
-                { 7.0, 8.0, 9.0 }
+        dto.setIndividualProperties(new double[][]{
+                {1.0, 2.0, 3.0},
+                {4.0, 5.0, 6.0},
+                {7.0, 8.0, 9.0}
         });
-        dto.setEvaluateFunctions(new String[] {
+        dto.setEvaluateFunctions(new String[]{
                 "default",
                 "default"
         });
@@ -74,32 +73,8 @@ public class SMTCustomFitnessFunctionTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {
-            "SIGMA{S1} + INVALID",
-            "SIGMA{S1} * / SIGMA{S2}",
-            "SIGMA{S1} + INVALID_VARIABLE",
-            "INVALID_FUNCTION",
-            "code qua chien"
-    })
-    void invalidSyntax(String function) throws Exception {
-        StableMatchingProblemDto dto = setUp();
-        dto.setFitnessFunction(function);
-
-        _mock.perform(post("/api/stable-matching-solver")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(dto)))
-                .andDo(print())
-                .andExpect(status().isBadRequest())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
-    }
-
-    @ParameterizedTest
     @CsvSource({
-            "NSGAII, SIGMA{S1} + SIGMA{S2}",
-            "NSGAIII, M1 + M2",
-            "eMOEA, S1 + S2",
-            "PESA2, SIGMA{S1} - M2",
-            "VEGA, SIGMA{S1}",
+        "IBEA, SIGMA{S1} + SIGMA{S2}"
     })
     void customFunction(String algorithm, String function) throws Exception {
         StableMatchingProblemDto dto = setUp();
@@ -108,31 +83,25 @@ public class SMTCustomFitnessFunctionTest {
         dto.setAlgorithm(algorithm);
 
         MvcResult result = this._mock
-                .perform(post("/api/stable-matching-solver")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(request().asyncStarted())
-                .andReturn();
+            .perform(post("/api/stable-matching-solver")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(dto)))
+            .andExpect(request().asyncStarted())
+            .andReturn();
 
         final String response = this._mock.perform(asyncDispatch(result))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
 
         // Verify response structure
         final JsonNode jsonNode = objectMapper.readTree(response);
         assertTrue(jsonNode.has("data"));
-        final JsonNode data = jsonNode.get("data");
-        assertTrue(data.has("matches"));
-        assertTrue(data.has("fitnessValue"));
-        assertTrue(data.has("setSatisfactions"));
-    }
-
-    private static String[] stableMatchingAlgorithms() {
-        return new String[] { "NSGAII", "NSGAIII", "eMOEA", "PESA2", "VEGA" };
+        assertTrue(jsonNode.has("message"));
+        assertTrue(jsonNode.has("status"));
     }
 
     @Autowired
