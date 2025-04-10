@@ -90,7 +90,8 @@ public class SMTCustomPreferenceTest {
 
     StableMatchingProblemDto dto = sampleDTO;
 
-    dto.setFitnessFunction(function);
+    dto.setFitnessFunction("DEFAULT");
+    dto.setEvaluateFunctions(new String[]{function, function});
     dto.setAlgorithm(algorithm);
     dto.setIndividualRequirements(requirements);
     dto.setIndividualWeights(weights);
@@ -183,7 +184,7 @@ public class SMTCustomPreferenceTest {
     return Stream.of(
             Arguments.of(
                     "NSGAII",
-                    "M1 + M2",
+                    "R1 * W2",
                     new String[][]{
                             {"1", "1.1", "1--"},
                             {"1++", "1.1", "1.1"},
@@ -202,7 +203,7 @@ public class SMTCustomPreferenceTest {
             ),
             Arguments.of(
                     "NSGAII",
-                    "SIGMA{S1} + SIGMA{S2}",
+                    "P2 + R2",
                     new String[][]{
                             {"1--", "2:3", "3++"},
                             {"1--", "2:3", "3++"},
@@ -221,7 +222,7 @@ public class SMTCustomPreferenceTest {
             ),
             Arguments.of(
                     "eMOEA",
-                    "S1 + S2",
+                    "W1 * 2",
                     new String[][]{
                             {"4", "5", "6"},
                             {"4", "5", "6"},
@@ -240,7 +241,7 @@ public class SMTCustomPreferenceTest {
             ),
             Arguments.of(
                     "PESA2",
-                    "SIGMA{S1} - M2",
+                    "P2 * 10",
                     new String[][]{
                             {"1:3", "5:10", "100:200"},
                             {"1:3", "5:10", "100:200"},
@@ -259,7 +260,7 @@ public class SMTCustomPreferenceTest {
             ),
             Arguments.of(
                     "VEGA",
-                    "SIGMA{S1}",
+                    "R1 + R3",
                     new String[][]{
                             {"4:5", "5:7", "1:6"},
                             {"4:5", "5:7", "1:6"},
@@ -277,10 +278,6 @@ public class SMTCustomPreferenceTest {
                     }
             )
     );
-  }
-
-  private static String[] stableMatchingAlgorithms() {
-    return StableMatchingConst.ALLOWED_INSIGHT_ALGORITHMS;
   }
 
   @Autowired
