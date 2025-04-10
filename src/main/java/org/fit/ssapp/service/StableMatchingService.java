@@ -421,6 +421,7 @@ public class StableMatchingService implements ProblemService {
     // Step 3: If uniform preferences found, throw error
     if (!invalidAgents.isEmpty()) {
       throw new AlgorithmsUniformException("uniform preferences found");
+
     }
   }
 
