@@ -12,7 +12,7 @@ import org.fit.ssapp.dto.mapper.StableMatchingProblemMapper;
 import org.fit.ssapp.dto.request.StableMatchingProblemDto;
 import org.fit.ssapp.dto.response.Progress;
 import org.fit.ssapp.dto.response.Response;
-import org.fit.ssapp.exception.IBEAUniformException;
+import org.fit.ssapp.exception.AlgorithmsUniformException;
 import org.fit.ssapp.ss.smt.Matches;
 import org.fit.ssapp.ss.smt.MatchingData;
 import org.fit.ssapp.ss.smt.MatchingProblem;
@@ -30,7 +30,6 @@ import org.fit.ssapp.ss.smt.result.MatchingSolutionInsights;
 import org.fit.ssapp.util.ComputerSpecsUtil;
 import org.moeaframework.Executor;
 import org.moeaframework.core.NondominatedPopulation;
-import org.moeaframework.core.Problem;
 import org.moeaframework.core.Solution;
 import org.moeaframework.core.TerminationCondition;
 import org.moeaframework.core.termination.MaxFunctionEvaluations;
@@ -152,7 +151,7 @@ public class StableMatchingService implements ProblemService {
                       "[Service] Stable Matching: Solve stable matching problem successfully!")
               .data(matchingSolution)
               .build());
-    } catch (IBEAUniformException e) {
+    } catch (AlgorithmsUniformException e) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
               Response.builder()
                       .data(null)
@@ -384,7 +383,7 @@ public class StableMatchingService implements ProblemService {
 
   // PreferenceListWrapper wrapper, String algorithm, String fitnessFunction, FitnessEvaluator fitnessEvaluator
   public static void validateUniformPreferences(MatchingData data, String algorithm, StableMatchingProblemDto request) {
-    if (!Objects.equals(algorithm, "IBEA")) {
+    if (!Objects.equals(algorithm, "IBEA") || !Objects.equals(algorithm, "eMOEA")) {
       return;
     }
     PreferenceBuilder builder = new TwoSetPreferenceProvider(data, request.getEvaluateFunctions());
@@ -404,7 +403,7 @@ public class StableMatchingService implements ProblemService {
 
     // Step 3: If uniform preferences found, throw error
     if (!invalidAgents.isEmpty()) {
-      throw new IBEAUniformException("uniform preferences found");
+      throw new AlgorithmsUniformException("uniform preferences found");
     } else if (request.getFitnessFunction() != null) {
       fitnessEvaluator.validateUniformFitness(request.getFitnessFunction());
     }

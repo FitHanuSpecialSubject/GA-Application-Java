@@ -1,7 +1,5 @@
 package org.fit.ssapp.ss.smt.evaluator;
 
-import org.fit.ssapp.exception.IBEAUniformException;
-
 /**
  * Evaluates the default fitness function based on an array of satisfaction values.
  *
