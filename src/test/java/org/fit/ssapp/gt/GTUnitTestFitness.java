@@ -1,4 +1,4 @@
-package org.fit.ssapp.service;
+package org.fit.ssapp.gt;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
