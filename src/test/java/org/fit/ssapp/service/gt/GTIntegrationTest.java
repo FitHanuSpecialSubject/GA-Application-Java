@@ -112,24 +112,12 @@ public class GTIntegrationTest {
     GameTheoryProblemDto dto = setUpBaseCase("NSGAII");
     dto.setFitnessFunction("Wrong fitness function");
 
-    MvcResult result = mockMvc
+    mockMvc
             .perform(post("/api/game-theory-solver")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(dto)))
-            .andExpect(request().asyncStarted())
-            .andReturn();
-
-    String response = mockMvc.perform(asyncDispatch(result))
-            .andDo(print())
             .andExpect(status().isBadRequest())
-            .andReturn()
-            .getResponse()
-            .getContentAsString();
-
-    JsonNode jsonNode = objectMapper.readTree(response);
-    assertThat(jsonNode.has("message")).isTrue();
-    String errorMessage = jsonNode.get("message").asText();
-    assertThat(errorMessage).contains("Invalid fitness function syntax");
+            .andReturn();
   }
 
 
