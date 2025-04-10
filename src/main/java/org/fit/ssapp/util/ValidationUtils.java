@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import org.fit.ssapp.controller.GlobalExceptionHandler.ValidationException;
 import org.springframework.context.MessageSource;
 import org.springframework.context.NoSuchMessageException;
 import org.springframework.util.CollectionUtils;
@@ -33,14 +34,20 @@ public class ValidationUtils {
    *
    * @param target DTO object
    * @return bindingResult
+   * @throws ValidationException if validation fails
    */
-
   public static BindingResult validate(Object target) {
     try (ValidatorFactory factory = Validation.buildDefaultValidatorFactory()) {
       Validator validator = factory.getValidator();
       BindingResult bindingResult = new BeanPropertyBindingResult(target, "");
       SpringValidatorAdapter springValidator = new SpringValidatorAdapter(validator);
       springValidator.validate(target, bindingResult);
+      
+      if (bindingResult.hasErrors()) {
+        Map<String, List<String>> errors = getAllErrorDetails(bindingResult);
+        throw new ValidationException("Validation failed: " + errors);
+      }
+      
       return bindingResult;
     }
   }

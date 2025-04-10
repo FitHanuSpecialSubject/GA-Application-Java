@@ -6,6 +6,7 @@ import java.util.List;
 import org.fit.ssapp.ss.gt.Conflict;
 import org.fit.ssapp.ss.gt.NormalPlayer;
 import org.fit.ssapp.ss.gt.SpecialPlayer;
+import org.fit.ssapp.dto.validator.ValidFitnessFunction;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,7 +24,10 @@ public class GameTheoryProblemDto implements ProblemRequestDto {
   private SpecialPlayer specialPlayer;
   private List<NormalPlayer> normalPlayers;
   private List<Conflict> conflictSet = new ArrayList<>();
+  
+  @ValidFitnessFunction
   private String fitnessFunction;
+  
   private String defaultPayoffFunction;
   private String algorithm;
   private boolean isMaximizing;

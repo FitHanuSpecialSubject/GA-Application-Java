@@ -76,16 +76,15 @@ public class GTIntegrationTest {
    * @param algorithm allowed algorithm for gt system
    *
    */
-  // @ParameterizedTest
+  @ParameterizedTest
   @MethodSource("gameTheoryAlgorithms")
   void baseCaseTestWithConflict(String algorithm) throws Exception{
 
     GameTheoryProblemDto dto = setUpBaseCase(algorithm);
 
     List<Conflict> conflicts = Arrays.asList(
-            createConflict(0,1,0,1),
-            createConflict(1,2,1,0)
-
+            createConflict(1,2,0,1),
+            createConflict(2,3,1,0)
     );
     dto.setConflictSet(conflicts);
 
@@ -108,20 +107,17 @@ public class GTIntegrationTest {
    * Test case for base case with empty request .
    *
    */
-  // @Test
+  @Test
   void testEmptyRequestBody() throws Exception{
-
-    MvcResult result = mockMvc
+    mockMvc
             .perform(post("/api/game-theory-solver")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{}")) // Empty JSON body
             .andDo(print())
             .andExpect(status().isBadRequest())
-            .andReturn();
-
-    String response = getAsyncResponse(result);
-
+            .andExpect(jsonPath("$.message").value("Request body is required"));
   }
+
 
   /**
    * Test case for base case with invalid fitness function .
@@ -129,21 +125,22 @@ public class GTIntegrationTest {
    */
   @Test
   void testInvalidFitnessFunc() throws Exception{
-
     GameTheoryProblemDto dto = setUpBaseCase("NSGAII");
     dto.setFitnessFunction("Wrong fitness function");
 
-    MvcResult result = performPostRequest(dto);
+    MvcResult result = mockMvc
+            .perform(post("/api/game-theory-solver")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(dto)))
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+            .andReturn();
 
-    String response = getAsyncResponse(result);
-
+    String response = result.getResponse().getContentAsString();
     JsonNode jsonNode = objectMapper.readTree(response);
-    assertThat(jsonNode.has("data")).isTrue();
-    JsonNode dataNode = jsonNode.get("data");
-
+    assertThat(jsonNode.has("status")).isTrue();
     assertThat(jsonNode.has("message")).isTrue();
-    String errorMessage = jsonNode.get("message").asText();
-    assertThat(errorMessage).contains("Unknown function or variable");
+    assertThat(jsonNode.get("message").asText()).isEqualTo("Validation failed");
   }
 
   private MvcResult performPostRequest(GameTheoryProblemDto dto) throws Exception {
@@ -163,6 +160,7 @@ public class GTIntegrationTest {
             .getResponse()
             .getContentAsString();
   }
+
 
   /**
    * Set up input data for base case .
@@ -257,8 +255,6 @@ public class GTIntegrationTest {
               && player2Node.get("strategyName").asText().equals("Strategy " + conflict.getRightPlayerStrategy())
       ).isFalse();
     }
-
-
   }
 
   /**
