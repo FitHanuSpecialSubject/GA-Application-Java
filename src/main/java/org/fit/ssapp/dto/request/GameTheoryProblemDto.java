@@ -6,7 +6,12 @@ import java.util.List;
 import org.fit.ssapp.ss.gt.Conflict;
 import org.fit.ssapp.ss.gt.NormalPlayer;
 import org.fit.ssapp.ss.gt.SpecialPlayer;
+import org.fit.ssapp.dto.validator.ValidFitnessFunction;
+import org.fit.ssapp.dto.validator.ValidPayoffFunction;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,11 +26,24 @@ import lombok.Setter;
 @AllArgsConstructor
 public class GameTheoryProblemDto implements ProblemRequestDto {
   private SpecialPlayer specialPlayer;
+  
+  @Valid
+  @NotEmpty(message = "Normal players list cannot be empty")
   private List<NormalPlayer> normalPlayers;
+  
   private List<Conflict> conflictSet = new ArrayList<>();
+  
+  @NotNull(message = "Fitness function cannot be null")
   private String fitnessFunction;
+  
+  @ValidPayoffFunction
+  @NotNull(message = "Default payoff function cannot be null")
   private String defaultPayoffFunction;
+  
+  @NotNull(message = "Algorithm cannot be null")
   private String algorithm;
+  
+  
   private boolean isMaximizing;
   private String distributedCores;
   private Integer maxTime;

@@ -115,7 +115,7 @@ public class HomeController {
   @Async("taskExecutor")
   @PostMapping("/game-theory-solver")
   public CompletableFuture<ResponseEntity<Response>> solveGameTheory(
-      @RequestBody GameTheoryProblemDto gameTheoryProblem) {
+      @RequestBody @Valid GameTheoryProblemDto gameTheoryProblem) {
     return CompletableFuture.completedFuture(gameTheoryService.solveGameTheory(gameTheoryProblem));
   }
 

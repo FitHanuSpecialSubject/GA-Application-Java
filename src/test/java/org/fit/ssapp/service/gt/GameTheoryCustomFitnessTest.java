@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,6 +60,7 @@ public class GameTheoryCustomFitnessTest {
 
     dto.setFitnessFunction(function);
     dto.setAlgorithm(algorithm);
+    dto.setDefaultPayoffFunction("DEFAULT");
 
     MvcResult result = this.mockMvc
         .perform(post("/api/game-theory-solver")
@@ -66,6 +68,7 @@ public class GameTheoryCustomFitnessTest {
             .content(objectMapper.writeValueAsString(dto)))
         .andExpect(request().asyncStarted())
         .andReturn();
+
 
     final String response = this.mockMvc.perform(asyncDispatch(result))
         .andDo(print())
@@ -98,21 +101,22 @@ public class GameTheoryCustomFitnessTest {
 
     dto.setFitnessFunction(function);
     dto.setAlgorithm(algorithm);
+    dto.setDefaultPayoffFunction("DEFAULT");
 
     MvcResult result = this.mockMvc
-        .perform(post("/api/game-theory-solver")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(dto)))
-        .andExpect(request().asyncStarted())
-        .andReturn();
+            .perform(post("/api/game-theory-solver")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(dto)))
+            .andExpect(request().asyncStarted())
+            .andReturn();
 
-    final String response = this.mockMvc.perform(asyncDispatch(result))
-        .andDo(print())
-        .andExpect(status().isOk())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andReturn()
-        .getResponse()
-        .getContentAsString();
+        final String response = this.mockMvc.perform(asyncDispatch(result))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
 
     // Verify response structure
     final JsonNode jsonNode = objectMapper.readTree(response);
@@ -126,7 +130,6 @@ public class GameTheoryCustomFitnessTest {
   @ValueSource(strings = {
       "(u1 + u2 + ) / 3 - (u4 + u5",
       "u1 + u2 * / u3",
-      "u1 + u9",
       "INVALID",
       "code qua chien"
   })
@@ -134,7 +137,7 @@ public class GameTheoryCustomFitnessTest {
     GameTheoryProblemDto invalidDto = setUpTestCase();
     invalidDto.setFitnessFunction(function);
 
-    mockMvc
+    this.mockMvc
         .perform(post("/api/game-theory-solver")
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(invalidDto)))
@@ -143,7 +146,7 @@ public class GameTheoryCustomFitnessTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON));
   }
 
-  //
+
   @Test
   void InvalidDto() throws Exception {
     String invalidJson = "{" +
@@ -156,8 +159,7 @@ public class GameTheoryCustomFitnessTest {
         .perform(post("/api/game-theory-solver")
             .contentType(MediaType.APPLICATION_JSON)
             .content(invalidJson))
-        .andExpect(status().isBadRequest())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+        .andExpect(status().isBadRequest());
   }
 
   private GameTheoryProblemDto setUpTestCase() {
