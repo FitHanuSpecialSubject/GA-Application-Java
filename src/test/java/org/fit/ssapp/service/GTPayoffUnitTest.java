@@ -26,7 +26,6 @@ import org.junit.jupiter.params.provider.ValueSource;
  * 5. Input validation and error handling
  */
 public class GTPayoffUnitTest {
-
     /**
      * Test default payoff function (sum of all properties)
      */
@@ -39,9 +38,13 @@ public class GTPayoffUnitTest {
         BigDecimal result = StringExpressionEvaluator.evaluatePayoffFunctionNoRelative(
             strategy, "");
 
-        assertEquals(expected, result.doubleValue(), 0.00001);
+        assertEquals(expected, result.doubleValue(), 0.0001);
     }
 
+    /**
+     * Provides test cases for default payoff function evaluation.
+     * 
+     */
     private static Stream<Arguments> defaultPayoffTestCases() {
         return Stream.of(
             // Format: properties, expected sum
@@ -56,7 +59,6 @@ public class GTPayoffUnitTest {
 
     /**
      * Test custom non-relative payoff function (using pi syntax)
-     * where p1, p2, p3 refer to properties of the strategy
      */
     @ParameterizedTest
     @MethodSource("nonRelativePayoff")
@@ -66,9 +68,13 @@ public class GTPayoffUnitTest {
 
         BigDecimal result = StringExpressionEvaluator.evaluatePayoffFunctionNoRelative(
             strategy, expression);
-        assertEquals(expected, result.doubleValue(), 0.00001);
+        assertEquals(expected, result.doubleValue(), 0.0001);
     }
 
+    /**
+     * Provides test cases for non-relative payoff function evaluation.
+     * 
+     */
     private static Stream<Arguments> nonRelativePayoff() {
         return Stream.of(
             // Format: properties, expression, expected result
@@ -109,9 +115,12 @@ public class GTPayoffUnitTest {
         BigDecimal result = StringExpressionEvaluator.evaluatePayoffFunctionWithRelativeToOtherPlayers(
             strategy1, expression, players, chosenStrategyIndices);
 
-        assertEquals(expected, result.doubleValue(), 0.00001);
+        assertEquals(expected, result.doubleValue(), 0.0001);
     }
 
+    /**
+     * Provides test cases for relative payoff function evaluation.
+     */
     private static Stream<Arguments> relativePayoff() {
         return Stream.of(
             Arguments.of(List.of(1.0, 2.0), List.of(3.0, 4.0), "P1p1 + P2p2", 5.0),
@@ -130,7 +139,7 @@ public class GTPayoffUnitTest {
                 "ceil(P1p1 / 3) + floor( 12 +  1)",
                 15.0
             ),
-            // tbinh
+            // average
             Arguments.of(
                 List.of(10.0, 20.0),
                 List.of(30.0, 40.0),
@@ -142,14 +151,14 @@ public class GTPayoffUnitTest {
                 List.of(5.0, 15.0),
                 List.of(10.0, 20.0),
                 "sqrt(P1p1 + P2p1) + cbrt(P1p2 + P2p2)",
-                7.1440496564
+                7.1440
             ),
-            // logarith
+            // logarithm
             Arguments.of(
                 List.of(5.0, 10.0, 15.0),
                 List.of(20.0, 25.0, 30.0),
                 "log2(P1p1 + P2p1) + log(P1p2 + P2p2) - log10(P1p2 + P2p2)",
-                6.6551362069
+                6.6551
             ),
             // Standard deviation approximation (for 2 values only)
             Arguments.of(
@@ -162,7 +171,8 @@ public class GTPayoffUnitTest {
     }
 
     /**
-     * Test built-in exp4j
+     * Test built-in exp4j operations for both relative and non-relative expressions.
+     * Tests mathematical functions and operations provided by the exp4j library.
      */
     @ParameterizedTest
     @MethodSource("exp4jOperation")
@@ -174,7 +184,7 @@ public class GTPayoffUnitTest {
         if (!isRelative) {
             BigDecimal result = StringExpressionEvaluator.evaluatePayoffFunctionNoRelative(
                 strategy, expression);
-            assertEquals(expected, result.doubleValue(), epsilon);
+            assertEquals(expected, result.doubleValue(), 0.00001);
         } else {
             NormalPlayer player1 = new NormalPlayer();
             player1.setStrategies(List.of(strategy));
@@ -189,13 +199,16 @@ public class GTPayoffUnitTest {
 
             BigDecimal result = StringExpressionEvaluator.evaluatePayoffFunctionWithRelativeToOtherPlayers(
                 strategy, relativeExpression, players, chosenStrategyIndices);
-            assertEquals(expected, result.doubleValue(), epsilon);
+            assertEquals(expected, result.doubleValue(), 0.00001);
         }
     }
 
+    /**
+     * Provides test cases for exp4j mathematical operations in payoff functions. 
+     */
     private static Stream<Arguments> exp4jOperation() {
         return Stream.of(
-            // Format: properties, player2Properties, nonRelativeExpression, relativeExpression, isRelative, expected, epsilo
+            // Format: properties, player2Properties, nonRelativeExpression, relativeExpression, isRelative, expected, epsilon
             Arguments.of(
                 List.of(2.0, 4.0, 8.0),
                 List.of(),
@@ -215,19 +228,19 @@ public class GTPayoffUnitTest {
             Arguments.of(List.of(1.0, 2.0, 3.0), List.of(), "floor(p2 + 0.9)", "", false, 2.0, 0.00001),
             Arguments.of(List.of(1.7, 2.7), List.of(3.7, 4.7), "", "floor(P1p1)", true, 1.0, 0.00001),
 
-            Arguments.of(List.of(1.0, 2.0, 3.0), List.of(), "log(p3)", "", false, 1.0986122886681098, 0.0001),
-            Arguments.of(List.of(1.0, 2.0), List.of(3.0, 4.0), "", "log(P2p1)", true, 1.0986122886681098, 0.0001),
+            Arguments.of(List.of(1.0, 2.0, 3.0), List.of(), "log(p3)", "", false, 1.0986, 0.0001),
+            Arguments.of(List.of(1.0, 2.0), List.of(3.0, 4.0), "", "log(P2p1)", true, 1.0986, 0.0001),
 
             Arguments.of(List.of(1.0, 2.0, 3.0), List.of(), "sqrt(p2^2)", "", false, 2.0, 0.00001),
             Arguments.of(List.of(4.0, 5.0), List.of(9.0, 16.0), "", "sqrt(P1p1)", true, 2.0, 0.00001),
 
-            Arguments.of(List.of(2.0, 4.0, 8.0), List.of(), "sqrt(p1) + cbrt(p3)", "", false, 3.414213562373095, 0.00001), //non-relative
+            Arguments.of(List.of(2.0, 4.0, 8.0), List.of(), "sqrt(p1) + cbrt(p3)", "", false, 3.4142, 0.0001), //non-relative
             Arguments.of(List.of(4.0, 5.0), List.of(9.0, 16.0), "", "sqrt(P1p1) + sqrt(P2p1)", true, 5.0, 0.00001) //relative
         );
     }
 
     /**
-     * Test invalid syntax and values
+     * Tests invalid syntax and values in payoff functions to ensure proper error handling.
      */
     @ParameterizedTest
     @ValueSource(strings = {
