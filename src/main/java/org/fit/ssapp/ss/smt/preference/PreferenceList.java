@@ -64,4 +64,9 @@ public interface PreferenceList {
    */
   double getScore(int position);
 
+  /**
+   * Validate score of all preference list
+   * @return isUniform
+   */
+  boolean isUniformPreference();
 }
