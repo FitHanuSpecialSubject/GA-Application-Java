@@ -110,5 +110,10 @@ public class PreferenceListWrapper {
     return satisfactions;
   }
 
-
+  /**
+   * get the list of preference lists
+   * */
+  public List<PreferenceList> getLists() {
+    return lists;
+  }
 }
