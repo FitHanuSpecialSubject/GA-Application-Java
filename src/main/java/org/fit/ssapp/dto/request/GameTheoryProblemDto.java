@@ -32,7 +32,8 @@ public class GameTheoryProblemDto implements ProblemRequestDto {
   private List<NormalPlayer> normalPlayers;
   
   private List<Conflict> conflictSet = new ArrayList<>();
-  
+
+  @ValidFitnessFunction
   @NotNull(message = "Fitness function cannot be null")
   private String fitnessFunction;
   
