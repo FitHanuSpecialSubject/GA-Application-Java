@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
 /**
  * **ValidFitnessFunction** - Annotation for validating fitness function syntax.
  * This annotation ensures that the fitness function provided follows the correct **mathematical syntax**
- * and contains only **allowed variables**. The validation is handled by `FitnessFunctionValidator`.
+ * and contains only **allowed variables**. The validation is handled by `FitnessValidateGT`.
  * ## **Validation Logic:**
  * - Checks if the function is syntactically valid.
  * - Ensures only permitted variables and mathematical operations are used.
@@ -18,7 +18,7 @@ import java.lang.annotation.Target;
  */
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = FitnessFunctionValidator.class)
+@Constraint(validatedBy = FitnessValidateGT.class)
 public @interface ValidFitnessFunction {
 
   /**

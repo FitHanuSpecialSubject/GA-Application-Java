@@ -4,10 +4,12 @@ import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
+import org.fit.ssapp.constants.GameTheoryConst;
 import org.fit.ssapp.constants.StableMatchingConst;
 
 /**
@@ -21,6 +23,8 @@ import org.fit.ssapp.constants.StableMatchingConst;
 public class FitnessFunctionValidator implements ConstraintValidator<ValidFitnessFunction, String> {
 
   private static final Pattern VARIABLE_PATTERN = Pattern.compile("(M\\d+|S\\d+|SIGMA\\{[^}]+\\})");
+  
+  private static final TreeSet<String> VALID_FUNCTIONS = new TreeSet<>(Set.of("SUM","AVERAGE","MIN","MAX","PRODUCT","MEDIAN","RANGE"));
 
   /**
    * Validates the fitness function by checking its syntax and allowed variables.
@@ -31,9 +35,21 @@ public class FitnessFunctionValidator implements ConstraintValidator<ValidFitnes
    */
   @Override
   public boolean isValid(String value, ConstraintValidatorContext context) {
-    if (value.equalsIgnoreCase(StableMatchingConst.DEFAULT_EVALUATE_FUNC)) {
+    if (value == null || value.trim().isEmpty()) {
+      return false;
+    }
+    
+    // Check for default function names
+    if (value.equalsIgnoreCase(StableMatchingConst.DEFAULT_EVALUATE_FUNC) || 
+        value.equalsIgnoreCase(GameTheoryConst.DEFAULT_PAYOFF_FUNC)) {
       return true;
     }
+    
+    // Check if it's one of the default functions
+    if (VALID_FUNCTIONS.contains(value.toUpperCase().trim())) {
+      return true;
+    }
+    
     String cleanFunc = value.replaceAll("\\s+", "");
     try {
       Set<String> variables = extractVariables(cleanFunc);

@@ -7,6 +7,7 @@ import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 import net.objecthunter.exp4j.ValidationResult;
 import org.fit.ssapp.constants.AppConst;
+import org.fit.ssapp.constants.GameTheoryConst;
 import org.fit.ssapp.constants.StableMatchingConst;
 
 /**
@@ -130,22 +131,27 @@ public class EvaluatorUtils {
    */
   public static String getValidEvaluationFunction(String func) {
     func = func.trim();
-    if (func.equalsIgnoreCase(StableMatchingConst.DEFAULT_EVALUATE_FUNC)) {
+    if (StringUtils.isEmptyOrNull(func)
+        ||
+        func.equalsIgnoreCase(StableMatchingConst.DEFAULT_EVALUATE_FUNC)) {
       return "";
     }
     return func;
   }
 
   /**
-   * Checks if the function string is equal to the default function and returns an empty string if
-   * true.
+   * Checks if a given function is a default function and returns an empty string if it is;
+   * otherwise, returns the function string.
    *
    * @param func the function string to check
-   * @return an empty string if the function matches the default; otherwise, returns the function
-   *        string
+   * @return an empty string if the function is default; otherwise, returns the function string
    */
   public static String getIfDefaultFunction(String func) {
-    if (AppConst.DEFAULT_FUNC.equalsIgnoreCase(func)) {
+    if (func == null || func.trim().isEmpty()) {
+      return "";
+    }
+    if (AppConst.DEFAULT_FUNC.equalsIgnoreCase(func.trim()) ||
+        GameTheoryConst.DEFAULT_PAYOFF_FUNC.equalsIgnoreCase(func.trim())) {
       return "";
     }
     return func;
@@ -162,10 +168,20 @@ public class EvaluatorUtils {
    *      otherwise, returns the function string
    */
   public static String getValidFitnessFunction(String func) {
+    if (func == null || func.trim().isEmpty()) {
+      return "";
+    }
+    
     func = func.trim();
-    if (StringUtils.isEmptyOrNull(func)
-        ||
-        func.equalsIgnoreCase(StableMatchingConst.DEFAULT_FITNESS_FUNC)) {
+    if (func.equalsIgnoreCase(StableMatchingConst.DEFAULT_FITNESS_FUNC) ||
+        func.equalsIgnoreCase(GameTheoryConst.DEFAULT_PAYOFF_FUNC) ||
+        func.equalsIgnoreCase("SUM") ||
+        func.equalsIgnoreCase("AVERAGE") ||
+        func.equalsIgnoreCase("MIN") ||
+        func.equalsIgnoreCase("MAX") ||
+        func.equalsIgnoreCase("PRODUCT") ||
+        func.equalsIgnoreCase("MEDIAN") ||
+        func.equalsIgnoreCase("RANGE")) {
       return "";
     }
     return func;

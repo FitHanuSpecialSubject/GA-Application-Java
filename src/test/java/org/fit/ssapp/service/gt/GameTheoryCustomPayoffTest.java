@@ -7,6 +7,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.hamcrest.Matchers.containsString;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,15 +48,14 @@ public class GameTheoryCustomPayoffTest {
 
   @ParameterizedTest
   @CsvSource({
-      "NSGAII,(p1+p2+p3)/3-(p4+p5)/2", // Non-relative payoff function
-      "NSGAIII,sqrt(p1^2) / 100",
-      "eMOEA,ceil(100 / p3)",
-      "PESA2,log(4) - p1",
-      "VEGA,sqrt(p1) + sqrt(4)",
-      "OMOPSO,12 - 41 * p2 + p1",
-      "SMPSO,p2 + 21 / 13"
+      "NSGAII,(p1+p2+p3)/3-(p4+p5)/2", 
+      "eMOEA,ceil(100/p3)", 
+      "PESA2,log(4)-p1", 
+      "VEGA,sqrt(p1)+sqrt(4)", 
+      "OMOPSO,12-41*p2+p1",
+      "SMPSO,p2+21/13"
   })
-  void exp4j(String algorithm, String function) throws Exception {
+  void testNonRelativePayoffFunctions(String algorithm, String function) throws Exception {
     GameTheoryProblemDto dto = setUpTestCase();
 
     dto.setDefaultPayoffFunction(function);
@@ -84,15 +85,15 @@ public class GameTheoryCustomPayoffTest {
 
   @ParameterizedTest
   @CsvSource({
-      "NSGAII, (P1p1+P2p2)/(p3+1)",
-      "NSGAIII, P2p1*P1p2",
-      "eMOEA, P1p1-P2p2",
-      "PESA2, P1p1/P2p2",
-      "VEGA, (P1p1 + P2p1) / 2 - p1",
-      "OMOPSO, P1p1 + P2p2 - P1p3",
-      "SMPSO, P1p1 * p2 / P2p3"
+      "NSGAII,(P1p1+P2p2)/(p3+1)",
+      "NSGAIII,P2p1*P1p2",
+      "eMOEA,P1p1-P2p2",
+      "PESA2,P1p1/P2p2",
+      "VEGA,(P1p1+P2p1)/2-p1",
+      "OMOPSO,P1p1+P2p2-P1p3",
+      "SMPSO,P1p1*p2/P2p3"
   })
-  void customFunction(String algorithm, String function) throws Exception {
+  void testRelativePayoffFunctions(String algorithm, String function) throws Exception {
     GameTheoryProblemDto dto = setUpTestCase();
 
     dto.setDefaultPayoffFunction(function);
@@ -122,13 +123,13 @@ public class GameTheoryCustomPayoffTest {
 
   @ParameterizedTest
   @CsvSource({
-      "NSGAII,(p1 * p2 + p3/10)",
-      "eMOEA,p1^2 + p2^3 - p3",
-      "PESA2,P1p1/2 + P2p2^2",
-      "VEGA,p1/10 + p2",
+      "NSGAII,p1 * p2 + p3 / 10",
+      "eMOEA,p1 * p1 + p2 * p2 * p2 - p3",
+      "PESA2,P1p1 / 2 + P2p2 * P2p2",
+      "VEGA,p1 / 10 + p2",
       "OMOPSO,p1 + p2 + p3"
   })
-  void complexPayoffFunction(String algorithm, String function) throws Exception {  //fail do exp4j bi loi
+  void testComplexPayoffFunctions(String algorithm, String function) throws Exception {
     GameTheoryProblemDto dto = setUpTestCase();
 
     dto.setDefaultPayoffFunction(function);
@@ -153,6 +154,7 @@ public class GameTheoryCustomPayoffTest {
     assertTrue(jsonNode.has("data"));
     final JsonNode data = jsonNode.get("data");
     assertTrue(data.has("players"));
+    assertTrue(data.has("fitnessValue"));
   }
 
   @ParameterizedTest
@@ -162,7 +164,7 @@ public class GameTheoryCustomPayoffTest {
       "(p1 + p2 +) * p3",
       "p1 + p2 + @@"
   })
-  void invalidFunction(String function) throws Exception {
+  void testInvalidPayoffFunctions(String function) throws Exception {
     GameTheoryProblemDto dto = setUpTestCase();
     dto.setDefaultPayoffFunction(function);
     dto.setAlgorithm("NSGAII");
@@ -177,7 +179,7 @@ public class GameTheoryCustomPayoffTest {
   }
 
   @Test
-  void InvalidDto() throws Exception {
+  void testInvalidDto() throws Exception {
     String invalidJson = "{" +
         "\"defaultPayoffFunction\": \"(p1+p2)/2\"," +
         "\"maxTime\": \"sixty\"," +
