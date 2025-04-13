@@ -103,8 +103,8 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
   /**
    * Replaces all S(index) occurrences with their set sums
    */
-  private String replaceSIndexFunctions(double[] satisfactions, String expression) {
-    Matcher matcher = S_INDEX_PATTERN.matcher(expression);
+  private String replaceSDirectReferences(double[] satisfactions, String expression) {
+    Matcher matcher = S_DIRECT_PATTERN.matcher(expression);
     StringBuffer sb = new StringBuffer();
 
     while (matcher.find()) {
