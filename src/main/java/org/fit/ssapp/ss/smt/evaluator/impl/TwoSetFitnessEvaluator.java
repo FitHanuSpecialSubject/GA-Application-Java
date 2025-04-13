@@ -33,6 +33,9 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
 
   // Regex pattern for S(index) set references
   private static final Pattern S_INDEX_PATTERN = Pattern.compile("S\\((\\d)\\)");
+  
+  // Regex pattern for direct S1 and S2 references
+  private static final Pattern S_DIRECT_PATTERN = Pattern.compile("\\bS([12])\\b");
 
   // Regex pattern for M(position) variables
   private static final Pattern M_VAR_PATTERN = Pattern.compile("M(\\d+)");
@@ -72,6 +75,7 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
   private String processCustomFunctions(double[] satisfactions, String expression) {
     // Processing order matters - handle most complex functions first
     String processed = replaceSigmaFunctions(satisfactions, expression);
+    processed = replaceSDirectReferences(satisfactions, processed);
     processed = replaceSIndexFunctions(satisfactions, processed);
     processed = replaceMVariables(satisfactions, processed);
     return processed;
@@ -94,6 +98,24 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
       // Replace with calculated value (handling scientific notation)
       matcher.appendReplacement(sb, Matcher.quoteReplacement(
           convertToStringWithoutScientificNotation(value)));
+    }
+    matcher.appendTail(sb);
+
+    return sb.toString();
+  }
+  
+  /**
+   * Replaces direct S1 and S2 references with their set sums
+   */
+  private String replaceSDirectReferences(double[] satisfactions, String expression) {
+    Matcher matcher = S_DIRECT_PATTERN.matcher(expression);
+    StringBuffer sb = new StringBuffer();
+
+    while (matcher.find()) {
+      int setIndex = Integer.parseInt(matcher.group(1)) - 1; // Convert to 0-based index
+      double sum = calculateSetSum(satisfactions, setIndex);
+      matcher.appendReplacement(sb, Matcher.quoteReplacement(
+          convertToStringWithoutScientificNotation(sum)));
     }
     matcher.appendTail(sb);
 

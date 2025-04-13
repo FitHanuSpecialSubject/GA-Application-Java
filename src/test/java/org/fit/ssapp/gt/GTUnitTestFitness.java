@@ -125,6 +125,6 @@ public class GTUnitTestFitness {
   public void testFitnessValueWithInvalidFunction(String fitnessFunction) {
     double[] payoffs = { 3.0, 4.0, 5.0 };
 
-    assertThrows(ArithmeticException.class, () -> evaluateFitnessValue(payoffs, fitnessFunction));
+    assertThrows(IllegalArgumentException.class, () -> evaluateFitnessValue(payoffs, fitnessFunction));
   }
 }
