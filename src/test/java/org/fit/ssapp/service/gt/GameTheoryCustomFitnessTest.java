@@ -69,7 +69,6 @@ public class GameTheoryCustomFitnessTest {
         .andExpect(request().asyncStarted())
         .andReturn();
 
-
     final String response = this.mockMvc.perform(asyncDispatch(result))
         .andDo(print())
         .andExpect(status().isOk())
@@ -78,7 +77,6 @@ public class GameTheoryCustomFitnessTest {
         .getResponse()
         .getContentAsString();
 
-    // Verify response structure
     final JsonNode jsonNode = objectMapper.readTree(response);
     assertTrue(jsonNode.has("data"));
     final JsonNode data = jsonNode.get("data");
@@ -104,27 +102,27 @@ public class GameTheoryCustomFitnessTest {
     dto.setDefaultPayoffFunction("DEFAULT");
 
     MvcResult result = this.mockMvc
-            .perform(post("/api/game-theory-solver")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(dto)))
-            .andExpect(request().asyncStarted())
-            .andReturn();
+        .perform(post("/api/game-theory-solver")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(dto)))
+        .andExpect(request().asyncStarted())
+        .andReturn();
 
-        final String response = this.mockMvc.perform(asyncDispatch(result))
-            .andDo(print())
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andReturn()
-            .getResponse()
-            .getContentAsString();
+    final String response = this.mockMvc.perform(asyncDispatch(result))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andReturn()
+        .getResponse()
+        .getContentAsString();
 
-    // Verify response structure
     final JsonNode jsonNode = objectMapper.readTree(response);
     assertTrue(jsonNode.has("data"));
     final JsonNode data = jsonNode.get("data");
     assertTrue(data.has("players"));
     assertTrue(data.has("fitnessValue"));
   }
+
 
   @ParameterizedTest
   @ValueSource(strings = {
@@ -146,7 +144,6 @@ public class GameTheoryCustomFitnessTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON));
   }
 
-
   @Test
   void InvalidDto() throws Exception {
     String invalidJson = "{" +
@@ -167,8 +164,8 @@ public class GameTheoryCustomFitnessTest {
     GameTheoryProblemDto dto = new GameTheoryProblemDto();
     dto.setSpecialPlayer(null);
     dto.setNormalPlayers(players);
-    dto.setFitnessFunction("default");
-    dto.setDefaultPayoffFunction("default");
+    dto.setFitnessFunction("DEFAULT");
+    dto.setDefaultPayoffFunction("DEFAULT");
     dto.setMaximizing(true);
     dto.setDistributedCores("all");
     dto.setMaxTime(5000);
@@ -196,7 +193,7 @@ public class GameTheoryCustomFitnessTest {
 
     final NormalPlayer player = new NormalPlayer();
     player.setStrategies(strats);
-    player.setPayoffFunction("default");
+    player.setPayoffFunction("SUM");
 
     final List<NormalPlayer> players = new ArrayList<NormalPlayer>(3);
     players.add(player);

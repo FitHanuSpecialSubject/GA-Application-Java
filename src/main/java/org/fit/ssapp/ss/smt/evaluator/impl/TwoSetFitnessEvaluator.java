@@ -3,7 +3,6 @@ package org.fit.ssapp.ss.smt.evaluator.impl;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.Random;
 import java.util.function.DoubleUnaryOperator;
 import java.util.regex.Matcher;
@@ -13,7 +12,7 @@ import lombok.experimental.FieldDefaults;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 import net.objecthunter.exp4j.ValidationResult;
-import org.fit.ssapp.exception.AlgorithmsUniformException;
+import org.fit.ssapp.exception.*;
 import org.fit.ssapp.ss.smt.MatchingData;
 import org.fit.ssapp.ss.smt.evaluator.FitnessEvaluator;
 
@@ -75,6 +74,7 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
   private String processCustomFunctions(double[] satisfactions, String expression) {
     // Processing order matters - handle most complex functions first
     String processed = replaceSigmaFunctions(satisfactions, expression);
+    processed = replaceSDirectReferences(satisfactions, processed);
     processed = replaceSIndexFunctions(satisfactions, processed);
     processed = replaceMVariables(satisfactions, processed);
     return processed;
@@ -104,10 +104,28 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
   }
 
   /**
-   * Replaces all S(index) occurrences with their set sums
+   * Replaces direct S1 and S2 references with their set sums
    */
   private String replaceSDirectReferences(double[] satisfactions, String expression) {
     Matcher matcher = S_DIRECT_PATTERN.matcher(expression);
+    StringBuffer sb = new StringBuffer();
+
+    while (matcher.find()) {
+      int setIndex = Integer.parseInt(matcher.group(1)) - 1; // Convert to 0-based index
+      double sum = calculateSetSum(satisfactions, setIndex);
+      matcher.appendReplacement(sb, Matcher.quoteReplacement(
+          convertToStringWithoutScientificNotation(sum)));
+    }
+    matcher.appendTail(sb);
+
+    return sb.toString();
+  }
+
+  /**
+   * Replaces all S(index) occurrences with their set sums
+   */
+  private String replaceSIndexFunctions(double[] satisfactions, String expression) {
+    Matcher matcher = S_INDEX_PATTERN.matcher(expression);
     StringBuffer sb = new StringBuffer();
 
     while (matcher.find()) {
@@ -240,17 +258,17 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
 
     double baseFitness = withFitnessFunctionEvaluation(satisfactions, fitnessFunction);
 
+    // Kiểm tra xem từng phần tử khi thay đổi có ảnh hưởng đến fitness không
     for (int i = 0; i < size; i++) {
       double[] testSatisfactions = Arrays.copyOf(satisfactions, size);
-      testSatisfactions[i] = 1.0 - testSatisfactions[i];
+      testSatisfactions[i] = 1.0 - testSatisfactions[i]; // Lật ngược giá trị (nếu 0.7 → 0.3)
 
       double testFitness = withFitnessFunctionEvaluation(testSatisfactions, fitnessFunction);
       if (Double.compare(testFitness, baseFitness) != 0) {
-        return;
+        return; // Fitness thay đổi → không đồng đều
       }
     }
 
     throw new AlgorithmsUniformException("Fitness Uniform detected"); // Mọi thay đổi đều không ảnh hưởng → đồng đều
   }
-
 }
