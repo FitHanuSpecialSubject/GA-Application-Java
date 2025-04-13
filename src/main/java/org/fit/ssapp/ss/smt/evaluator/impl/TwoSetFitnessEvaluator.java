@@ -224,30 +224,30 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
     return String.valueOf(value); // Decimal values as-is
   }
 
-//  @Override
-//  public void validateUniformFitness(String fitnessFunction) throws AlgorithmsUniformException {
-//    int size =  matchingData.getSize();
-//    double[] satisfactions = new double[size];
-//
-//    // Random hóa giá trị satisfaction (giá trị từ 0.0 đến 1.0)
-//    Random random = new Random();
-//    for (int i = 0; i < size; i++) {
-//      satisfactions[i] = random.nextDouble();
-//    }
-//
-//    double baseFitness = withFitnessFunctionEvaluation(satisfactions, fitnessFunction);
-//
-//    for (int i = 0; i < size; i++) {
-//      double[] testSatisfactions = Arrays.copyOf(satisfactions, size);
-//      testSatisfactions[i] = 1.0 - testSatisfactions[i];
-//
-//      double testFitness = withFitnessFunctionEvaluation(testSatisfactions, fitnessFunction);
-//      if (Double.compare(testFitness, baseFitness) != 0) {
-//        return;
-//      }
-//    }
-//
-//    throw new AlgorithmsUniformException("Fitness Uniform detected"); // Mọi thay đổi đều không ảnh hưởng → đồng đều
-//  }
+  @Override
+  public void validateUniformFitness(String fitnessFunction) throws AlgorithmsUniformException {
+    int size =  matchingData.getSize();
+    double[] satisfactions = new double[size];
+
+    // Random hóa giá trị satisfaction (giá trị từ 0.0 đến 1.0)
+    Random random = new Random();
+    for (int i = 0; i < size; i++) {
+      satisfactions[i] = random.nextDouble();
+    }
+
+    double baseFitness = withFitnessFunctionEvaluation(satisfactions, fitnessFunction);
+
+    for (int i = 0; i < size; i++) {
+      double[] testSatisfactions = Arrays.copyOf(satisfactions, size);
+      testSatisfactions[i] = 1.0 - testSatisfactions[i];
+
+      double testFitness = withFitnessFunctionEvaluation(testSatisfactions, fitnessFunction);
+      if (Double.compare(testFitness, baseFitness) != 0) {
+        return;
+      }
+    }
+
+    throw new AlgorithmsUniformException("Fitness Uniform detected"); // Mọi thay đổi đều không ảnh hưởng → đồng đều
+  }
 
 }
