@@ -54,30 +54,22 @@ public class GameTheoryService {
    * @param request the game theory problem request DTO
    * @return a ResponseEntity containing the solution or an error message
    */
-  public ResponseEntity<Response> solveGameTheory(GameTheoryProblemDto request) {
+  public ResponseEntity<?> solveGameTheory(GameTheoryProblemDto request) {
     try {
       // Validate request is not null and has required fields
       if (request == null) {
         return ResponseEntity
             .badRequest()
-            .body(Response.builder()
-                .status(400)
-                .message("Request body is required")
-                .build());
+            .body(Map.of("error", "Request body is required"));
       }
 
       if (request.getNormalPlayers() == null || request.getNormalPlayers().isEmpty()) {
         return ResponseEntity
             .badRequest()
-            .body(Response.builder()
-                .status(400)
-                .message("Request body is invalid: normalPlayers is required")
-                .build());
+            .body(Map.of("error", "Request body is invalid: normalPlayers is required"));
       }
 
       log.info("Received request: {}", request);
-
-
 
       GameTheoryProblem problem = GameTheoryProblemMapper.toProblem(request);
 
@@ -101,23 +93,27 @@ public class GameTheoryService {
       GameSolution gameSolution = formatSolution(problem, results);
       gameSolution.setAlgorithm(request.getAlgorithm());
       gameSolution.setRuntime(runtime);
-      return ResponseEntity.ok(Response
-          .builder()
+
+      Response response = Response.builder()
           .status(200)
-          .message("Solve game theory problem successfully!")
+          .message("Success")
           .data(gameSolution)
-          .build());
+          .build();
+
+      return ResponseEntity.ok()
+          .contentType(MediaType.APPLICATION_JSON)
+          .body(response);
     } catch (IllegalArgumentException | ValidationException e) {
       log.error("Validation error: {}", e.getMessage());
       return ResponseEntity
           .status(HttpStatus.BAD_REQUEST)
           .contentType(MediaType.APPLICATION_JSON)
-          .body(Response.builder().status(400).message(e.getMessage()).build());
+          .body(Map.of("error", e.getMessage()));
     } catch (Exception e) {
       log.error("Error ", e);
       return ResponseEntity
           .status(HttpStatus.INTERNAL_SERVER_ERROR)
-          .body(Response.builder().status(500).message(e.getMessage()).build());
+          .body(Map.of("error", e.getMessage()));
     }
   }
 

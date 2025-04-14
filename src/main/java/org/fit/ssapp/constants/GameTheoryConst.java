@@ -11,20 +11,20 @@ public class GameTheoryConst {
    * algorithms allowing
    */
   public static final String[] ALLOWED_INSIGHT_ALGORITHMS = {
-          "NSGAII",
-          "NSGAIII",
-          "eMOEA",
-          "PESA2",
-          "VEGA",
-          "OMOPSO",
-          "SMPSO"};
+      "NSGAII",
+      "NSGAIII",
+      "eMOEA",
+      "PESA2",
+      "VEGA",
+      "OMOPSO",
+      "SMPSO"};
 
   /**
    * PAYOFF_VARIABLE_PREFIXES
    */
   public static final Set<String> PAYOFF_VARIABLE_PREFIXES = Set.of("p");
 
-  public static final String DEFAULT_PAYOFF_FUNC = "defalt";
+  public static final String DEFAULT_PAYOFF_FUNC = "default";
 
   /**
    * FITNESS_VARIABLE_PREFIXES

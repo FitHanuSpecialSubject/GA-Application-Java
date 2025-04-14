@@ -43,7 +43,7 @@ public class GTPayoffUnitTest {
 
     /**
      * Provides test cases for default payoff function evaluation.
-     * 
+     *
      */
     private static Stream<Arguments> defaultPayoffTestCases() {
         return Stream.of(
@@ -73,7 +73,7 @@ public class GTPayoffUnitTest {
 
     /**
      * Provides test cases for non-relative payoff function evaluation.
-     * 
+     *
      */
     private static Stream<Arguments> nonRelativePayoff() {
         return Stream.of(
@@ -98,7 +98,7 @@ public class GTPayoffUnitTest {
     @ParameterizedTest
     @MethodSource("relativePayoff")
     void customRelativePayoff(List<Double> player1Properties, List<Double> player2Properties,
-                                 String expression, double expected) {
+        String expression, double expected) {
         NormalPlayer player1 = new NormalPlayer();
         Strategy strategy1 = new Strategy();
         strategy1.setProperties(player1Properties);
@@ -162,11 +162,11 @@ public class GTPayoffUnitTest {
             ),
             // Standard deviation approximation (for 2 values only)
             Arguments.of(
-                         List.of(10.0),
-                         List.of(20.0),
-                         "abs(P1p1 - P2p1) / 2",
-                         5.0
-                         )
+                List.of(10.0),
+                List.of(20.0),
+                "abs(P1p1 - P2p1) / 2",
+                5.0
+            )
         );
     }
 
@@ -177,7 +177,7 @@ public class GTPayoffUnitTest {
     @ParameterizedTest
     @MethodSource("exp4jOperation")
     void exp4jFunctions(List<Double> properties, List<Double> player2Properties,
-                                  String expression, String relativeExpression, boolean isRelative, double expected, double epsilon) {
+        String expression, String relativeExpression, boolean isRelative, double expected, double epsilon) {
         Strategy strategy = new Strategy();
         strategy.setProperties(properties);
 
@@ -204,7 +204,7 @@ public class GTPayoffUnitTest {
     }
 
     /**
-     * Provides test cases for exp4j mathematical operations in payoff functions. 
+     * Provides test cases for exp4j mathematical operations in payoff functions.
      */
     private static Stream<Arguments> exp4jOperation() {
         return Stream.of(
@@ -228,8 +228,8 @@ public class GTPayoffUnitTest {
             Arguments.of(List.of(1.0, 2.0, 3.0), List.of(), "floor(p2 + 0.9)", "", false, 2.0, 0.00001),
             Arguments.of(List.of(1.7, 2.7), List.of(3.7, 4.7), "", "floor(P1p1)", true, 1.0, 0.00001),
 
-            Arguments.of(List.of(1.0, 2.0, 3.0), List.of(), "log(p3)", "", false, 1.0986122887, 0.0001),
-            Arguments.of(List.of(1.0, 2.0), List.of(3.0, 4.0), "", "log(P2p1)", true, 1.0986122887, 0.0001),
+            Arguments.of(List.of(1.0, 2.0, 3.0), List.of(), "log(p3)", "", false, 1.098612288, 0.0001),
+            Arguments.of(List.of(1.0, 2.0), List.of(3.0, 4.0), "", "log(P2p1)", true, 1.098612288, 0.0001),
 
             Arguments.of(List.of(1.0, 2.0, 3.0), List.of(), "sqrt(p2^2)", "", false, 2.0, 0.00001),
             Arguments.of(List.of(4.0, 5.0), List.of(9.0, 16.0), "", "sqrt(P1p1)", true, 2.0, 0.00001),

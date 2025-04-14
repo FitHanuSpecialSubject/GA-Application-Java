@@ -18,7 +18,7 @@ import java.lang.annotation.Target;
  */
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = FitnessFunctionValidator.class)
+@Constraint(validatedBy = FitnessValidateGT.class)
 public @interface ValidFitnessFunction {
 
   /**

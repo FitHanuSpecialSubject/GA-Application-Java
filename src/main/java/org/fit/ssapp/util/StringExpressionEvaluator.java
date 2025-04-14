@@ -215,7 +215,9 @@ public class StringExpressionEvaluator {
       return calculateByDefault(payoffList, "SUM");
     }
 
-    if (checkIfIsDefaultFunction(fitnessFunction)) {
+    // Check if it's a default function
+    if (Arrays.stream(DefaultFunction.values())
+        .anyMatch(f -> f.name().equalsIgnoreCase(fitnessFunction))) {
       List<Double> payoffList = new ArrayList<>();
       for (double payoff : payoffs) {
         payoffList.add(payoff);
@@ -345,19 +347,29 @@ public class StringExpressionEvaluator {
   }
 
   public static BigDecimal calculateByDefault(List<Double> values, String defaultFunction) {
-    DefaultFunction function = (!StringUtils.isEmptyOrNull(defaultFunction))
-        ? DefaultFunction.valueOf(defaultFunction.toUpperCase()) : DefaultFunction.SUM;
-    double val = switch (function) {
-      case PRODUCT -> calProduct(values);
-      case MAX -> calMax(values);
-      case MIN -> calMin(values);
-      case AVERAGE -> calAverage(values);
-      case MEDIAN -> calMedian(values);
-      case RANGE -> calRange(values);
-      default -> calSum(values);
-    };
+    // Handle "default" as a special case that defaults to SUM
+    if (StringUtils.isEmptyOrNull(defaultFunction) ||
+        defaultFunction.equalsIgnoreCase("default") ||
+        defaultFunction.equalsIgnoreCase("DEFAULT")) {
+      return new BigDecimal(calSum(values));
+    }
 
-    return new BigDecimal(val);
+    try {
+      DefaultFunction function = DefaultFunction.valueOf(defaultFunction.toUpperCase());
+      double val = switch (function) {
+        case PRODUCT -> calProduct(values);
+        case MAX -> calMax(values);
+        case MIN -> calMin(values);
+        case AVERAGE -> calAverage(values);
+        case MEDIAN -> calMedian(values);
+        case RANGE -> calRange(values);
+        default -> calSum(values);
+      };
+      return new BigDecimal(val);
+    } catch (IllegalArgumentException e) {
+      // If the function name is not valid, default to SUM
+      return new BigDecimal(calSum(values));
+    }
   }
 
   /**
@@ -400,12 +412,30 @@ public class StringExpressionEvaluator {
       }
     };
 
-    builder.function(logFunction);
+    Function ceilFunction = new Function("ceil", 1) {
+      @Override
+      public double apply(double... args) {
+        return Math.ceil(args[0]);
+      }
+    };
+
+    Function sqrtFunction = new Function("sqrt", 1) {
+      @Override
+      public double apply(double... args) {
+        if (args[0] < 0) {
+          throw new IllegalArgumentException("Square root of negative number is not allowed");
+        }
+        return Math.sqrt(args[0]);
+      }
+    };
+
+    builder.function(logFunction)
+        .function(ceilFunction)
+        .function(sqrtFunction);
+
     // Build the expression
     Expression expr = builder.build();
     return expr;
   }
-
-
 
 }
