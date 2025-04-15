@@ -1,7 +1,9 @@
 package org.fit.ssapp.ss.smt.evaluator.impl;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Objects;
+import java.util.List;
+import java.util.Random;
 import java.util.function.DoubleUnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -10,6 +12,7 @@ import lombok.experimental.FieldDefaults;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 import net.objecthunter.exp4j.ValidationResult;
+import org.fit.ssapp.exception.*;
 import org.fit.ssapp.ss.smt.MatchingData;
 import org.fit.ssapp.ss.smt.evaluator.FitnessEvaluator;
 
@@ -30,6 +33,9 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
   // Regex pattern for S(index) set references
   private static final Pattern S_INDEX_PATTERN = Pattern.compile("S\\((\\d)\\)");
 
+  // Regex pattern for direct S1 and S2 references
+  private static final Pattern S_DIRECT_PATTERN = Pattern.compile("\\bS([12])\\b");
+
   // Regex pattern for M(position) variables
   private static final Pattern M_VAR_PATTERN = Pattern.compile("M(\\d+)");
 
@@ -49,25 +55,26 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
   @Override
   public double withFitnessFunctionEvaluation(double[] satisfactions, String fitnessFunction) {
     String processedExpression = processCustomFunctions(satisfactions, fitnessFunction);
-      Expression expression = new ExpressionBuilder(processedExpression).build();
+    Expression expression = new ExpressionBuilder(processedExpression).build();
 
-      ValidationResult validation = expression.validate(false);
-      if (!validation.isValid()) {
-        throw new IllegalArgumentException(
-                "Invalid expression: '" + processedExpression + "'. "
-                        + "Validation errors: " + validation.getErrors()
-                        + " Original expression: '" + fitnessFunction + "'"
-        );
-      }
-      return expression.evaluate();
+    ValidationResult validation = expression.validate(false);
+    if (!validation.isValid()) {
+      throw new IllegalArgumentException(
+          "Invalid expression: '" + processedExpression + "'. "
+              + "Validation errors: " + validation.getErrors()
+              + " Original expression: '" + fitnessFunction + "'");
+    }
+    return expression.evaluate();
   }
 
   /**
-   * Processes all custom functions in the expression by replacing them with values
+   * Processes all custom functions in the expression by replacing them with
+   * values
    */
   private String processCustomFunctions(double[] satisfactions, String expression) {
     // Processing order matters - handle most complex functions first
     String processed = replaceSigmaFunctions(satisfactions, expression);
+    processed = replaceSDirectReferences(satisfactions, processed);
     processed = replaceSIndexFunctions(satisfactions, processed);
     processed = replaceMVariables(satisfactions, processed);
     return processed;
@@ -89,7 +96,25 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
 
       // Replace with calculated value (handling scientific notation)
       matcher.appendReplacement(sb, Matcher.quoteReplacement(
-              convertToStringWithoutScientificNotation(value)));
+          convertToStringWithoutScientificNotation(value)));
+    }
+    matcher.appendTail(sb);
+
+    return sb.toString();
+  }
+
+  /**
+   * Replaces direct S1 and S2 references with their set sums
+   */
+  private String replaceSDirectReferences(double[] satisfactions, String expression) {
+    Matcher matcher = S_DIRECT_PATTERN.matcher(expression);
+    StringBuffer sb = new StringBuffer();
+
+    while (matcher.find()) {
+      int setIndex = Integer.parseInt(matcher.group(1)) - 1; // Convert to 0-based index
+      double sum = calculateSetSum(satisfactions, setIndex);
+      matcher.appendReplacement(sb, Matcher.quoteReplacement(
+          convertToStringWithoutScientificNotation(sum)));
     }
     matcher.appendTail(sb);
 
@@ -107,7 +132,7 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
       int setIndex = Integer.parseInt(matcher.group(1));
       double sum = calculateSetSum(satisfactions, setIndex);
       matcher.appendReplacement(sb, Matcher.quoteReplacement(
-              convertToStringWithoutScientificNotation(sum)));
+          convertToStringWithoutScientificNotation(sum)));
     }
     matcher.appendTail(sb);
 
@@ -127,12 +152,12 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
       // Validate position bounds
       if (position < 1 || position > matchingData.getSize()) {
         throw new IllegalArgumentException(
-                "M position out of range [1-" + matchingData.getSize() + "]: " + position);
+            "M position out of range [1-" + matchingData.getSize() + "]: " + position);
       }
 
       double value = satisfactions[position - 1];
       matcher.appendReplacement(sb, Matcher.quoteReplacement(
-              convertToStringWithoutScientificNotation(value)));
+          convertToStringWithoutScientificNotation(value)));
     }
     matcher.appendTail(sb);
 
@@ -161,7 +186,7 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
             yield "S2";
           }
           default -> throw new IllegalArgumentException(
-                  "Invalid set reference after S: " + expression);
+              "Invalid set reference after S: " + expression);
         };
       }
     }
@@ -172,8 +197,8 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
 
     // Build and evaluate the sub-expression
     Expression exp = new ExpressionBuilder(expression)
-            .variables(regex)
-            .build();
+        .variables(regex)
+        .build();
 
     String finalRegex = regex;
     DoubleUnaryOperator calculator = x -> {
@@ -182,8 +207,8 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
     };
 
     return Arrays.stream(streamValue)
-            .map(calculator)
-            .sum();
+        .map(calculator)
+        .sum();
   }
 
   /**
@@ -191,25 +216,26 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
    */
   private double calculateSetSum(double[] satisfactions, int setIndex) {
     return Arrays.stream(getSatisfactoryOfASetByDefault(satisfactions, setIndex))
-            .sum();
+        .sum();
   }
 
   /**
    * Extracts satisfaction values for a specific set
    */
   private double[] getSatisfactoryOfASetByDefault(double[] satisfactions, int set) {
-    int setTotal = this.matchingData.getTotalIndividualOfSet(set);
-    double[] result = new double[setTotal];
+    List<Double> result = new ArrayList<>();
+
     for (int i = 0; i < matchingData.getSize(); i++) {
-      if (Objects.equals(matchingData.getSetNoOf(i), set)) {
-        setTotal--;
-        result[i] = satisfactions[i];
-      }
-      if (setTotal == 0) {
-        break;
-      }
+      result.add(satisfactions[i]);
     }
-    return result;
+
+    double[] temp = new double[result.size()];
+
+    for (int i = 0; i < result.size(); i++) {
+      temp[i] = result.get(i);
+    }
+
+    return temp;
   }
 
   /**
@@ -217,5 +243,32 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
    */
   private String convertToStringWithoutScientificNotation(double value) {
     return String.valueOf(value); // Decimal values as-is
+  }
+
+  @Override
+  public void validateUniformFitness(String fitnessFunction) throws AlgorithmsUniformException {
+    int size =  matchingData.getSize();
+    double[] satisfactions = new double[size];
+
+    // Random hóa giá trị satisfaction (giá trị từ 0.0 đến 1.0)
+    Random random = new Random();
+    for (int i = 0; i < size; i++) {
+      satisfactions[i] = random.nextDouble();
+    }
+
+    double baseFitness = withFitnessFunctionEvaluation(satisfactions, fitnessFunction);
+
+    // Kiểm tra xem từng phần tử khi thay đổi có ảnh hưởng đến fitness không
+    for (int i = 0; i < size; i++) {
+      double[] testSatisfactions = Arrays.copyOf(satisfactions, size);
+      testSatisfactions[i] = 1.0 - testSatisfactions[i]; // Lật ngược giá trị (nếu 0.7 → 0.3)
+
+      double testFitness = withFitnessFunctionEvaluation(testSatisfactions, fitnessFunction);
+      if (Double.compare(testFitness, baseFitness) != 0) {
+        return; // Fitness thay đổi → không đồng đều
+      }
+    }
+
+    throw new AlgorithmsUniformException("Fitness Uniform detected"); // Mọi thay đổi đều không ảnh hưởng → đồng đều
   }
 }

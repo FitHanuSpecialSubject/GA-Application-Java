@@ -12,15 +12,24 @@ import org.fit.ssapp.dto.mapper.StableMatchingProblemMapper;
 import org.fit.ssapp.dto.request.StableMatchingProblemDto;
 import org.fit.ssapp.dto.response.Progress;
 import org.fit.ssapp.dto.response.Response;
+import org.fit.ssapp.exception.AlgorithmsUniformException;
 import org.fit.ssapp.ss.smt.Matches;
+import org.fit.ssapp.ss.smt.MatchingData;
 import org.fit.ssapp.ss.smt.MatchingProblem;
+import org.fit.ssapp.ss.smt.evaluator.FitnessEvaluator;
+import org.fit.ssapp.ss.smt.evaluator.impl.TwoSetFitnessEvaluator;
 import org.fit.ssapp.ss.smt.implement.MTMProblem;
+import org.fit.ssapp.ss.smt.preference.PreferenceBuilder;
+import org.fit.ssapp.ss.smt.preference.PreferenceList;
+import org.fit.ssapp.ss.smt.preference.PreferenceListWrapper;
+import org.fit.ssapp.ss.smt.preference.impl.list.TripletPreferenceList;
+import org.fit.ssapp.ss.smt.preference.impl.list.TwoSetPreferenceList;
+import org.fit.ssapp.ss.smt.preference.impl.provider.TwoSetPreferenceProvider;
 import org.fit.ssapp.ss.smt.result.MatchingSolution;
 import org.fit.ssapp.ss.smt.result.MatchingSolutionInsights;
 import org.fit.ssapp.util.ComputerSpecsUtil;
 import org.moeaframework.Executor;
 import org.moeaframework.core.NondominatedPopulation;
-import org.moeaframework.core.Problem;
 import org.moeaframework.core.Solution;
 import org.moeaframework.core.TerminationCondition;
 import org.moeaframework.core.termination.MaxFunctionEvaluations;
@@ -96,27 +105,27 @@ public class StableMatchingService implements ProblemService {
       //            log.info("req cap {}, pro cap {}, equality {}", requestAddress, problemAddress,
       //            Objects.equals(requestAddress, problemAddress));
       log.info("Start solving: {}, problem name: {}, problem size: {}",
-          problem.getMatchingTypeName(),
-          problem.getName(),
-          problem.getMatchingData().getSize());
+              problem.getMatchingTypeName(),
+              problem.getName(),
+              problem.getMatchingData().getSize());
       long startTime = System.currentTimeMillis();
 
       NondominatedPopulation results = solveProblem(problem,
-          request.getAlgorithm(),
-          request.getPopulationSize(),
-          request.getGeneration(),
-          request.getMaxTime(),
-          request.getDistributedCores());
+              request.getAlgorithm(),
+              request.getPopulationSize(),
+              request.getGeneration(),
+              request.getMaxTime(),
+              request.getDistributedCores(), request);
 
       if (Objects.isNull(results)) {
         return ResponseEntity
-            .status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(Response
-                .builder()
-                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                .message("Error solving stable matching problem.")
-                .data(null)
-                .build());
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Response
+                        .builder()
+                        .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                        .message("Error solving stable matching problem.")
+                        .data(null)
+                        .build());
       }
       //            Testing tester = new Testing((Matches) results.get(0).getAttribute("matches"),
       //            problem.getMatchingData().getSize(), problem.getMatchingData().getCapacities());
@@ -132,30 +141,37 @@ public class StableMatchingService implements ProblemService {
 
       MatchingSolution matchingSolution = formatSolution(algorithm, results, runtime);
       matchingSolution.setSetSatisfactions(problem.getMatchesSatisfactions((Matches) results
-          .get(0)
-          .getAttribute(StableMatchingConst.MATCHES_KEY)));
+              .get(0)
+              .getAttribute(StableMatchingConst.MATCHES_KEY)));
 
       return ResponseEntity.ok(Response
-          .builder()
-          .status(200)
-          .message(
-              "[Service] Stable Matching: Solve stable matching problem successfully!")
-          .data(matchingSolution)
-          .build());
+              .builder()
+              .status(200)
+              .message(
+                      "[Service] Stable Matching: Solve stable matching problem successfully!")
+              .data(matchingSolution)
+              .build());
+    } catch (AlgorithmsUniformException e) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+              Response.builder()
+                      .data(null)
+                      .message("[Service] Stable Matching: BAD REQUEST")
+                      .status(HttpStatus.BAD_REQUEST.value()).build()
+      );
     } catch (Exception e) {
       log.error("[Service] Stable Matching: Error solving stable matching problem: {}",
-          e.getMessage(),
-          e);
+              e.getMessage(),
+              e);
       // Handle exceptions and return an error response
       return ResponseEntity
-          .status(HttpStatus.INTERNAL_SERVER_ERROR)
-          .body(Response
-              .builder()
-              .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-              .message(
-                  "[Service] Stable Matching: Error solving stable matching problem.")
-              .data(null)
-              .build());
+              .status(HttpStatus.INTERNAL_SERVER_ERROR)
+              .body(Response
+                      .builder()
+                      .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                      .message(
+                              "[Service] Stable Matching: Error solving stable matching problem.")
+                      .data(null)
+                      .build());
     }
   }
 
@@ -193,16 +209,18 @@ public class StableMatchingService implements ProblemService {
    * @param distributedCores The number of computing cores used for execution.
    * @return A `NondominatedPopulation` containing the solutions.
    */
-  private NondominatedPopulation solveProblem(Problem problem,
+  private NondominatedPopulation solveProblem(MatchingProblem problem,
                                               String algorithm,
                                               int populationSize,
                                               int generation,
                                               int maxTime,
-                                              String distributedCores) {
+                                              String distributedCores,
+                                              StableMatchingProblemDto request) {
     NondominatedPopulation result;
     if (algorithm == null) {
       algorithm = "PESA2";
     }
+
     if (distributedCores == null) {
       distributedCores = "all";
     }
@@ -211,27 +229,44 @@ public class StableMatchingService implements ProblemService {
     properties.setInt("maxTime", maxTime);
     TerminationCondition maxEval = new MaxFunctionEvaluations(generation * populationSize);
 
+
+    // check for IBEA, if true do test run with minimal configuration
+    if (algorithm.equals("IBEA")) {
+      validateUniformPreferences(problem.getMatchingData(), request);
+      try {
+        new Executor()
+                .withProblem(problem)
+                .withAlgorithm(algorithm)
+                .withMaxEvaluations(100)
+                .withTerminationCondition(new MaxFunctionEvaluations(100))
+                .withProperties(properties)
+                .distributeOn(1)
+                .run();
+      } catch (Exception e) {
+        throw new AlgorithmsUniformException("uniform preferences found");
+      }
+    }
+
     try {
       if (distributedCores.equals("all")) {
         result = new Executor()
-
-            .withProblem(problem)
-            .withAlgorithm(algorithm)
-            .withMaxEvaluations(generation * populationSize)
-            .withTerminationCondition(maxEval)
-            .withProperties(properties)
-            .distributeOnAllCores()
-            .run();
+                .withProblem(problem)
+                .withAlgorithm(algorithm)
+                .withMaxEvaluations(generation * populationSize)
+                .withTerminationCondition(maxEval)
+                .withProperties(properties)
+                .distributeOnAllCores()
+                .run();
       } else {
         int numberOfCores = Integer.parseInt(distributedCores);
         result = new Executor()
-            .withProblem(problem)
-            .withAlgorithm(algorithm)
-            .withMaxEvaluations(generation * populationSize)
-            .withTerminationCondition(maxEval)
-            .withProperties(properties)
-            .distributeOn(numberOfCores)
-            .run();
+                .withProblem(problem)
+                .withAlgorithm(algorithm)
+                .withMaxEvaluations(generation * populationSize)
+                .withTerminationCondition(maxEval)
+                .withProperties(properties)
+                .distributeOn(numberOfCores)
+                .run();
       }
       log.info("Problem {} solved successfully!", problem.getName());
       return result;
@@ -251,8 +286,8 @@ public class StableMatchingService implements ProblemService {
                                               String sessionCode) {
     String[] algorithms = StableMatchingConst.ALLOWED_INSIGHT_ALGORITHMS;
     simpMessagingTemplate.convertAndSendToUser(sessionCode,
-        "/progress",
-        createProgressMessage("Initializing the problem..."));
+            "/progress",
+            createProgressMessage("Initializing the problem..."));
     MTMProblem problem = StableMatchingProblemMapper.toMTM(request);
 
     log.info("Start benchmarking {} session code {}", problem.getName(), sessionCode);
@@ -265,8 +300,8 @@ public class StableMatchingService implements ProblemService {
     // of the algorithms
     //        log.info("Start benchmarking the algorithms...");
     simpMessagingTemplate.convertAndSendToUser(sessionCode,
-        "/progress",
-        createProgressMessage("Start benchmarking the algorithms..."));
+            "/progress",
+            createProgressMessage("Start benchmarking the algorithms..."));
 
     for (String algorithm : algorithms) {
       for (int i = 0; i < RUN_COUNT_PER_ALGORITHM; i++) {
@@ -274,11 +309,11 @@ public class StableMatchingService implements ProblemService {
         long start = System.currentTimeMillis();
 
         NondominatedPopulation results = solveProblem(problem,
-            algorithm,
-            request.getGeneration(),
-            request.getPopulationSize(),
-            request.getMaxTime(),
-            request.getDistributedCores());
+                algorithm,
+                request.getGeneration(),
+                request.getPopulationSize(),
+                request.getMaxTime(),
+                request.getDistributedCores(), request);
 
         long end = System.currentTimeMillis();
         assert results != null;
@@ -287,8 +322,8 @@ public class StableMatchingService implements ProblemService {
 
         // send the progress to the client
         String message =
-            "Algorithm " + algorithm + " finished iteration: #" + (i + 1) + "/"
-                + RUN_COUNT_PER_ALGORITHM;
+                "Algorithm " + algorithm + " finished iteration: #" + (i + 1) + "/"
+                        + RUN_COUNT_PER_ALGORITHM;
         Progress progress = createProgress(message, runtime, runCount, maxRunCount);
         System.out.println(progress);
         simpMessagingTemplate.convertAndSendToUser(sessionCode, "/progress", progress);
@@ -302,15 +337,15 @@ public class StableMatchingService implements ProblemService {
     }
     log.info("Benchmark finished! {} session code {}", problem.getName(), sessionCode);
     simpMessagingTemplate.convertAndSendToUser(sessionCode,
-        "/progress",
-        createProgressMessage("Benchmarking finished!"));
+            "/progress",
+            createProgressMessage("Benchmarking finished!"));
 
     return ResponseEntity.ok(Response
-        .builder()
-        .status(200)
-        .message("Get problem result insights successfully!")
-        .data(matchingSolutionInsights)
-        .build());
+            .builder()
+            .status(200)
+            .message("Get problem result insights successfully!")
+            .data(matchingSolutionInsights)
+            .build());
   }
 
   private MatchingSolutionInsights initMatchingSolutionInsights(String[] algorithms) {
@@ -332,12 +367,12 @@ public class StableMatchingService implements ProblemService {
 
   private Progress createProgressMessage(String message) {
     return Progress
-        .builder()
-        .inProgress(
-            false)
-        // this object is just to send a message to the client, not to show the progress
-        .message(message)
-        .build();
+            .builder()
+            .inProgress(
+                    false)
+            // this object is just to send a message to the client, not to show the progress
+            .message(message)
+            .build();
   }
 
   private Progress createProgress(String message,
@@ -346,20 +381,42 @@ public class StableMatchingService implements ProblemService {
                                   int maxRunCount) {
     int percent = runCount * 100 / maxRunCount;
     int minuteLeft = (int) Math.ceil(
-        ((maxRunCount - runCount) * runtime) / 60); // runtime is in seconds
+            ((maxRunCount - runCount) * runtime) / 60); // runtime is in seconds
     return Progress
-        .builder()
-        .inProgress(true) // this object is just to send to the client to show the progress
-        .message(message)
-        .runtime(runtime)
-        .minuteLeft(minuteLeft)
-        .percentage(percent)
-        .build();
+            .builder()
+            .inProgress(true) // this object is just to send to the client to show the progress
+            .message(message)
+            .runtime(runtime)
+            .minuteLeft(minuteLeft)
+            .percentage(percent)
+            .build();
   }
 
   private double getFitnessValue(NondominatedPopulation result) {
     Solution solution = result.get(0);
     return solution.getObjective(0);
+  }
+
+
+  public static void validateUniformPreferences(MatchingData data, StableMatchingProblemDto request) {
+    PreferenceBuilder builder = new TwoSetPreferenceProvider(data, request.getEvaluateFunctions());
+    PreferenceListWrapper preferenceLists = builder.toListWrapper();
+    List<PreferenceList> lists = preferenceLists.getLists();
+    List<Integer> invalidAgents = new ArrayList<>();
+
+    for (int i = 0; i < lists.size(); i++) {
+      PreferenceList list = lists.get(i);
+      if ((list instanceof TwoSetPreferenceList twoSet && twoSet.isUniformPreference()) ||
+              (list instanceof TripletPreferenceList triplet && triplet.isUniformPreference())) {
+        invalidAgents.add(i);
+      }
+    }
+
+    // Step 3: If uniform preferences found, throw error
+    if (!invalidAgents.isEmpty()) {
+      throw new AlgorithmsUniformException("uniform preferences found");
+
+    }
   }
 
 }

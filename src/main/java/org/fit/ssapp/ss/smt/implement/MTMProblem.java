@@ -3,6 +3,8 @@ package org.fit.ssapp.ss.smt.implement;
 import java.util.LinkedList;
 import java.util.Objects;
 import java.util.Queue;
+import java.util.Set;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,6 +17,7 @@ import org.fit.ssapp.ss.smt.MatchingProblem;
 import org.fit.ssapp.ss.smt.evaluator.FitnessEvaluator;
 import org.fit.ssapp.ss.smt.preference.PreferenceList;
 import org.fit.ssapp.ss.smt.preference.PreferenceListWrapper;
+import org.fit.ssapp.ss.smt.preference.impl.list.TwoSetPreferenceList;
 import org.fit.ssapp.util.StringUtils;
 import org.moeaframework.core.Solution;
 import org.moeaframework.core.Variable;
@@ -164,51 +167,57 @@ public class MTMProblem implements MatchingProblem {
         continue;
       }
 
-      //Get preference list of proposing node
-      PreferenceList nodePreference = preferenceLists.get(leftNode);
+      TwoSetPreferenceList nodePreference = (TwoSetPreferenceList) preferenceLists.get(leftNode);
+      for (int rightNode : nodePreference.getScores().keySet()) {
 
-      //Loop through LeftNode's preference list to find a Match
-      for (int i = 0; i < nodePreference.size(UNUSED_VAL); i++) {
-        int rightNode = nodePreference.getPositionByRank(UNUSED_VAL, i);
+        Set<Integer> currentMatchesOfLeftNode = matches.getSetOf(leftNode);
+        Set<Integer> currentMatchesOfRightNode = matches.getSetOf(rightNode);
 
-        if (matches.isMatched(rightNode, leftNode)) {
+        boolean leftIsFull = matches.isFull(leftNode, matchingData.getCapacityOf(leftNode));
+        boolean rightIsFull = matches.isFull(rightNode, matchingData.getCapacityOf(rightNode));
+
+        // if both left and right are not null: match
+        if (!leftIsFull && !rightIsFull) {
+          matches.addMatchBi(leftNode, rightNode);
           continue;
         }
 
-        boolean rightIsFull = matches.isFull(rightNode, this.matchingData.getCapacityOf(rightNode));
-
-        if (!rightIsFull) {
-          matches.addMatchBi(leftNode, rightNode);
-          break;
-        }
-
-        // The node that rightNode has the least preference considering
-        // its currents matches and leftNode
-        int rightLoser = preferenceLists.getLeastScoreNode(
-                UNUSED_VAL,
-                rightNode,
-                leftNode,
-                matches.getSetOf(rightNode),
-                matchingData.getCapacityOf(rightNode));
-
-        // rightNode likes its current matches more than leftNode
-        if (rightLoser == leftNode) {
-          // if leftNode like rightNode the least
-          if (preferenceLists.getLastChoiceOf(UNUSED_VAL, leftNode) == rightNode) {
-            break;
+        // if left is full and left does not like right more: continue
+        if (leftIsFull) {  // may be leftFull and rightNotFull
+          int leastPreferredLeftMatch = nodePreference.getLeastNode(UNUSED_VAL, rightNode, currentMatchesOfLeftNode);
+          if (leastPreferredLeftMatch == rightNode) {
+            continue;
           }
-        } else {
-          matches.removeMatchBi(rightNode, rightLoser);
-          matches.addMatchBi(leftNode, rightNode);
-          queue.add(rightLoser);
-          break;
         }
+
+        TwoSetPreferenceList rightNodePreference = (TwoSetPreferenceList) preferenceLists.get(rightNode);
+        // if right is full and right does not like left more: continue
+        if (rightIsFull) { // may be rightFull and leftNotFull
+          int leastPreferredRightMatch = rightNodePreference.getLeastNode(UNUSED_VAL, leftNode, currentMatchesOfRightNode);
+          if (leastPreferredRightMatch == leftNode) {
+            continue;
+          }
+        }
+
+        //  left prefer new right more: match
+        if (leftIsFull) {
+          int leastPreferredLeftMatch = nodePreference.getLeastNode(UNUSED_VAL, rightNode, currentMatchesOfLeftNode);
+          matches.removeMatchBi(leftNode, leastPreferredLeftMatch);
+          queue.add(leastPreferredLeftMatch); // Đưa node bị loại vào queue
+        }
+
+        //  right prefer new left more: match
+        if (rightIsFull) {
+          int leastPreferredRightMatch = rightNodePreference.getLeastNode(UNUSED_VAL, leftNode, currentMatchesOfRightNode);
+          matches.removeMatchBi(rightNode, leastPreferredRightMatch);
+          queue.add(leastPreferredRightMatch);
+        }
+
+        matches.addMatchBi(leftNode, rightNode);
       }
     }
-
     return matches;
   }
-
   @Override
   public String getMatchingTypeName() {
     return "Many to Many";

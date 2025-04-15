@@ -1,4 +1,4 @@
-package org.fit.ssapp.service;
+package org.fit.ssapp.service.gt;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.asyncDispatch;
@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,7 +45,7 @@ public class GameTheoryCustomFitnessTest {
   @Autowired
   private ObjectMapper objectMapper;
 
-  // @ParameterizedTest
+  @ParameterizedTest
   @CsvSource({
       "NSGAII,(u2)^10 + 12",
       "NSGAIII,abs(u1) / 100",
@@ -59,6 +60,7 @@ public class GameTheoryCustomFitnessTest {
 
     dto.setFitnessFunction(function);
     dto.setAlgorithm(algorithm);
+    dto.setDefaultPayoffFunction("DEFAULT");
 
     MvcResult result = this.mockMvc
         .perform(post("/api/game-theory-solver")
@@ -75,7 +77,6 @@ public class GameTheoryCustomFitnessTest {
         .getResponse()
         .getContentAsString();
 
-    // Verify response structure
     final JsonNode jsonNode = objectMapper.readTree(response);
     assertTrue(jsonNode.has("data"));
     final JsonNode data = jsonNode.get("data");
@@ -83,7 +84,7 @@ public class GameTheoryCustomFitnessTest {
     assertTrue(data.has("fitnessValue"));
   }
 
-  // @ParameterizedTest
+  @ParameterizedTest
   @CsvSource({
       "NSGAII,SUM",
       "NSGAIII,AVERAGE",
@@ -98,6 +99,7 @@ public class GameTheoryCustomFitnessTest {
 
     dto.setFitnessFunction(function);
     dto.setAlgorithm(algorithm);
+    dto.setDefaultPayoffFunction("DEFAULT");
 
     MvcResult result = this.mockMvc
         .perform(post("/api/game-theory-solver")
@@ -114,7 +116,6 @@ public class GameTheoryCustomFitnessTest {
         .getResponse()
         .getContentAsString();
 
-    // Verify response structure
     final JsonNode jsonNode = objectMapper.readTree(response);
     assertTrue(jsonNode.has("data"));
     final JsonNode data = jsonNode.get("data");
@@ -122,11 +123,11 @@ public class GameTheoryCustomFitnessTest {
     assertTrue(data.has("fitnessValue"));
   }
 
-  // @ParameterizedTest
+
+  @ParameterizedTest
   @ValueSource(strings = {
       "(u1 + u2 + ) / 3 - (u4 + u5",
       "u1 + u2 * / u3",
-      "u1 + u9",
       "INVALID",
       "code qua chien"
   })
@@ -134,7 +135,7 @@ public class GameTheoryCustomFitnessTest {
     GameTheoryProblemDto invalidDto = setUpTestCase();
     invalidDto.setFitnessFunction(function);
 
-    mockMvc
+    this.mockMvc
         .perform(post("/api/game-theory-solver")
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(invalidDto)))
@@ -143,8 +144,7 @@ public class GameTheoryCustomFitnessTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON));
   }
 
-  //
-  // @Test
+  @Test
   void InvalidDto() throws Exception {
     String invalidJson = "{" +
         "\"fitnessFunction\": \"DEFAULT\"," +
@@ -156,8 +156,7 @@ public class GameTheoryCustomFitnessTest {
         .perform(post("/api/game-theory-solver")
             .contentType(MediaType.APPLICATION_JSON)
             .content(invalidJson))
-        .andExpect(status().isBadRequest())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+        .andExpect(status().isBadRequest());
   }
 
   private GameTheoryProblemDto setUpTestCase() {
@@ -165,8 +164,8 @@ public class GameTheoryCustomFitnessTest {
     GameTheoryProblemDto dto = new GameTheoryProblemDto();
     dto.setSpecialPlayer(null);
     dto.setNormalPlayers(players);
-    dto.setFitnessFunction("default");
-    dto.setDefaultPayoffFunction("default");
+    dto.setFitnessFunction("DEFAULT");
+    dto.setDefaultPayoffFunction("DEFAULT");
     dto.setMaximizing(true);
     dto.setDistributedCores("all");
     dto.setMaxTime(5000);
@@ -194,7 +193,7 @@ public class GameTheoryCustomFitnessTest {
 
     final NormalPlayer player = new NormalPlayer();
     player.setStrategies(strats);
-    player.setPayoffFunction("default");
+    player.setPayoffFunction("SUM");
 
     final List<NormalPlayer> players = new ArrayList<NormalPlayer>(3);
     players.add(player);

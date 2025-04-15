@@ -8,6 +8,11 @@ import org.moeaframework.core.variable.RealVariable;
 
 /**
  * Utility class for number-related operations.
+ * 
+ * Note on decimal precision:
+ * This class uses a standard precision of 4 decimal places for all number formatting.
+ * This precision is consistent with the StringExpressionEvaluator class and provides
+ * sufficient accuracy for most calculations while avoiding excessive precision.
  */
 public class NumberUtils {
 
@@ -36,9 +41,6 @@ public class NumberUtils {
    * @return true if the string is a valid double, false otherwise
    */
   public static boolean isDouble(String str) {
-    if (!str.contains(",") || !str.contains(".")) {
-      return false;
-    }
     try {
       // Attempt to parse the String as an integer
       Double.parseDouble(str);
@@ -50,14 +52,14 @@ public class NumberUtils {
   }
 
   /**
-   * Formats a double value to two decimal places.
+   * Formats a double value to four decimal places.
    *
    * @param val the double value to format
    * @return the formatted double value
    */
   public static Double formatDouble(double val) {
     DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.US);
-    DecimalFormat df = new DecimalFormat("#.##", symbols);
+    DecimalFormat df = new DecimalFormat("#.####", symbols); // 4 decimal places
     String formattedValue = df.format(val);
     return Double.parseDouble(formattedValue);
   }

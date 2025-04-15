@@ -1,4 +1,4 @@
-package org.fit.ssapp.service;
+package org.fit.ssapp.service.st;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -42,17 +42,9 @@ public class StableMatchingSolverTest {
   }
 
 
-//  @Test
-//  public void testEvaluateFunctions() {
-//    stableMatchingProblemDto.setEvaluateFunctions(new String[]{"SUM", ""});
-//    Set<ConstraintViolation<StableMatchingProblemDto>> violations = validator.validate(
-//            stableMatchingProblemDto);
-//    assert (violations.isEmpty());
-//  }
-
   @Test
   public void testFitnessCalculation() {
-    int testNumberOfIndividuals1 = 5;
+    int testNumberOfIndividuals1 = 4;
     int testNumberOfIndividuals2 = 1;  //or any positive number
     int testNumberOfProperties = 3;
     double[] satisfactions = {1.0, 2.0, 3.0, 4.0, 5.0};

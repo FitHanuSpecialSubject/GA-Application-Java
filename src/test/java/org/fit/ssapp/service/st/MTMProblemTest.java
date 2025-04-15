@@ -1,4 +1,4 @@
-package org.fit.ssapp.service;
+package org.fit.ssapp.service.st;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
