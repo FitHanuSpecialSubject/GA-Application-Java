@@ -19,7 +19,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = FitnessValidateGT.class)
-public @interface ValidFitnessFunction {
+public @interface ValidFitnessFunctionGT {
 
   /**
    * The default error message when validation fails.

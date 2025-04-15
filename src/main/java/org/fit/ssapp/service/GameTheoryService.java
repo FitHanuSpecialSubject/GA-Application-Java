@@ -26,9 +26,13 @@ import org.moeaframework.core.Variable;
 import org.moeaframework.core.variable.BinaryIntegerVariable;
 import org.moeaframework.core.variable.EncodingUtils;
 import org.moeaframework.core.variable.RealVariable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import jakarta.validation.ValidationException;
+import org.fit.ssapp.util.StringExpressionEvaluator;
 
 /**
  * Service class for solving game theory problems and providing insights into algorithm performance.
@@ -50,10 +54,23 @@ public class GameTheoryService {
    * @param request the game theory problem request DTO
    * @return a ResponseEntity containing the solution or an error message
    */
-  public ResponseEntity<Response> solveGameTheory(GameTheoryProblemDto request) {
-
+  public ResponseEntity<?> solveGameTheory(GameTheoryProblemDto request) {
     try {
+      // Validate request is not null and has required fields
+      if (request == null) {
+        return ResponseEntity
+            .badRequest()
+            .body(Map.of("error", "Request body is required"));
+      }
+
+      if (request.getNormalPlayers() == null || request.getNormalPlayers().isEmpty()) {
+        return ResponseEntity
+            .badRequest()
+            .body(Map.of("error", "Request body is invalid: normalPlayers is required"));
+      }
+
       log.info("Received request: {}", request);
+
       GameTheoryProblem problem = GameTheoryProblemMapper.toProblem(request);
 
       long startTime = System.currentTimeMillis();
@@ -76,17 +93,27 @@ public class GameTheoryService {
       GameSolution gameSolution = formatSolution(problem, results);
       gameSolution.setAlgorithm(request.getAlgorithm());
       gameSolution.setRuntime(runtime);
-      return ResponseEntity.ok(Response
-          .builder()
+
+      Response response = Response.builder()
           .status(200)
-          .message("Solve game theory problem successfully!")
+          .message("Success")
           .data(gameSolution)
-          .build());
+          .build();
+
+      return ResponseEntity.ok()
+          .contentType(MediaType.APPLICATION_JSON)
+          .body(response);
+    } catch (IllegalArgumentException | ValidationException e) {
+      log.error("Validation error: {}", e.getMessage());
+      return ResponseEntity
+          .status(HttpStatus.BAD_REQUEST)
+          .contentType(MediaType.APPLICATION_JSON)
+          .body(Map.of("error", e.getMessage()));
     } catch (Exception e) {
       log.error("Error ", e);
       return ResponseEntity
-          .ok()
-          .body(Response.builder().status(500).message(e.getMessage()).build());
+          .status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body(Map.of("error", e.getMessage()));
     }
   }
 
@@ -121,7 +148,6 @@ public class GameTheoryService {
             .withProperty("maxTime", maxTime)
             .distributeOnAllCores()
             .run();
-
 
       } else {
         int numberOfCores = Integer.parseInt(distributedCores);

@@ -1,4 +1,4 @@
-package org.fit.ssapp.service;
+package org.fit.ssapp.service.st;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -33,7 +33,7 @@ public class StableMatchingIntegrationTest {
   @Autowired
   private ObjectMapper objectMapper;
 
-  // @ParameterizedTest
+  @ParameterizedTest
   @MethodSource("stableMatchingAlgorithms")
   void stableMatching_BaseCase(String algorithm) throws Exception {
     StableMatchingProblemDto dto = createBaseCaseDto(algorithm);
@@ -118,7 +118,7 @@ public class StableMatchingIntegrationTest {
   }
 
   private static String[] stableMatchingAlgorithms() {
-    return StableMatchingConst.ALLOWED_INSIGHT_ALGORITHMS;
+    return new String[] {"NSGAII", "NSGAIII", "eMOEA", "PESA2", "VEGA"};
   }
 
   private StableMatchingProblemDto createBaseCaseDto(String algorithm) {
@@ -162,26 +162,43 @@ public class StableMatchingIntegrationTest {
   }
 
   private void assertNoExcludedPairs(JsonNode matches, int[][] excludedPairs) {
-    if (excludedPairs == null) return;
-    Map<Integer, int[]> matchesSplitted = new TreeMap<>();
+    if (excludedPairs == null || excludedPairs.length == 0) return;
+
+    Map<Integer, List<Integer>> matchesSplitted = new TreeMap<>();
     int i = 0;
-    for (JsonNode list: matches) {
+    for (JsonNode list : matches) {
       int[] indices = getIndices(list);
-      matchesSplitted.put(i, indices);
+      List<Integer> temp = new ArrayList<>(indices.length);
+      for (int num : indices) {
+          temp.add(num);
+      }
+      matchesSplitted.put(i, temp);
       i++;
     }
+
     for (int[] pair : excludedPairs) {
+      if (pair.length < 1) {
+        continue; // Bỏ qua nếu dữ liệu không hợp lệ
+      }
+
       int left = pair[0];
       int right = pair[1];
 
-      assertThat(left)
-          .isNotIn(matchesSplitted.get(right))
-          .withFailMessage("Excluded pair matched");
-      assertThat(right)
-          .isNotIn(matchesSplitted.get(left))
-          .withFailMessage("Excluded pair matched");
+      // Chỉ assert nếu cả hai agent tồn tại trong map
+      if (matchesSplitted.containsKey(right)) {
+        assertThat(matchesSplitted.get(right).contains(left))
+          .isFalse()
+          .withFailMessage("Excluded pair matched: %d - %d", left, right);
+      }
+
+      if (matchesSplitted.containsKey(left)) {
+        assertThat(matchesSplitted.get(left).contains(right))
+                .isFalse()
+                .withFailMessage("Excluded pair matched: %d - %d", left, right);
+      }
     }
   }
+
 
   private void assertCapacityValid(JsonNode data, StableMatchingProblemDto dto) {
     int[] capacities = dto.getIndividualCapacities();

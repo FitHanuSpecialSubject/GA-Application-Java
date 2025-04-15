@@ -111,15 +111,9 @@ public class PreferenceListWrapper {
   }
 
   /**
-   * get last option of target.
-   *
-   * @param set    int
-   * @param target position of individual
-   * @return last option
-   */
-  public int getLastChoiceOf(int set, int target) {
-    PreferenceList pref = lists.get(target);
-    return pref.getPositionByRank(set, pref.size(set) - 1);
+   * get the list of preference lists
+   * */
+  public List<PreferenceList> getLists() {
+    return lists;
   }
-
 }
