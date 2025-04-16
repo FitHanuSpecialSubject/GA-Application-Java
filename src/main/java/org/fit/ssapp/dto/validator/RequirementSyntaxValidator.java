@@ -37,16 +37,30 @@ public class RequirementSyntaxValidator implements
    */
   @Override
   public boolean isValid(String[][] value, ConstraintValidatorContext context) {
-    for (String[] row : value) {
-      for (String requirement : row) {
+    if (value == null) return true;
+    boolean isValid = true;
+    context.disableDefaultConstraintViolation(); // Ngăn thông báo mặc định
+
+    for (int i = 0; i < value.length; i++) {
+      String[] row = value[i];
+      for (int j = 0; j < row.length; j++) {
+        String requirement = row[j];
         if (!VALID_PATTERN.matcher(requirement).matches()) {
-          context.disableDefaultConstraintViolation();
-          context.buildConstraintViolationWithTemplate(message + ": '" + requirement + "'")
+          String errorMessage = String.format("%s tại hàng %d, cột %d: '%s'", message, i, j, requirement);
+
+          // Gắn lỗi vào đúng trường
+          context.buildConstraintViolationWithTemplate(errorMessage)
+                  .addPropertyNode("individualRequirements")
+                  .addBeanNode()
+                  .inIterable().atIndex(i) // chỉ ra hàng
                   .addConstraintViolation();
-          return false;
+
+          isValid = false;
         }
       }
     }
-    return true;
+
+    return isValid;
   }
+
 }
