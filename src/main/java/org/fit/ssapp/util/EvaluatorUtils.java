@@ -118,22 +118,15 @@ public class EvaluatorUtils {
     return setSatisfactions;
   }
 
-
   /**
-   * Validates a given fitness function by trimming whitespace and checking if it is empty or
-   * matches the default fitness function. If it is empty or matches the default, it returns an
-   * empty string.
+   * return boolean `true` if match DEFAULT_EVALUATE_FUNCTION constant
    *
-   * @param func the fitness function string to validate
-   * @return an empty string if the function is empty or matches the default fitness function;
-   *        otherwise, returns the function string
+   * @param func the evaluate function to check
+   * @return as title
    */
-  public static String getValidEvaluationFunction(String func) {
+  public static boolean isDefaultEvaluateFunction(String func) {
     func = func.trim();
-    if (func.equalsIgnoreCase(StableMatchingConst.DEFAULT_EVALUATE_FUNC)) {
-      return "";
-    }
-    return func;
+    return  func.isEmpty() || func.equalsIgnoreCase(StableMatchingConst.DEFAULT_EVALUATE_FUNC);
   }
 
   /**

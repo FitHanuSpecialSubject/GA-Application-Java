@@ -7,7 +7,9 @@ import java.util.HashMap;
 import java.util.Map;
 import lombok.Getter;
 import lombok.Setter;
+import org.fit.ssapp.exception.ZeroWeightSum;
 import org.fit.ssapp.ss.smt.requirement.Requirement;
+import org.fit.ssapp.util.NumberUtils;
 
 /**
  * Matching Data.
@@ -48,6 +50,11 @@ public class MatchingData {
   int[][] excludedPairs;
 
   /**
+   * flag if weight is [0, 1] normalized, default false
+   */
+  private boolean[] isWeightsNormalized;
+
+  /**
    * characteristic data.
    */
   private final double[][] propertyValues;
@@ -85,6 +92,7 @@ public class MatchingData {
       setNums.put(set, setNums.get(set) + 1);
     }
     this.size = size;
+    this.isWeightsNormalized = new boolean[setNums.size()];
     this.propertyNum = propertyNum;
     this.sets = sets;
     this.capacities = capacities;
@@ -95,8 +103,40 @@ public class MatchingData {
   }
 
   /**
-   * get number of set in this MatchingData's Problem <br/> example: one-to-many (two set)
-   * -> return 2.
+   * do: normalize weights to [0, 1] assume that all weight are >= 0, validated before.
+   */
+  public void normalizeWeights(int setNum) {
+
+    if (setNum >= this.setNums.size()) {
+      throw new IllegalArgumentException("setNum is out of range");
+    }
+
+    if (this.isWeightsNormalized[setNum]) {
+      return;
+    }
+
+    double sum;
+    for (int i = 0; i < this.size; i++) {
+      if (this.sets[i] != setNum) {
+        continue;
+      }
+      sum = NumberUtils.calSum(this.weights[i]);
+      if (sum == 0.0) {
+        // Could not normalize when sum = 0
+        throw new ZeroWeightSum(i);
+      }
+      for (int j = 0; j < this.propertyNum; j++) {
+        double normalizedWeight = this.weights[i][j] / sum;
+        this.weights[i][j] = normalizedWeight;
+      }
+    }
+
+    this.isWeightsNormalized[setNum] = true;
+  }
+
+  /**
+   * get number of set in this MatchingData's Problem <br/> example: one-to-many (two set) -> return
+   * 2.
    *
    * @return number of set
    */

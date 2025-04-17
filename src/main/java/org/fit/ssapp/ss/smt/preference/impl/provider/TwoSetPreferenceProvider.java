@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,11 +17,9 @@ import org.fit.ssapp.ss.smt.preference.PreferenceBuilder;
 import org.fit.ssapp.ss.smt.preference.PreferenceList;
 import org.fit.ssapp.ss.smt.preference.PreferenceListWrapper;
 import org.fit.ssapp.ss.smt.preference.impl.list.TwoSetPreferenceList;
-import org.fit.ssapp.ss.smt.preference.impl.list.TwoSetPreferenceList;
 import org.fit.ssapp.ss.smt.requirement.Requirement;
 import org.fit.ssapp.util.EvaluatorUtils;
 import org.fit.ssapp.util.PreferenceProviderUtils;
-import org.fit.ssapp.util.StringUtils;
 
 /**
  * Standard implementation of PreferenceBuilder that uses Exp4j lib.
@@ -36,8 +33,22 @@ public class TwoSetPreferenceProvider implements PreferenceBuilder {
   private final MatchingData matchingData;
   private final int sizeOf1;
   private final int sizeOf2;
+
+  /**
+   * Flag default function for two sets
+   */
+  private final boolean isDefaultSet1;
+  private final boolean isDefaultSet2;
+
+  /**
+   * Exp4j mathematical Expression two sets
+   */
   private Expression expressionOfSet1;
   private Expression expressionOfSet2;
+
+  /**
+   * Variable accumulation for two sets
+   */
   private Map<String, Set<Integer>> variablesOfSet1;
   private Map<String, Set<Integer>> variablesOfSet2;
 
@@ -49,25 +60,36 @@ public class TwoSetPreferenceProvider implements PreferenceBuilder {
    */
   public TwoSetPreferenceProvider(MatchingData matchingData, String[] evaluationFunctions) {
     this.matchingData = matchingData;
-    String evalFunctionForSet1 = EvaluatorUtils.getValidEvaluationFunction(evaluationFunctions[0]);
-    String evalFunctionForSet2 = EvaluatorUtils.getValidEvaluationFunction(evaluationFunctions[1]);
+    String evalFunctionForSet1 = evaluationFunctions[0].trim();
+    String evalFunctionForSet2 = evaluationFunctions[1].trim();
+
     this.sizeOf1 = matchingData.getTotalIndividualOfSet(0);
     this.sizeOf2 = matchingData.getSize() - sizeOf1;
 
-    if (!StringUtils.isEmptyOrNull(evalFunctionForSet1)) {
-      if (expressionOfSet2 != null) {
+    this.isDefaultSet1 = EvaluatorUtils.isDefaultEvaluateFunction(evalFunctionForSet1);
+    this.isDefaultSet2 = EvaluatorUtils.isDefaultEvaluateFunction(evalFunctionForSet2);
+
+
+    if (this.isDefaultSet1) {
+      this.expressionOfSet1 = null;
+      this.matchingData.normalizeWeights(0);
+    } else {
+      if (expressionOfSet1 != null) {
+        // idk why have to do this :v
         return;
       }
       this.variablesOfSet1 = PreferenceProviderUtils.filterVariable(evalFunctionForSet1);
-                  this.expressionOfSet1 = new ExpressionBuilder(evalFunctionForSet1)
-                          .variables(PreferenceProviderUtils.convertMapToSet(variablesOfSet1))
-                          .build();
+      this.expressionOfSet1 = new ExpressionBuilder(evalFunctionForSet1)
+          .variables(PreferenceProviderUtils.convertMapToSet(variablesOfSet1))
+          .build();
     }
 
-    if (StringUtils.isEmptyOrNull(evalFunctionForSet2)) {
+    if (this.isDefaultSet2) {
       this.expressionOfSet2 = null;
+      this.matchingData.normalizeWeights(0);
     } else {
       if (expressionOfSet2 != null) {
+        // idk why have to do this :v
         return;
       }
       this.variablesOfSet2 = PreferenceProviderUtils.filterVariable(evalFunctionForSet2);
@@ -151,7 +173,7 @@ public class TwoSetPreferenceProvider implements PreferenceBuilder {
     Expression e;
     if (set == 0) {
       a = new TwoSetPreferenceList(this.sizeOf2);
-      if (this.expressionOfSet1 == null) {
+      if (this.isDefaultSet1) {
         return this.getPreferenceListByDefault(index);
       }
       e = this.expressionOfSet1;
@@ -164,7 +186,7 @@ public class TwoSetPreferenceProvider implements PreferenceBuilder {
       }
     } else {
       a = new TwoSetPreferenceList(this.sizeOf1);
-      if (this.expressionOfSet2 == null) {
+      if (this.isDefaultSet2) {
         return this.getPreferenceListByDefault(index);
       }
       e = this.expressionOfSet2;

@@ -75,4 +75,17 @@ public class NumberUtils {
     return (int) Math.floor(rawValue);
   }
 
+  /**
+   * get sum of double array.
+   *
+   * @param values double[]
+   * @return sum
+   */
+  public static double calSum(double[] values) {
+    double sum = 0.0;
+    for (double value : values) {
+      sum += value;
+    }
+    return sum;
+  }
 }

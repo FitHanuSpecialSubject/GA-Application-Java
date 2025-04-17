@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import org.fit.ssapp.exception.ZeroWeightSum;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -21,6 +22,9 @@ public class GlobalExceptionHandler {
 
   private static final Logger logger = Logger.getLogger("GlobalExceptionHandler");
 
+  /**
+   * TODO: Chuyển sang package org/fit/ssapp/exception
+   */
   public static class ValidationException extends RuntimeException {
     public ValidationException(String message) {
       super(message);
@@ -89,5 +93,20 @@ public class GlobalExceptionHandler {
     Map<String, String> error = new HashMap<>();
     error.put("error", ex.getMessage());
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+  }
+
+  /**
+   * Zero-sum exception handler.
+   * - Throw when normalizing weights of MatchingData (module SMT)
+   *
+   * @param ex Exception
+   * @return ResponseEntity with error message
+   */
+  @ExceptionHandler(ZeroWeightSum.class)
+  public ResponseEntity<Map<String, String>> handleZeroWeightSum(Exception ex) {
+    logger.warning("Message: " + ex.getMessage());
+    Map<String, String> error = new HashMap<>();
+    error.put("error", ex.getMessage());
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
   }
 }

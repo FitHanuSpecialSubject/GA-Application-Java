@@ -16,8 +16,6 @@ import org.fit.ssapp.exception.AlgorithmsUniformException;
 import org.fit.ssapp.ss.smt.Matches;
 import org.fit.ssapp.ss.smt.MatchingData;
 import org.fit.ssapp.ss.smt.MatchingProblem;
-import org.fit.ssapp.ss.smt.evaluator.FitnessEvaluator;
-import org.fit.ssapp.ss.smt.evaluator.impl.TwoSetFitnessEvaluator;
 import org.fit.ssapp.ss.smt.implement.MTMProblem;
 import org.fit.ssapp.ss.smt.preference.PreferenceBuilder;
 import org.fit.ssapp.ss.smt.preference.PreferenceList;
