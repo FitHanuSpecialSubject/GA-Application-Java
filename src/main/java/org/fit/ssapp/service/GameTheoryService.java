@@ -19,6 +19,7 @@ import org.fit.ssapp.ss.gt.implement.StandardGameTheoryProblem;
 import org.fit.ssapp.ss.gt.result.GameSolution;
 import org.fit.ssapp.ss.gt.result.GameSolutionInsights;
 import org.fit.ssapp.util.NumberUtils;
+import org.fit.ssapp.util.StringUtils;
 import org.moeaframework.Executor;
 import org.moeaframework.core.NondominatedPopulation;
 import org.moeaframework.core.Solution;
@@ -32,7 +33,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import jakarta.validation.ValidationException;
-import org.fit.ssapp.util.StringExpressionEvaluator;
 
 /**
  * Service class for solving game theory problems and providing insights into algorithm performance.
@@ -61,6 +61,12 @@ public class GameTheoryService {
         return ResponseEntity
             .badRequest()
             .body(Map.of("error", "Request body is required"));
+      }
+
+      if (StringUtils.isEmptyOrNull(request.getAlgorithm())) {
+        return ResponseEntity
+            .badRequest()
+            .body(Map.of("error", "Request body is invalid: `algorithm` is required"));
       }
 
       if (request.getNormalPlayers() == null || request.getNormalPlayers().isEmpty()) {

@@ -47,8 +47,7 @@ public class GameTheoryProblemDto implements ProblemRequestDto {
   @NotBlank(message = "Default payoff function is required")
   private String defaultPayoffFunction;
 
-  @NotNull(message = "Algorithm is required")
-  @NotBlank(message = "Algorithm cannot be empty")
+
   private String algorithm;
 
 
