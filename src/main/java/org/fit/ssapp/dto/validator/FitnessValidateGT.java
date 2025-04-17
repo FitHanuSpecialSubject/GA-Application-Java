@@ -18,7 +18,6 @@ import org.fit.ssapp.constants.GameTheoryConst;
  * - **u{number}** → Represents utility variables for players in game theory.
  * - **M{number}** → Represents matching-related variables for stable matching.
  * - **S{number}** → Represents satisfaction-related variables for stable matching.
- * - **SIGMA{expression}** → Represents a summation expression inside `{}`.
  * - Various math functions like abs(), sqrt(), log(), ceil(), etc.
  */
 public class FitnessValidateGT implements ConstraintValidator<ValidFitnessFunction, String> {
