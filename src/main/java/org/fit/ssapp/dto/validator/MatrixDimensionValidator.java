@@ -39,7 +39,7 @@ public class MatrixDimensionValidator implements ConstraintValidator<ValidMatrix
 
         if (matrix.length != expectedRows) {
             context.buildConstraintViolationWithTemplate(
-                    String.format("- Matrix '%s' has %d rows, but expected %d individuals", fieldName, matrix.length, expectedRows)
+                    String.format("Matrix '%s' has %d rows, but expected %d individuals", fieldName, matrix.length, expectedRows)
             ).addPropertyNode(fieldName).addConstraintViolation();
             valid = false;
         }
@@ -48,7 +48,7 @@ public class MatrixDimensionValidator implements ConstraintValidator<ValidMatrix
             if (matrix[i] == null) continue;
             if (matrix[i].length != expectedCols) {
                 context.buildConstraintViolationWithTemplate(
-                        String.format("- Row %d in '%s' has %d columns, but expected %d properties", i + 1, fieldName, matrix[i].length, expectedCols)
+                        String.format("Row %d in '%s' has %d columns, but expected %d properties", i + 1, fieldName, matrix[i].length, expectedCols)
                 ).addPropertyNode(fieldName).addConstraintViolation();
                 valid = false;
             }
@@ -64,7 +64,7 @@ public class MatrixDimensionValidator implements ConstraintValidator<ValidMatrix
 
         if (matrix.length != expectedRows) {
             context.buildConstraintViolationWithTemplate(
-                    String.format("- Matrix '%s' has %d rows, but expected %d individuals", fieldName, matrix.length, expectedRows)
+                    String.format("Matrix '%s' has %d rows, but expected %d individuals", fieldName, matrix.length, expectedRows)
             ).addPropertyNode(fieldName).addConstraintViolation();
             valid = false;
         }
@@ -73,7 +73,7 @@ public class MatrixDimensionValidator implements ConstraintValidator<ValidMatrix
             if (matrix[i] == null) continue;
             if (matrix[i].length != expectedCols) {
                 context.buildConstraintViolationWithTemplate(
-                        String.format("- Row %d in '%s' has %d columns, but expected %d properties", i + 1, fieldName, matrix[i].length, expectedCols)
+                        String.format("Row %d in '%s' has %d columns, but expected %d properties", i + 1, fieldName, matrix[i].length, expectedCols)
                 ).addPropertyNode(fieldName).addConstraintViolation();
                 valid = false;
             }
