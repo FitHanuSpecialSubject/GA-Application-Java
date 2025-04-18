@@ -2,8 +2,8 @@ package org.fit.ssapp.dto.validator;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import java.util.HashSet;
-import java.util.Set;
+
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import net.objecthunter.exp4j.Expression;
@@ -21,6 +21,16 @@ import org.fit.ssapp.constants.StableMatchingConst;
 public class FitnessFunctionValidator implements ConstraintValidator<ValidFitnessFunction, String> {
 
   private static final Pattern VARIABLE_PATTERN = Pattern.compile("(M\\d+|S\\d+|SIGMA\\{[^}]+\\})");
+  private static final Pattern OPERATOR_PATTERN = Pattern.compile("[+\\-*/^]{2,}");
+  private static class ValidationError {
+    private final String message;
+    private final int position;
+
+    public ValidationError(String message, int position) {
+      this.message = message;
+      this.position = position;
+    }
+  }
 
   /**
    * Validates the fitness function by checking its syntax and allowed variables.
@@ -34,42 +44,149 @@ public class FitnessFunctionValidator implements ConstraintValidator<ValidFitnes
     if (value.equalsIgnoreCase(StableMatchingConst.DEFAULT_EVALUATE_FUNC)) {
       return true;
     }
-    String cleanFunc = value.replaceAll("\\s+", "");
+
+    if (validateExp4j(value)) {
+      return true;
+    }
+
+    List<ValidationError> errors = collectAllErrors(value);
+
+    if (!errors.isEmpty()) {
+      context.disableDefaultConstraintViolation();
+
+      for (ValidationError error : errors) {
+        String message = formatErrorMessage(error, value);
+        context.buildConstraintViolationWithTemplate(message)
+                .addConstraintViolation();
+      }
+      return false;
+    }
+
+    return true;
+  }
+
+  private boolean validateExp4j(String expression) {
     try {
-      Set<String> variables = extractVariables(cleanFunc);
+      Set<String> variables = extractVariables(expression);
+      ExpressionBuilder builder = new ExpressionBuilder(expression);
 
       for (String var : variables) {
+        builder.variable(var);
+      }
+
+      Expression exp = builder.build();
+      if (!exp.validate(false).isValid()) {
+        return false;
+      }
+
+      for (String var : variables) {
+        exp.setVariable(var, 1.0);
+      }
+      exp.evaluate();
+
+      return true;
+    } catch (Exception e) {
+      return false;
+    }
+  }
+
+  private List<ValidationError> collectAllErrors(String expression) {
+    List<ValidationError> errors = new ArrayList<>();
+
+    ValidationError bracketError = checkBrackets(expression);
+    if (bracketError != null) {
+      errors.add(bracketError);
+    }
+
+    ValidationError operatorError = checkConsecutiveOperators(expression);
+    if (operatorError != null) {
+      errors.add(operatorError);
+    }
+
+    ValidationError sisgmaError = checkSigmaExpressions(expression);
+    if (operatorError != null) {
+      errors.add(sisgmaError);
+    }
+
+    return errors;
+  }
+
+  private ValidationError checkSigmaExpressions(String expression) {
+    try {
+      Set<String> variables = extractVariables(expression);
+
+      // Kiểm tra từng biểu thức SIGMA
+      for (String var : variables) {
         if (var.startsWith("SIGMA{") && var.endsWith("}")) {
-          cleanFunc = cleanFunc.replace(var, var.substring(6, var.length() - 1));
+          String innerExpression = var.substring(6, var.length() - 1);
+
+          // Kiểm tra biểu thức bên trong SIGMA có hợp lệ không
+          if (!validateInnerSigmaExpression(innerExpression)) {
+            return new ValidationError("Invalid expression inside SIGMA: " + innerExpression,
+                    expression.indexOf(var) + 6);
+          }
         }
       }
 
-      ExpressionBuilder builder = new ExpressionBuilder(cleanFunc);
-      for (String var : variables) {
-        String cleanVar = var.startsWith("SIGMA{") && var.endsWith("}")
-                ? var.substring(6, var.length() - 1)
-                : var;
-        builder.variable(cleanVar);
-      }
-
-      Expression expression = builder.build();
-
-      for (String var : variables) {
-        String cleanVar = var.startsWith("SIGMA{") && var.endsWith("}")
-                ? var.substring(6, var.length() - 1)
-                : var;
-        expression.setVariable(cleanVar, 1.0);
-      }
-
-      expression.evaluate();
+      return null;
     } catch (Exception e) {
-      context.disableDefaultConstraintViolation();
-      context.buildConstraintViolationWithTemplate(
-                      "Invalid fitness function syntax: '" + value + "'")
-              .addConstraintViolation();
+      return new ValidationError("Error in SIGMA expression: " + e.getMessage(), 0);
+    }
+  }
+
+  private boolean validateInnerSigmaExpression(String innerExpression) {
+    try {
+      Set<String> innerVars = extractVariables(innerExpression);
+
+      ExpressionBuilder builder = new ExpressionBuilder(innerExpression);
+      for (String var : innerVars) {
+        builder.variable(var);
+      }
+
+      Expression exp = builder.build();
+
+      for (String var : innerVars) {
+        exp.setVariable(var, 1.0);
+      }
+
+      exp.evaluate();
+      return true;
+    } catch (Exception e) {
       return false;
     }
-    return true;
+  }
+
+  private ValidationError checkBrackets(String expression) {
+    Stack<Integer> stack = new Stack<>();
+
+    for (int i = 0; i < expression.length(); i++) {
+      char current = expression.charAt(i);
+      if (current == '(') {
+        stack.push(i);
+      } else if (current == ')') {
+        if (stack.isEmpty()) {
+          return new ValidationError("Unmatched closing bracket", i);
+        }
+        stack.pop();
+      }
+    }
+
+    if (!stack.isEmpty()) {
+      return new ValidationError("Unmatched opening bracket", stack.peek());
+    }
+
+    return null;
+  }
+
+  private ValidationError checkConsecutiveOperators(String expression) {
+    Matcher matcher = OPERATOR_PATTERN.matcher(expression);
+    if (matcher.find()) {
+      return new ValidationError(
+              "Invalid consecutive operators: " + matcher.group(),
+              matcher.start()
+      );
+    }
+    return null;
   }
 
   /**
@@ -87,5 +204,12 @@ public class FitnessFunctionValidator implements ConstraintValidator<ValidFitnes
       variables.add(matcher.group(0));
     }
     return variables;
+  }
+
+  private String formatErrorMessage(ValidationError error, String expression) {
+    return String.format("%s at position %d in function: %s",
+            error.message,
+            error.position,
+            expression);
   }
 }
