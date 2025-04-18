@@ -3,6 +3,7 @@ package org.fit.ssapp.dto.request;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.fit.ssapp.dto.validator.ValidStrategyStructure;
 import org.fit.ssapp.ss.gt.Conflict;
 import org.fit.ssapp.ss.gt.NormalPlayer;
 import org.fit.ssapp.ss.gt.SpecialPlayer;
@@ -27,6 +28,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@ValidStrategyStructure
 public class GameTheoryProblemDto implements ProblemRequestDto {
   private SpecialPlayer specialPlayer;
 
