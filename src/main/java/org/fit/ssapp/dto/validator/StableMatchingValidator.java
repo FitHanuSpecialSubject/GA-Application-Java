@@ -16,6 +16,7 @@ public class StableMatchingValidator implements ConstraintValidator<ValidStableM
     public boolean isValid(StableMatchingProblemDto dto, ConstraintValidatorContext context) {
         boolean isValid = true;
         int threshold = validationConfig.getThreshold();
+        int threshold = validationConfig.getThreshold();
 
         // if (dto.getPopulationSize() > validationConfig.getMaxPopulation()) {
         //     context.disableDefaultConstraintViolation();
@@ -34,17 +35,28 @@ public class StableMatchingValidator implements ConstraintValidator<ValidStableM
         // }
 
         if (dto.getPopulationSize() * dto.getGeneration() > threshold) {
-            context.disableDefaultConstraintViolation();
-            // Violation for the 'generation' field
-            context.buildConstraintViolationWithTemplate("Threshold (generation * populationSize) must not exceed " + threshold)
-                    .addPropertyNode("generation")
-                    .addConstraintViolation();
+        // if (dto.getPopulationSize() > validationConfig.getMaxPopulation()) {
+        //     context.disableDefaultConstraintViolation();
+        //     context.buildConstraintViolationWithTemplate("Population size must not exceed " + validationConfig.getMaxPopulation())
+        //             .addPropertyNode("populationSize")
+        //             .addConstraintViolation();
+        //     isValid = false;
+        // }
 
-            // Violation for the 'populationSize' field
-            context.buildConstraintViolationWithTemplate("Threshold (generation * populationSize) must not exceed " + threshold)
+        // if (dto.getGeneration() > validationConfig.getMaxGeneration()) {
+        //     context.disableDefaultConstraintViolation();
+        //     context.buildConstraintViolationWithTemplate("Generation must not exceed " + validationConfig.getMaxGeneration())
+        //             .addPropertyNode("generation")
+        //             .addConstraintViolation();
+        //     isValid = false;
+        // }
+
+        if (dto.getPopulationSize() * dto.getGeneration() > threshold) {
+            context.disableDefaultConstraintViolation();
+            context.buildConstraintViolationWithTemplate("Threshold must not exceed " + threshold)
+                    .addPropertyNode("generation")
                     .addPropertyNode("populationSize")
                     .addConstraintViolation();
-
             isValid = false;
         }
 
