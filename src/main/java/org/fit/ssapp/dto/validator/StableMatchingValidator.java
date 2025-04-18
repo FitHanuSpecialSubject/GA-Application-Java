@@ -53,10 +53,16 @@ public class StableMatchingValidator implements ConstraintValidator<ValidStableM
 
         if (dto.getPopulationSize() * dto.getGeneration() > threshold) {
             context.disableDefaultConstraintViolation();
-            context.buildConstraintViolationWithTemplate("Threshold must not exceed " + threshold)
+            // Violation for the 'generation' field
+            context.buildConstraintViolationWithTemplate("Threshold (generation * populationSize) must not exceed " + threshold)
                     .addPropertyNode("generation")
+                    .addConstraintViolation();
+
+            // Violation for the 'populationSize' field
+            context.buildConstraintViolationWithTemplate("Threshold (generation * populationSize) must not exceed " + threshold)
                     .addPropertyNode("populationSize")
                     .addConstraintViolation();
+
             isValid = false;
         }
 
