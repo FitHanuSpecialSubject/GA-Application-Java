@@ -13,46 +13,24 @@ public class StrategyStructureValidator implements ConstraintValidator<ValidStra
     @Override
     public boolean isValid(GameTheoryProblemDto dto, ConstraintValidatorContext context) {
         List<NormalPlayer> players = dto.getNormalPlayers();
-        if (players == null || players.size() < 2) return true;
+        if (players == null || players.isEmpty()) return true;
 
         boolean isValid = true;
 
-        int expectedStrategyCount = players.get(0).getStrategies() != null
-                ? players.get(0).getStrategies().size()
-                : 0;
-
-        int expectedPropertyCount = players.get(0).getStrategies() != null &&
-                !players.get(0).getStrategies().isEmpty() &&
-                players.get(0).getStrategies().get(0).getProperties() != null
-                ? players.get(0).getStrategies().get(0).getProperties().size()
-                : 0;
+        int expectedStrategyCount = getExpectedStrategyCount(players);
+        int expectedPropertyCount = getExpectedPropertyCount(players);
 
         for (int i = 0; i < players.size(); i++) {
             NormalPlayer player = players.get(i);
             List<Strategy> strategies = player.getStrategies();
 
-            // Check strategy count
-            if (strategies == null || strategies.size() != expectedStrategyCount) {
-                addViolation(context,
-                        "normalPlayers.strategies",
-                        String.format("At player index %d, expected %d strategies but found %d",
-                                i, expectedStrategyCount, strategies == null ? 0 : strategies.size()));
+            // Validate strategy count
+            if (!isStrategyCountValid(strategies, expectedStrategyCount, i, context)) {
                 isValid = false;
-            }
-
-            // Check property count inside each strategy (if strategies != null)
-            if (strategies != null) {
-                for (int j = 0; j < strategies.size(); j++) {
-                    Strategy strategy = strategies.get(j);
-                    List<Double> properties = strategy.getProperties();
-
-                    if (properties == null || properties.size() != expectedPropertyCount) {
-                        addViolation(context,
-                                "normalPlayers.strategies.properties",
-                                String.format("At player index %d, strategy index %d, expected %d properties but found %d",
-                                        i, j, expectedPropertyCount, properties == null ? 0 : properties.size()));
-                        isValid = false;
-                    }
+            } else {
+                // Validate property count per strategy
+                if (!arePropertiesValid(strategies, expectedPropertyCount, i, context)) {
+                    isValid = false;
                 }
             }
         }
@@ -60,13 +38,57 @@ public class StrategyStructureValidator implements ConstraintValidator<ValidStra
         return isValid;
     }
 
+    private int getExpectedStrategyCount(List<NormalPlayer> players) {
+        List<Strategy> strategies = players.get(0).getStrategies();
+        return strategies != null ? strategies.size() : 0;
+    }
+
+    private int getExpectedPropertyCount(List<NormalPlayer> players) {
+        List<Strategy> strategies = players.get(0).getStrategies();
+        if (strategies != null && !strategies.isEmpty()) {
+            List<Double> properties = strategies.get(0).getProperties();
+            return properties != null ? properties.size() : 0;
+        }
+        return 0;
+    }
+
+    private boolean isStrategyCountValid(List<Strategy> strategies, int expectedCount, int playerIndex, ConstraintValidatorContext context) {
+        int actualCount = strategies != null ? strategies.size() : 0;
+        if (actualCount != expectedCount) {
+            addViolation(context,
+                    "normalPlayers.strategies",
+                    String.format("At player index %d, expected %d strategies but found %d", playerIndex, expectedCount, actualCount));
+            return false;
+        }
+        return true;
+    }
+
+    private boolean arePropertiesValid(List<Strategy> strategies, int expectedPropertyCount, int playerIndex, ConstraintValidatorContext context) {
+        boolean valid = true;
+        for (int j = 0; j < strategies.size(); j++) {
+            Strategy strategy = strategies.get(j);
+            List<Double> properties = strategy.getProperties();
+            int actualCount = properties != null ? properties.size() : 0;
+
+            if (actualCount != expectedPropertyCount) {
+                addViolation(context,
+                        "normalPlayers.strategies.properties",
+                        String.format("At player index %d, strategy index %d, expected %d properties but found %d",
+                                playerIndex, j, expectedPropertyCount, actualCount));
+                valid = false;
+            }
+        }
+        return valid;
+    }
+
     private void addViolation(ConstraintValidatorContext context, String field, String message) {
         context.disableDefaultConstraintViolation();
         context.buildConstraintViolationWithTemplate(
-                String.format("• field: \"%s\", message: \"%s\"", field, message)
+                String.format("field: \"%s\", message: \"%s\"", field, message)
         ).addConstraintViolation();
     }
 }
+
 
 
 
