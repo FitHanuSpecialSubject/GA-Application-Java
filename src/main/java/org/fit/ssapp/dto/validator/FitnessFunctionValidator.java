@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 import org.fit.ssapp.constants.StableMatchingConst;
+import org.fit.ssapp.dto.request.StableMatchingProblemDto;
 
 /**
  * **FitnessFunctionValidator** - Validator for fitness function syntax.
@@ -18,53 +19,48 @@ import org.fit.ssapp.constants.StableMatchingConst;
  * - **S{number}** → Represents satisfaction-related variables.
  * - **SIGMA{expression}** → Represents a summation expression inside `{}`.
  */
-public class FitnessFunctionValidator implements ConstraintValidator<ValidFitnessFunctionSMT, String> {
+public class FitnessFunctionValidator implements ConstraintValidator<ValidFitnessFunctionSMT, StableMatchingProblemDto> {
 
   private static final Pattern VARIABLE_PATTERN = Pattern.compile("(M\\d+|S\\d+|SIGMA\\{[^}]+\\})");
   private static final Pattern OPERATOR_PATTERN = Pattern.compile("[+\\-*/^]{2,}");
-  private static class ValidationError {
-    private final String message;
-    private final int position;
-
-    public ValidationError(String message, int position) {
-      this.message = message;
-      this.position = position;
-    }
-  }
 
   /**
    * Validates the fitness function by checking its syntax and allowed variables.
    *
-   * @param value   The fitness function string to validate.
+   * @param dto   The fitness function string to validate.
    * @param context The validation context for constraint violations.
    * @return `true` if the function is valid, otherwise `false`.
    */
   @Override
-  public boolean isValid(String value, ConstraintValidatorContext context) {
+  public boolean isValid(StableMatchingProblemDto dto, ConstraintValidatorContext context) {
+    String value = dto.getFitnessFunction();
+    boolean isValid = true;
     if (value.equalsIgnoreCase(StableMatchingConst.DEFAULT_EVALUATE_FUNC)) {
       return true;
     }
 
-    if (validateExp4j(value)) {
-      return true;
+    if (!checkSigmaExpressions(context, value)) {
+      isValid = false;
     }
 
-    List<ValidationError> errors = collectAllErrors(value);
+    String modifiedExpression = replaceSigma(value);
 
-    if (!errors.isEmpty()) {
-      context.disableDefaultConstraintViolation();
-
-      for (ValidationError error : errors) {
-        String message = formatErrorMessage(error, value);
-        context.buildConstraintViolationWithTemplate(message)
-                .addConstraintViolation();
-      }
-      return false;
+    if (!validateExp4j(modifiedExpression)) {
+      collectAllErrors(context, modifiedExpression);
+      isValid = false;
     }
 
-    return true;
+    Set<String> variables = extractVariablesWithoutSigma(value);
+    if (!validateVariableLimits(context, variables, dto)) {
+      isValid = false;
+    }
+
+    return isValid;
   }
 
+  private String replaceSigma(String expression) {
+    return expression.replaceAll("SIGMA\\{[^}]*\\}", "1.0");
+  }
   private boolean validateExp4j(String expression) {
     try {
       Set<String> variables = extractVariables(expression);
@@ -72,6 +68,9 @@ public class FitnessFunctionValidator implements ConstraintValidator<ValidFitnes
 
       for (String var : variables) {
         builder.variable(var);
+        if (!var.startsWith("SIGMA{")) {
+          builder.variable(var);
+        }
       }
 
       Expression exp = builder.build();
@@ -80,7 +79,9 @@ public class FitnessFunctionValidator implements ConstraintValidator<ValidFitnes
       }
 
       for (String var : variables) {
-        exp.setVariable(var, 1.0);
+        if (!var.startsWith("SIGMA{")) {
+          exp.setVariable(var, 1.0);
+        }
       }
       exp.evaluate();
 
@@ -90,53 +91,34 @@ public class FitnessFunctionValidator implements ConstraintValidator<ValidFitnes
     }
   }
 
-  private List<ValidationError> collectAllErrors(String expression) {
-    List<ValidationError> errors = new ArrayList<>();
-
-    ValidationError bracketError = checkBrackets(expression);
-    if (bracketError != null) {
-      errors.add(bracketError);
-    }
-
-    ValidationError operatorError = checkConsecutiveOperators(expression);
-    if (operatorError != null) {
-      errors.add(operatorError);
-    }
-
-    ValidationError sisgmaError = checkSigmaExpressions(expression);
-    if (sisgmaError != null) {
-      errors.add(sisgmaError);
-    }
-
-    ValidationError divisionByZeroError = checkDivisionByZero(expression);
-    if (divisionByZeroError != null) {
-      errors.add(divisionByZeroError);
-    }
-
-    return errors;
+  private void collectAllErrors(ConstraintValidatorContext context, String expression) {
+    checkBrackets(context, expression);
+    checkConsecutiveOperators(context, expression);
+    checkDivisionByZero(context, expression);
   }
 
-  private ValidationError checkSigmaExpressions(String expression) {
+  private boolean checkSigmaExpressions(ConstraintValidatorContext context, String expression) {
+    boolean isValid = true;
     try {
       Set<String> variables = extractVariables(expression);
 
-      // Kiểm tra từng biểu thức SIGMA
       for (String var : variables) {
         if (var.startsWith("SIGMA{") && var.endsWith("}")) {
           String innerExpression = var.substring(6, var.length() - 1);
 
-          // Kiểm tra biểu thức bên trong SIGMA có hợp lệ không
           if (!validateInnerSigmaExpression(innerExpression)) {
-            return new ValidationError("Invalid expression inside SIGMA: " + innerExpression,
-                    expression.indexOf(var) + 6);
+            addViolation(context, "expression",
+                    "Invalid expression inside SIGMA: " + innerExpression);
+            isValid = false;
           }
         }
       }
-
-      return null;
     } catch (Exception e) {
-      return new ValidationError("Error in SIGMA expression: " + e.getMessage(), 0);
+      addViolation(context, "expression",
+              "Error in SIGMA expression: " + e.getMessage());
+      isValid = false;
     }
+    return isValid ;
   }
 
   private boolean validateInnerSigmaExpression(String innerExpression) {
@@ -161,17 +143,55 @@ public class FitnessFunctionValidator implements ConstraintValidator<ValidFitnes
     }
   }
 
-  private ValidationError checkDivisionByZero(String expression) {
+  private boolean validateVariableLimits(ConstraintValidatorContext context, Set<String> variables, StableMatchingProblemDto dto) {
+    boolean isValid = true;
+    for (String var : variables) {
+      if (var.startsWith("S") && !var.startsWith("SIGMA")) {
+        try {
+          int index = Integer.parseInt(var.substring(1));
+          if (index > dto.getNumberOfSets() || index < 1) {
+            addViolation(
+                    context,
+                    "fitnessFunction",
+                    "Invalid S index: " + index + ". Must be between 1 and " + dto.getNumberOfSets()
+            );
+            isValid = false;
+          }
+        } catch (NumberFormatException e) {
+          addViolation(context, "fitnessFunction", "Invalid S variable format: " + var);
+          isValid = false;
+        }
+      } else if (var.startsWith("M")) {
+        try {
+          int index = Integer.parseInt(var.substring(1));
+          int maxM = dto.getIndividualSetIndices().length;
+          if (index > maxM || index < 1) {
+            addViolation(
+                    context,
+                    "fitnessFunction",
+                    "Invalid M index: " + index + ". Must be between 1 and " + maxM
+            );
+            isValid = false;
+          }
+        } catch (NumberFormatException e) {
+          addViolation(context, "fitnessFunction", "Invalid M variable format: " + var);
+          isValid = false;
+        }
+      }
+    }
+    return isValid;
+  }
+
+  private void checkDivisionByZero(ConstraintValidatorContext context, String expression) {
     for (int i = 0; i < expression.length(); i++) {
       char c = expression.charAt(i);
       if (c == '/') {
         String denominator = extractDenominator(expression, i + 1);
-        if (denominator.equals("0") || denominator.equals("0.0")) {
-          return new ValidationError("Division by zero", i);
+        if (denominator.matches("0(\\.0+)?")) {
+          addViolation(context, "fitnessFunction", "Division by zero at position " + (i + 1));
         }
       }
     }
-    return null;
   }
 
   private String extractDenominator(String expression, int startPos) {
@@ -186,7 +206,7 @@ public class FitnessFunctionValidator implements ConstraintValidator<ValidFitnes
     return denominator.toString().trim();
   }
 
-  private ValidationError checkBrackets(String expression) {
+  private void checkBrackets(ConstraintValidatorContext context, String expression) {
     Stack<Integer> stack = new Stack<>();
 
     for (int i = 0; i < expression.length(); i++) {
@@ -195,28 +215,25 @@ public class FitnessFunctionValidator implements ConstraintValidator<ValidFitnes
         stack.push(i);
       } else if (current == ')') {
         if (stack.isEmpty()) {
-          return new ValidationError("Unmatched closing bracket", i);
+          addViolation(context, "fitnessFunction", "Unmatched closing bracket at position " + i);
+        } else {
+          stack.pop();
         }
-        stack.pop();
       }
     }
 
-    if (!stack.isEmpty()) {
-      return new ValidationError("Unmatched opening bracket", stack.peek());
+    while (!stack.isEmpty()) {
+      int pos = stack.pop();
+      addViolation(context, "fitnessFunction", "Unmatched opening bracket at position " + pos);
     }
-
-    return null;
   }
 
-  private ValidationError checkConsecutiveOperators(String expression) {
+  private void checkConsecutiveOperators(ConstraintValidatorContext context, String expression) {
     Matcher matcher = OPERATOR_PATTERN.matcher(expression);
-    if (matcher.find()) {
-      return new ValidationError(
-              "Invalid consecutive operators: " + matcher.group(),
-              matcher.start()
-      );
+    while (matcher.find()) {
+      int pos = matcher.start();
+      addViolation(context, "fitnessFunction", "Consecutive operators at position " + pos);
     }
-    return null;
   }
 
   /**
@@ -236,10 +253,29 @@ public class FitnessFunctionValidator implements ConstraintValidator<ValidFitnes
     return variables;
   }
 
-  private String formatErrorMessage(ValidationError error, String expression) {
-    return String.format("%s at position %d in function: %s",
-            error.message,
-            error.position,
-            expression);
+  private Set<String> extractVariablesWithoutSigma(String func) {
+    Set<String> variables = new HashSet<>();
+    Matcher matcher = VARIABLE_PATTERN.matcher(func);
+
+    while (matcher.find()) {
+      String var = matcher.group(0);
+      if (var.startsWith("SIGMA")) {
+        // Lấy nội dung bên trong {}
+        String content = var.substring(6, var.length() - 1);
+        variables.add(content);
+      } else {
+        variables.add(var);
+      }
+    }
+
+    return variables;
   }
+
+  private void addViolation(ConstraintValidatorContext context, String field, String message) {
+    context.disableDefaultConstraintViolation();
+    context.buildConstraintViolationWithTemplate(message)
+            .addPropertyNode(field)
+            .addConstraintViolation();
+  }
+
 }
