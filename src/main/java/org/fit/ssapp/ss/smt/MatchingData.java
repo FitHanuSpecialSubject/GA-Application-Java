@@ -142,7 +142,12 @@ public class MatchingData {
    * @return value
    */
   public double getPropertyValueOf(int idx, int indexOfProperty) {
-    return this.propertyValues[idx][indexOfProperty];
+    try {
+      return this.propertyValues[idx][indexOfProperty];
+    } catch (ArrayIndexOutOfBoundsException e){
+      throw new ArrayIndexOutOfBoundsException("Index not found for value at index: " + indexOfProperty);
+    }
+
   }
 
   /**
@@ -153,7 +158,11 @@ public class MatchingData {
    * @return weight value
    */
   public double getPropertyWeightOf(int idx, int indexOfProperty) {
+    try {
     return this.weights[idx][indexOfProperty];
+    } catch (ArrayIndexOutOfBoundsException e){
+      throw new ArrayIndexOutOfBoundsException("Index not found for weight at index: " + indexOfProperty);
+    }
   }
 
   /**
@@ -164,7 +173,11 @@ public class MatchingData {
    * @return Requirement
    */
   public Requirement getRequirementOf(int idx, int indexOfProperty) {
-    return this.requirements[idx][indexOfProperty];
+    try {
+      return this.requirements[idx][indexOfProperty];
+    } catch (ArrayIndexOutOfBoundsException e){
+      throw new ArrayIndexOutOfBoundsException("Index not found for requirement at index: " + indexOfProperty);
+    }
   }
 
   /**
