@@ -27,9 +27,6 @@ import org.fit.ssapp.dto.request.GameTheoryProblemDto;
  */
 public class FitnessValidateGT implements ConstraintValidator<ValidFitnessFunctionGT, Object> {
 
-  // Pattern to match utility variables u1, u2, etc.
-  private static final Pattern VARIABLE_PATTERN = Pattern.compile("(u\\d+)");
-
   // Pattern to match standard mathematical functions
   private static final Pattern FUNCTION_PATTERN = Pattern.compile("(abs|sqrt|log|exp|ceil|floor|sin|cos|tan|pow)\\(");
 
@@ -41,8 +38,6 @@ public class FitnessValidateGT implements ConstraintValidator<ValidFitnessFuncti
 
   // Pattern to match invalid operators
   private static final Pattern INVALID_OPERATOR_PATTERN = Pattern.compile("[^+\\-*/()\\d\\w\\s,.\\^%]");
-
-  private static final TreeSet<String> VALID_FUNCTIONS = new TreeSet<>(Set.of("SUM","AVERAGE","MIN","MAX","PRODUCT","MEDIAN","RANGE"));
 
   // Map of function names to number of arguments
   private static final Map<String, Integer> FUNCTION_ARGS_COUNT = new HashMap<>();
@@ -97,6 +92,7 @@ public class FitnessValidateGT implements ConstraintValidator<ValidFitnessFuncti
       }
       context.disableDefaultConstraintViolation();
       context.buildConstraintViolationWithTemplate("Invalid data type for fitness function validation")
+          .addPropertyNode("fitnessFunction")
           .addConstraintViolation();
       return false;
     }
@@ -117,15 +113,94 @@ public class FitnessValidateGT implements ConstraintValidator<ValidFitnessFuncti
    */
   private int findHighestUVariable(String expression) {
     int highestIndex = 1; // Default to at least 1 player
-    Pattern uPattern = Pattern.compile("u(\\d+)");
-    Matcher matcher = uPattern.matcher(expression);
     
-    while (matcher.find()) {
-      int playerIndex = Integer.parseInt(matcher.group(1));
-      highestIndex = Math.max(highestIndex, playerIndex);
+    // Using the non-regex method to find player indices
+    Set<Integer> indices = findPlayerIndices(expression);
+    
+    // Find the highest index
+    for (Integer idx : indices) {
+      highestIndex = Math.max(highestIndex, idx);
     }
     
-    return highestIndex; // Return the highest index found
+    return highestIndex;
+  }
+  
+  /**
+   * Checks if a string is a default fitness function
+   * 
+   * @param function Function name to check
+   * @return true if it's a default function
+   */
+  private boolean isDefaultFunction(String function) {
+    if (function == null || function.trim().isEmpty()) {
+      return false;
+    }
+    
+    String upperFunc = function.toUpperCase().trim();
+    return upperFunc.equals(GameTheoryConst.DEFAULT_PAYOFF_FUNC.toUpperCase()) || 
+           GameTheoryConst.AGGREGATION_FUNCTIONS.contains(upperFunc);
+  }
+  
+  /**
+   * Finds all player indices in the expression without using regex
+   * Uses character-by-character tokenizer approach
+   * 
+   * @param expression Expression to analyze
+   * @return Set of player indices found
+   */
+  private Set<Integer> findPlayerIndices(String expression) {
+    Set<Integer> indices = new HashSet<>();
+    
+    if (expression == null || expression.isEmpty()) {
+      return indices;
+    }
+    
+    char[] chars = expression.toCharArray();
+    
+    for (int i = 0; i < chars.length - 1; i++) {
+      if (chars[i] == 'u' && Character.isDigit(chars[i + 1])) {
+        // Found a 'u' variable, read the index
+        StringBuilder indexStr = new StringBuilder();
+        int j = i + 1;
+        
+        while (j < chars.length && Character.isDigit(chars[j])) {
+          indexStr.append(chars[j]);
+          j++;
+        }
+        
+        try {
+          int playerIndex = Integer.parseInt(indexStr.toString());
+          indices.add(playerIndex);
+        } catch (NumberFormatException e) {
+          // Skip if parsing fails
+        }
+      }
+    }
+    
+    return indices;
+  }
+  
+  /**
+   * Checks if player indices in the expression exceed the maximum allowed
+   * 
+   * @param expression Expression to check
+   * @param maxPlayerCount Maximum number of players allowed
+   * @return Set of invalid player indices
+   */
+  private Set<Integer> checkInvalidPlayerIndices(String expression, int maxPlayerCount) {
+    Set<Integer> invalidIndices = new HashSet<>();
+    
+    // Find all player indices
+    Set<Integer> allIndices = findPlayerIndices(expression);
+    
+    // Check which ones exceed the limit
+    for (Integer index : allIndices) {
+      if (index < 1 || index > maxPlayerCount) {
+        invalidIndices.add(index);
+      }
+    }
+    
+    return invalidIndices;
   }
 
   /**
@@ -140,16 +215,12 @@ public class FitnessValidateGT implements ConstraintValidator<ValidFitnessFuncti
     if (value == null || value.trim().isEmpty()) {
       context.disableDefaultConstraintViolation();
       context.buildConstraintViolationWithTemplate("Invalid expression: Empty expression")
+          .addPropertyNode("fitnessFunction")
           .addConstraintViolation();
       return false;
     }
 
-    if (value.equalsIgnoreCase(GameTheoryConst.DEFAULT_PAYOFF_FUNC)) {
-      return true;
-    }
-
-    // Check if it's a default function
-    if (VALID_FUNCTIONS.contains(value.toUpperCase().trim())) {
+    if (value.equalsIgnoreCase(GameTheoryConst.DEFAULT_PAYOFF_FUNC) || isDefaultFunction(value)) {
       return true;
     }
 
@@ -157,23 +228,25 @@ public class FitnessValidateGT implements ConstraintValidator<ValidFitnessFuncti
     if (value.matches(".*\\/\\s*0[^\\d].*") || value.matches(".*\\/\\s*0$")) {
       context.disableDefaultConstraintViolation();
       context.buildConstraintViolationWithTemplate("Invalid fitness function: Division by zero detected")
+          .addPropertyNode("fitnessFunction")
           .addConstraintViolation();
       return false;
     }
 
     // Check player index limit based on actual player count
-    Pattern uPattern = Pattern.compile("u(\\d+)");
-    Matcher uMatcher = uPattern.matcher(value);
+    Set<Integer> invalidIndices = checkInvalidPlayerIndices(value, playerCount);
     
-    while (uMatcher.find()) {
-      int playerIndex = Integer.parseInt(uMatcher.group(1));
-      if (playerIndex > playerCount) {
-        context.disableDefaultConstraintViolation();
-        context.buildConstraintViolationWithTemplate(
-            "Invalid fitness function: Variable u" + playerIndex + " refers to non-existent player. The request contains only " + playerCount + " players.")
-            .addConstraintViolation();
-        return false;
-      }
+    if (!invalidIndices.isEmpty()) {
+      context.disableDefaultConstraintViolation();
+      context.buildConstraintViolationWithTemplate(
+          "Invalid fitness function: Variable " + 
+          (invalidIndices.size() == 1 ? 
+              "u" + invalidIndices.iterator().next() : 
+              "variables " + formatInvalidIndices(invalidIndices)) + 
+          " refers to non-existent player. The request contains only " + playerCount + " players.")
+          .addPropertyNode("fitnessFunction")
+          .addConstraintViolation();
+      return false;
     }
 
     // First, perform detailed validation
@@ -182,6 +255,7 @@ public class FitnessValidateGT implements ConstraintValidator<ValidFitnessFuncti
       // Report the first error
       context.disableDefaultConstraintViolation();
       context.buildConstraintViolationWithTemplate(errors.get(0).getMessage())
+          .addPropertyNode("fitnessFunction")
           .addConstraintViolation();
       return false;
     }
@@ -214,6 +288,7 @@ public class FitnessValidateGT implements ConstraintValidator<ValidFitnessFuncti
         context.disableDefaultConstraintViolation();
         context.buildConstraintViolationWithTemplate(
                 "Invalid fitness function syntax: '" + validationResult.getErrors().get(0) + "'")
+            .addPropertyNode("fitnessFunction")
             .addConstraintViolation();
         return false;
       }
@@ -223,6 +298,7 @@ public class FitnessValidateGT implements ConstraintValidator<ValidFitnessFuncti
       if (!errors.isEmpty()) {
         context.disableDefaultConstraintViolation();
         context.buildConstraintViolationWithTemplate(errors.get(0).getMessage())
+            .addPropertyNode("fitnessFunction")
             .addConstraintViolation();
         return false;
       }
@@ -230,10 +306,30 @@ public class FitnessValidateGT implements ConstraintValidator<ValidFitnessFuncti
       context.disableDefaultConstraintViolation();
       context.buildConstraintViolationWithTemplate(
               "Invalid fitness function syntax: '" + e.getMessage() + "'")
+          .addPropertyNode("fitnessFunction")
           .addConstraintViolation();
       return false;
     }
     return true;
+  }
+  
+  /**
+   * Format invalid indices for error message
+   * 
+   * @param indices Set of invalid indices
+   * @return Formatted string of invalid indices
+   */
+  private String formatInvalidIndices(Set<Integer> indices) {
+    StringBuilder sb = new StringBuilder();
+    int count = 0;
+    for (Integer idx : indices) {
+      if (count > 0) {
+        sb.append(count == indices.size() - 1 ? " and " : ", ");
+      }
+      sb.append("u").append(idx);
+      count++;
+    }
+    return sb.toString();
   }
 
   /**
@@ -256,6 +352,12 @@ public class FitnessValidateGT implements ConstraintValidator<ValidFitnessFuncti
     if (invalidOpMatcher.find()) {
       String invalidOp = invalidOpMatcher.group();
       errors.add(new ValidationError("Invalid operator: Unrecognized operator '" + invalidOp + "' in '" + func + "'", func));
+    }
+
+    // Check for missing operators between variables or after variables
+    ValidationError missingOperatorError = checkMissingOperators(func);
+    if (missingOperatorError != null) {
+      errors.add(missingOperatorError);
     }
 
     // Check parentheses matching using Stack
@@ -313,6 +415,82 @@ public class FitnessValidateGT implements ConstraintValidator<ValidFitnessFuncti
     }
 
     return errors;
+  }
+  
+  /**
+   * Checks if operators are missing between variables or after variables in the expression.
+   * This ensures that expressions like "u1u2" or "u1p1" are detected as invalid.
+   *
+   * @param func Function expression to check
+   * @return ValidationError if missing operators found, null otherwise
+   */
+  private ValidationError checkMissingOperators(String func) {
+    if (func == null || func.isEmpty()) {
+      return null;
+    }
+    
+    // Chuẩn bị cho việc phân tích
+    char[] chars = func.toCharArray();
+    boolean inVariable = false;
+    boolean expectOperator = false;
+    int variableStartPos = -1;
+    
+    for (int i = 0; i < chars.length; i++) {
+      char c = chars[i];
+      
+      // Skip whitespace
+      if (Character.isWhitespace(c)) {
+        continue;
+      }
+      
+      // Check if we're starting a variable
+      if (!inVariable && (c == 'u' || c == 'p' || c == 'P') && i + 1 < chars.length && Character.isDigit(chars[i + 1])) {
+        inVariable = true;
+        variableStartPos = i;
+        continue;
+      }
+      
+      // If we're in a variable and find a digit, continue
+      if (inVariable && Character.isDigit(c)) {
+        continue;
+      }
+      
+      // If we were in a variable but now find a letter, check if it's the end of a variable
+      if (inVariable && !Character.isDigit(c)) {
+        inVariable = false;
+        expectOperator = true;
+        
+        // If the current character is a variable start (u, p, P) but we're expecting an operator,
+        // it means we have variables next to each other without an operator
+        if ((c == 'u' || c == 'p' || c == 'P') && i + 1 < chars.length && Character.isDigit(chars[i + 1])) {
+          return new ValidationError(
+              "Invalid syntax: Missing operator between variables at position " + i + 
+              " in '" + func + "'. Variables must be separated by operators.", 
+              func);
+        }
+      }
+      
+      // If we're expecting an operator, check if we got one
+      if (expectOperator) {
+        if (c == '+' || c == '-' || c == '*' || c == '/' || c == ')' || c == ',' || c == '^') {
+          expectOperator = false;
+        } else if (c == '(') {
+          // Opening parenthesis after a variable requires an implicit multiplication operator
+          // which is not allowed in our syntax
+          return new ValidationError(
+              "Invalid syntax: Missing operator between variable and '(' at position " + i + 
+              " in '" + func + "'. Implicit multiplication is not supported.", 
+              func);
+        } else if (!Character.isDigit(c) && !Character.isWhitespace(c)) {
+          return new ValidationError(
+              "Invalid syntax: Expected operator after variable at position " + i + 
+              " in '" + func + "'.", 
+              func);
+        }
+      }
+    }
+    
+    return null;
   }
 
   /**
@@ -434,19 +612,35 @@ public class FitnessValidateGT implements ConstraintValidator<ValidFitnessFuncti
 
   /**
    * Extracts valid variable names from a mathematical function.
-   * - Uses **regex matching** to identify valid variables (u1, u2, etc).
-   * - Returns a **set of unique variable names** found in the function.
+   * Uses the tokenizer approach to identify variables (u1, u2, etc).
    *
    * @param func The mathematical function as a string.
    * @return A set of valid variable names found in the function.
    */
   private Set<String> extractVariables(String func) {
     Set<String> variables = new HashSet<>();
-    Matcher matcher = VARIABLE_PATTERN.matcher(func);
-    while (matcher.find()) {
-      String variable = matcher.group(0);
-      variables.add(variable);
+    
+    if (func == null || func.isEmpty()) {
+      return variables;
     }
+    
+    char[] chars = func.toCharArray();
+    
+    for (int i = 0; i < chars.length - 1; i++) {
+      if (chars[i] == 'u' && Character.isDigit(chars[i + 1])) {
+        StringBuilder varName = new StringBuilder();
+        varName.append('u');
+        
+        int j = i + 1;
+        while (j < chars.length && Character.isDigit(chars[j])) {
+          varName.append(chars[j]);
+          j++;
+        }
+        
+        variables.add(varName.toString());
+      }
+    }
+
     return variables;
   }
 

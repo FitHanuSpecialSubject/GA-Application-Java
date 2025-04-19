@@ -5,9 +5,7 @@ import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import net.objecthunter.exp4j.Expression;
@@ -65,9 +63,6 @@ public class StringExpressionEvaluator {
       Pattern generalPattern = Pattern.compile("(P[0-9]+)?" + nonRelativePattern.pattern());
       Matcher generalMatcher = generalPattern.matcher(expression);
 
-      // Collect all invalid indices before processing
-      Set<String> invalidReferences = new HashSet<>();
-
       while (generalMatcher.find()) {
         String placeholder = generalMatcher.group();
         if (placeholder.contains("P")) {
@@ -79,40 +74,16 @@ public class StringExpressionEvaluator {
               .map(x -> x - 1)
               .toArray(); // [j, i]
 
-          // Validate player index
-          if (ji[0] < 0 || ji[0] >= normalPlayers.size()) {
-            invalidReferences.add("P" + (ji[0] + 1) + " (player index out of bounds, max: " + normalPlayers.size() + ")");
-            continue;
-          }
-
           NormalPlayer otherPlayer = normalPlayers.get(ji[0]);
           Strategy otherPlayerStrategy = otherPlayer.getStrategyAt(chosenStrategyIndices[ji[0]]);
-
-          // Validate property index
-          if (ji[1] < 0 || ji[1] >= otherPlayerStrategy.getProperties().size()) {
-            invalidReferences.add("p" + (ji[1] + 1) + " for player " + (ji[0] + 1) + 
-                " (property index out of bounds, max: " + otherPlayerStrategy.getProperties().size() + ")");
-            continue;
-          }
-
           double propertyValue = otherPlayerStrategy.getProperties().get(ji[1]);
           expression = expression.replaceAll(placeholder, formatDouble(propertyValue));
         } else {
           // non-relative variables
           int index = Integer.parseInt(placeholder.substring(1)) - 1;
-          if (index < 0 || index >= strategy.getProperties().size()) {
-            invalidReferences.add(placeholder + " (property index out of bounds, max: " + strategy.getProperties().size() + ")");
-            continue;
-          }
           double propertyValue = strategy.getProperties().get(index);
           expression = expression.replaceAll(placeholder, formatDouble(propertyValue));
         }
-      }
-
-      // If there are any invalid references, throw an exception with detailed message
-      if (!invalidReferences.isEmpty()) {
-        throw new IllegalArgumentException("Invalid property reference(s) in payoff function '" + payoffFunction + "': " + 
-            String.join(", ", invalidReferences));
       }
 
       // Try to evaluate the expression to validate syntax
@@ -173,25 +144,12 @@ public class StringExpressionEvaluator {
     try {
       String expression = payoffFunction;
       
-      // Collect all invalid indices before processing
-      Set<String> invalidReferences = new HashSet<>();
-
       Matcher nonRelativeMatcher = nonRelativePattern.matcher(expression);
       while (nonRelativeMatcher.find()) {
         String placeholder = nonRelativeMatcher.group();
         int index = Integer.parseInt(placeholder.substring(1)) - 1;
-        if (index < 0 || index >= strategy.getProperties().size()) {
-          invalidReferences.add(placeholder + " (property index out of bounds, max: " + strategy.getProperties().size() + ")");
-          continue;
-        }
         double propertyValue = strategy.getProperties().get(index);
         expression = expression.replaceAll(placeholder, formatDouble(propertyValue));
-      }
-      
-      // If there are any invalid references, throw an exception with detailed message
-      if (!invalidReferences.isEmpty()) {
-        throw new IllegalArgumentException("Invalid property reference(s) in payoff function '" + payoffFunction + "': " + 
-            String.join(", ", invalidReferences));
       }
 
       // Handle relative variables
@@ -248,37 +206,8 @@ public class StringExpressionEvaluator {
       return calculateByDefault(values, fitnessFunction);
     }
 
-    // Actual number of players
-    int playerCount = payoffs.length;
-
-    // Find all 'u' variables in the expression
-    Pattern uPattern = Pattern.compile("u(\\d+)");
-    Matcher matcher = uPattern.matcher(fitnessFunction);
-    
-    // Check if all 'u' variables are valid before proceeding
-    Set<Integer> invalidIndices = new HashSet<>();
-    while (matcher.find()) {
-      int playerIndex = Integer.parseInt(matcher.group(1));
-      if (playerIndex < 1 || playerIndex > playerCount) {
-        invalidIndices.add(playerIndex);
-      }
-    }
-    
-    // If any invalid indices are found, throw an exception with detailed message
-    if (!invalidIndices.isEmpty()) {
-      String message = String.format(
-          "Error in fitness function '%s': Variable %s refers to non-existent player. " +
-          "Current player count is %d (valid variables are u1 to u%d).",
-          fitnessFunction,
-          invalidIndices.size() == 1 ? "u" + invalidIndices.iterator().next() : "variables " + formatInvalidIndices(invalidIndices),
-          playerCount,
-          playerCount
-      );
-      throw new IllegalArgumentException(message);
-    }
-
     String expression = fitnessFunction;
-    matcher.reset();
+    Matcher matcher = fitnessPattern.matcher(expression);
     
     while (matcher.find()) {
       String variable = matcher.group(0);
@@ -289,22 +218,6 @@ public class StringExpressionEvaluator {
 
     double val = evaluateExpression(expression);
     return new BigDecimal(val).setScale(10, RoundingMode.HALF_UP);
-  }
-
-  /**
-   * Format a list of invalid indices for error message
-   */
-  private static String formatInvalidIndices(Set<Integer> indices) {
-    StringBuilder sb = new StringBuilder();
-    int count = 0;
-    for (Integer idx : indices) {
-      if (count > 0) {
-        sb.append(count == indices.size() - 1 ? " and " : ", ");
-      }
-      sb.append("u").append(idx);
-      count++;
-    }
-    return sb.toString();
   }
 
   /**
