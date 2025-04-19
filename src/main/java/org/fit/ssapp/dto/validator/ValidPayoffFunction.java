@@ -18,7 +18,7 @@ import java.lang.annotation.Target;
  * - Ensures functions have the correct number of arguments.
  * - If the function is invalid, a detailed error message is generated.
  */
-@Target(ElementType.FIELD)
+@Target({ElementType.FIELD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = PayoffValidator.class)
 public @interface ValidPayoffFunction {

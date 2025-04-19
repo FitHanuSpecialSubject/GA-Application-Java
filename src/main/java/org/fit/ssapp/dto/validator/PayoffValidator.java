@@ -14,9 +14,12 @@ import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 import net.objecthunter.exp4j.ValidationResult;
 import org.fit.ssapp.constants.GameTheoryConst;
+import org.fit.ssapp.dto.request.GameTheoryProblemDto;
+import org.fit.ssapp.ss.gt.Strategy;
 
-public class PayoffValidator implements ConstraintValidator<ValidPayoffFunction, String> {
+public class PayoffValidator implements ConstraintValidator<ValidPayoffFunction, Object> {
   private static final Pattern VARIABLE_PATTERN = Pattern.compile("(P[0-9]+)?p[0-9]+");
+  private static final Pattern PROPERTY_PATTERN = Pattern.compile("p(\\d+)");
   private static final Pattern VALID_PATTERN = Pattern.compile(
       "^[\\s]*([pP]\\d+|P\\d+p\\d+|[\\d.]+|[+\\-*/()\\s]|sqrt|log|ceil|floor|abs|sin|cos|tan|SUM|AVERAGE|MIN|MAX|PRODUCT|MEDIAN|RANGE)+[\\s]*$",
       Pattern.CASE_INSENSITIVE
@@ -66,7 +69,83 @@ public class PayoffValidator implements ConstraintValidator<ValidPayoffFunction,
   }
 
   @Override
-  public boolean isValid(String value, ConstraintValidatorContext context) {
+  public boolean isValid(Object value, ConstraintValidatorContext context) {
+    // Handle case when value is not a GameTheoryProblemDto
+    if (!(value instanceof GameTheoryProblemDto dto)) {
+      // If it's a String (for backward compatibility)
+      if (value instanceof String) {
+        // Find the highest property index in the expression
+        String expression = (String) value;
+        int maxPropertyIndex = findHighestPropertyVariable(expression);
+        return isValidString(expression, context, maxPropertyIndex);
+      }
+      context.disableDefaultConstraintViolation();
+      context.buildConstraintViolationWithTemplate("Invalid data type for payoff function validation")
+          .addConstraintViolation();
+      return false;
+    }
+
+    // Get payoff function from DTO
+    String payoffFunction = dto.getDefaultPayoffFunction();
+    
+    // Find max property count from strategies
+    int maxPropertyCount = findMaxPropertyCount(dto);
+    
+    return isValidString(payoffFunction, context, maxPropertyCount);
+  }
+  
+  /**
+   * Finds the maximum number of properties in any strategy of any player
+   * 
+   * @param dto The GameTheoryProblemDto containing players and strategies
+   * @return The maximum property count found
+   */
+  private int findMaxPropertyCount(GameTheoryProblemDto dto) {
+    int maxCount = 0;
+    
+    if (dto.getNormalPlayers() != null) {
+      for (var player : dto.getNormalPlayers()) {
+        if (player.getStrategies() != null) {
+          for (Strategy strategy : player.getStrategies()) {
+            if (strategy.getProperties() != null) {
+              maxCount = Math.max(maxCount, strategy.getProperties().size());
+            }
+          }
+        }
+      }
+    }
+    
+    return maxCount > 0 ? maxCount : 5; // Default to 5 if no properties found
+  }
+
+  /**
+   * Finds the highest property index referenced (e.g., p1, p2, p10)
+   * 
+   * @param expression The payoff function expression to analyze
+   * @return The highest property index found, or 5 if no variables found
+   */
+  private int findHighestPropertyVariable(String expression) {
+    int highestIndex = 5; // Default to at least 5 properties
+    Pattern pPattern = Pattern.compile("p(\\d+)");
+    Matcher matcher = pPattern.matcher(expression);
+    
+    while (matcher.find()) {
+      int propertyIndex = Integer.parseInt(matcher.group(1));
+      highestIndex = Math.max(highestIndex, propertyIndex);
+    }
+    
+    return highestIndex; // Return the highest index found
+  }
+  
+  /**
+   * Validates a payoff function expression string
+   * 
+   * @param value String expression to validate
+   * @param context Validator context
+   * @param propertyCount Maximum property count available
+   * @return true if the expression is valid, false otherwise
+   */
+  private boolean isValidString(String value, ConstraintValidatorContext context, int propertyCount) {
     if (value == null || value.trim().isEmpty()) {
       context.disableDefaultConstraintViolation();
       context.buildConstraintViolationWithTemplate("Invalid expression: Empty expression")
@@ -89,6 +168,33 @@ public class PayoffValidator implements ConstraintValidator<ValidPayoffFunction,
       return true;
     }
     
+    // Check property index limit based on actual property count
+    Pattern pPattern = Pattern.compile("p(\\d+)");
+    Matcher pMatcher = pPattern.matcher(value);
+    
+    // Collect all invalid property indices
+    Set<Integer> invalidIndices = new HashSet<>();
+    while (pMatcher.find()) {
+      int propertyIndex = Integer.parseInt(pMatcher.group(1));
+      if (propertyIndex < 1 || propertyIndex > propertyCount) {
+        invalidIndices.add(propertyIndex);
+      }
+    }
+    
+    // If any invalid indices are found, report the error
+    if (!invalidIndices.isEmpty()) {
+      context.disableDefaultConstraintViolation();
+      context.buildConstraintViolationWithTemplate(
+          "Invalid payoff function: Property " + 
+          (invalidIndices.size() == 1 ? 
+              "p" + invalidIndices.iterator().next() : 
+              "variables " + formatInvalidIndices(invalidIndices)) + 
+          " exceeds available properties. Maximum property count is " + propertyCount + 
+          " (valid variables are p1 to p" + propertyCount + ").")
+          .addConstraintViolation();
+      return false;
+    }
+    
     // First, perform detailed validation
     List<ValidationError> errors = validateDetailed(value);
     if (!errors.isEmpty()) {
@@ -105,64 +211,72 @@ public class PayoffValidator implements ConstraintValidator<ValidPayoffFunction,
           .addConstraintViolation();
       return false;
     }
-
+    
+    String cleanFunc = value.replaceAll("\\s+", "");
     try {
-      // Extract variables
-      Set<String> variables = extractVariables(value);
+      Set<String> variables = extractVariables(cleanFunc);
       
-      // Prepare expression for validation
-      String tempExpr = value;
+      // Create evaluable expression with dummy values for validation
+      ExpressionBuilder builder = new ExpressionBuilder(cleanFunc);
+      
+      // Add all variables with dummy values
       for (String var : variables) {
-        tempExpr = tempExpr.replaceAll(Pattern.quote(var), "1");
+        builder.variable(var);
       }
       
-      // Build and validate the expression
-      ExpressionBuilder builder = new ExpressionBuilder(tempExpr);
       Expression expression = builder.build();
-      ValidationResult validationResult = expression.validate();
       
+      // Set dummy values to validate expression
+      for (String var : variables) {
+        expression.setVariable(var, 1.0);
+      }
+      
+      // Validate expression
+      ValidationResult validationResult = expression.validate();
       if (!validationResult.isValid()) {
         context.disableDefaultConstraintViolation();
         context.buildConstraintViolationWithTemplate(
-            "Invalid mathematical expression: " + validationResult.getErrors().get(0))
+            "Invalid payoff function syntax: '" + validationResult.getErrors().get(0) + "'")
             .addConstraintViolation();
         return false;
       }
       
-      // Perform math validation with variables
-      if (!variables.isEmpty()) {
-        // Add variables to expression builder
-        builder = new ExpressionBuilder(value);
-        for (String var : variables) {
-          builder.variable(var);
-        }
-        expression = builder.build();
-        
-        // Check for math errors with test values
-        errors = validateMathOperations(expression, variables);
-        if (!errors.isEmpty()) {
-          context.disableDefaultConstraintViolation();
-          context.buildConstraintViolationWithTemplate(errors.get(0).getMessage())
-              .addConstraintViolation();
-          return false;
-        }
+      // Check for mathematical issues
+      List<ValidationError> mathErrors = validateMathOperations(expression, variables);
+      if (!mathErrors.isEmpty()) {
+        context.disableDefaultConstraintViolation();
+        context.buildConstraintViolationWithTemplate(mathErrors.get(0).getMessage())
+            .addConstraintViolation();
+        return false;
       }
       
-      return true;
     } catch (Exception e) {
       context.disableDefaultConstraintViolation();
-      context.buildConstraintViolationWithTemplate("Invalid mathematical expression: " + e.getMessage())
+      context.buildConstraintViolationWithTemplate(
+          "Invalid payoff function syntax: '" + e.getMessage() + "'")
           .addConstraintViolation();
       return false;
     }
+    
+    return true;
   }
-  
+
   /**
-   * Performs detailed validation of the function syntax.
-   *
-   * @param func The function to validate.
-   * @return A list of validation errors.
+   * Format a list of invalid indices for error message
    */
+  private String formatInvalidIndices(Set<Integer> indices) {
+    StringBuilder sb = new StringBuilder();
+    int count = 0;
+    for (Integer idx : indices) {
+      if (count > 0) {
+        sb.append(count == indices.size() - 1 ? " and " : ", ");
+      }
+      sb.append("p").append(idx);
+      count++;
+    }
+    return sb.toString();
+  }
+
   private List<ValidationError> validateDetailed(String func) {
     List<ValidationError> errors = new ArrayList<>();
     

@@ -18,7 +18,7 @@ import java.lang.annotation.Target;
  * - Ensures functions have the correct number of arguments.
  * - If the function is invalid, a detailed error message is generated.
  */
-@Target(ElementType.FIELD)
+@Target({ElementType.FIELD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = FitnessValidateGT.class)
 public @interface ValidFitnessFunctionGT {
@@ -28,7 +28,7 @@ public @interface ValidFitnessFunctionGT {
    *
    * @return A string containing the default error message.
    */
-  String message() default "Invalid fitness function syntax or mathematical error";
+  String message() default "Invalid fitness function";
 
   /**
    * Defines validation groups (optional).

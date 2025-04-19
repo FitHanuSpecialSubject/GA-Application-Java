@@ -129,6 +129,7 @@ public class GameTheoryCustomFitnessTest {
   @ValueSource(strings = {
       "(u1 + u2 + ) / 3 - (u4 + u5",
       "u1 + u2 * / u3",
+      "u12 + u3",
       "log()",
       "log(2,3)",
       "INVALID",
@@ -147,7 +148,8 @@ public class GameTheoryCustomFitnessTest {
         .andExpect(status().isBadRequest())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON));
   }
-  
+
+
   @Test
   void InvalidDto() throws Exception {
     String invalidJson = "{" +

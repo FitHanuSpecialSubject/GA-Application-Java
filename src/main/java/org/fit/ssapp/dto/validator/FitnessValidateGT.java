@@ -16,6 +16,7 @@ import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 import net.objecthunter.exp4j.ValidationResult;
 import org.fit.ssapp.constants.GameTheoryConst;
+import org.fit.ssapp.dto.request.GameTheoryProblemDto;
 
 /**
  * **FitnessFunctionValidator** - Validator for fitness function syntax in Game Theory.
@@ -24,7 +25,7 @@ import org.fit.ssapp.constants.GameTheoryConst;
  * - **u{number}** → Represents utility variables for players in game theory.
  * - Various math functions like abs(), sqrt(), log(), ceil(), etc.
  */
-public class FitnessValidateGT implements ConstraintValidator<ValidFitnessFunctionGT, String> {
+public class FitnessValidateGT implements ConstraintValidator<ValidFitnessFunctionGT, Object> {
 
   // Pattern to match utility variables u1, u2, etc.
   private static final Pattern VARIABLE_PATTERN = Pattern.compile("(u\\d+)");
@@ -85,7 +86,57 @@ public class FitnessValidateGT implements ConstraintValidator<ValidFitnessFuncti
   }
 
   @Override
-  public boolean isValid(String value, ConstraintValidatorContext context) {
+  public boolean isValid(Object value, ConstraintValidatorContext context) {
+    // Handle case when value is not a GameTheoryProblemDto
+    if (!(value instanceof GameTheoryProblemDto dto)) {
+      // If it's a String (for backward compatibility)
+      if (value instanceof String) {
+        String expression = (String) value;
+        int minimumPlayerCount = findHighestUVariable(expression);
+        return isValidString(expression, context, minimumPlayerCount);
+      }
+      context.disableDefaultConstraintViolation();
+      context.buildConstraintViolationWithTemplate("Invalid data type for fitness function validation")
+          .addConstraintViolation();
+      return false;
+    }
+
+    // Get fitness function from DTO
+    String fitnessFunction = dto.getFitnessFunction();
+    // Get actual player count
+    int actualPlayerCount = dto.getNormalPlayers() != null ? dto.getNormalPlayers().size() : 0;
+
+    return isValidString(fitnessFunction, context, actualPlayerCount);
+  }
+
+  /**
+   * Finds the highest player index referenced in u variables (e.g., u1, u2, u10)
+   * 
+   * @param expression The fitness function expression to analyze
+   * @return The highest player index found, or 1 if no variables found
+   */
+  private int findHighestUVariable(String expression) {
+    int highestIndex = 1; // Default to at least 1 player
+    Pattern uPattern = Pattern.compile("u(\\d+)");
+    Matcher matcher = uPattern.matcher(expression);
+    
+    while (matcher.find()) {
+      int playerIndex = Integer.parseInt(matcher.group(1));
+      highestIndex = Math.max(highestIndex, playerIndex);
+    }
+    
+    return highestIndex; // Return the highest index found
+  }
+
+  /**
+   * Validates a fitness function expression string
+   * 
+   * @param value String expression to validate
+   * @param context Validator context
+   * @param playerCount Actual number of players
+   * @return true if the expression is valid, false otherwise
+   */
+  private boolean isValidString(String value, ConstraintValidatorContext context, int playerCount) {
     if (value == null || value.trim().isEmpty()) {
       context.disableDefaultConstraintViolation();
       context.buildConstraintViolationWithTemplate("Invalid expression: Empty expression")
@@ -108,6 +159,21 @@ public class FitnessValidateGT implements ConstraintValidator<ValidFitnessFuncti
       context.buildConstraintViolationWithTemplate("Invalid fitness function: Division by zero detected")
           .addConstraintViolation();
       return false;
+    }
+
+    // Check player index limit based on actual player count
+    Pattern uPattern = Pattern.compile("u(\\d+)");
+    Matcher uMatcher = uPattern.matcher(value);
+    
+    while (uMatcher.find()) {
+      int playerIndex = Integer.parseInt(uMatcher.group(1));
+      if (playerIndex > playerCount) {
+        context.disableDefaultConstraintViolation();
+        context.buildConstraintViolationWithTemplate(
+            "Invalid fitness function: Variable u" + playerIndex + " refers to non-existent player. The request contains only " + playerCount + " players.")
+            .addConstraintViolation();
+        return false;
+      }
     }
 
     // First, perform detailed validation
