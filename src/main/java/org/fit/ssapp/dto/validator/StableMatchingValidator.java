@@ -6,7 +6,6 @@ import org.fit.ssapp.config.ValidationConfig;
 import org.fit.ssapp.constants.MessageConst;
 import org.fit.ssapp.dto.request.StableMatchingProblemDto;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 public class StableMatchingValidator implements ConstraintValidator<ValidStableMatching, StableMatchingProblemDto> {
 
@@ -16,22 +15,6 @@ public class StableMatchingValidator implements ConstraintValidator<ValidStableM
     @Override
     public boolean isValid(StableMatchingProblemDto dto, ConstraintValidatorContext context) {
         boolean isValid = true;
-
-        if (dto.getPopulationSize() > validationConfig.getMaxPopulation()) {
-            context.disableDefaultConstraintViolation();
-            context.buildConstraintViolationWithTemplate("Population size must not exceed " + validationConfig.getMaxPopulation())
-                    .addPropertyNode("populationSize")
-                    .addConstraintViolation();
-            isValid = false;
-        }
-
-        if (dto.getGeneration() > validationConfig.getMaxGeneration()) {
-            context.disableDefaultConstraintViolation();
-            context.buildConstraintViolationWithTemplate("Generation must not exceed " + validationConfig.getMaxGeneration())
-                    .addPropertyNode("generation")
-                    .addConstraintViolation();
-            isValid = false;
-        }
 
         if (dto.getNumberOfIndividuals() < validationConfig.getMinIndividuals()) {
             context.disableDefaultConstraintViolation();
@@ -67,4 +50,5 @@ public class StableMatchingValidator implements ConstraintValidator<ValidStableM
 
         return isValid;
     }
+
 }

@@ -23,8 +23,10 @@ import org.fit.ssapp.dto.validator.*;
 @ValidEvaluateFunctionCount
 @ValidIndividualArrayPropertyCount
 @ValidStableMatching
+@ValidThreshold
 @ValidMatrixDimension
 @Builder
+
 public class StableMatchingProblemDto implements ProblemRequestDto {
 
   @Size(max = 255, message = ErrMessage.PROBLEM_NAME)
