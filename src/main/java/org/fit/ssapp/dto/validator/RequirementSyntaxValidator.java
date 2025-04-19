@@ -63,11 +63,32 @@ public class RequirementSyntaxValidator implements
         }
 
         // Invalid: Check components and give detailed feedback
-        if (requirement.contains(":") && !RANGE_PATTERN.matcher(requirement.replaceAll("(\\+\\+|--)$", "")).matches()) {
-          buildViolation(context, "Invalid range format", i, j, requirement);
-          isValid = false;
-          continue;
+        if (requirement.contains(":")) {
+          String withoutSuffix = requirement.replaceAll("(\\+\\+|--)$", "");
+          if (RANGE_PATTERN.matcher(withoutSuffix).matches()) {
+            String[] parts = withoutSuffix.split(":");
+            try {
+              double left = Double.parseDouble(parts[0]);
+              double right = Double.parseDouble(parts[1]);
+
+              if (left > right) {
+                buildViolation(context, "Invalid range logic: left bound is greater than right bound", i, j, requirement);
+                isValid = false;
+                continue;
+              }
+
+            } catch (NumberFormatException e) {
+              buildViolation(context, "Range values must be numeric", i, j, requirement);
+              isValid = false;
+              continue;
+            }
+          } else {
+            buildViolation(context, "Invalid range format", i, j, requirement);
+            isValid = false;
+            continue;
+          }
         }
+
 
         if (!NUMBER_PATTERN.matcher(requirement.split("[:\\+\\-]")[0]).matches()) {
           buildViolation(context, "Requirement must start with a valid number", i, j, requirement);
