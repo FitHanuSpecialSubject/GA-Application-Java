@@ -24,6 +24,7 @@ import org.fit.ssapp.dto.validator.*;
 @ValidIndividualArrayPropertyCount
 @ValidStableMatching
 @ValidThreshold
+@ValidMatrixDimension
 @Builder
 
 public class StableMatchingProblemDto implements ProblemRequestDto {
