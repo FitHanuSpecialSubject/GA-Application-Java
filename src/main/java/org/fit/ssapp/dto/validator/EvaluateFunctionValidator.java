@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 import org.fit.ssapp.constants.StableMatchingConst;
+import org.fit.ssapp.dto.request.StableMatchingProblemDto;
 
 /**
  * Validator class for checking the validity of evaluate functions provided as an array of strings.
@@ -16,7 +17,7 @@ import org.fit.ssapp.constants.StableMatchingConst;
  * expression with supported variables.
  */
 public class EvaluateFunctionValidator implements
-        ConstraintValidator<ValidEvaluateFunction, String[]> {
+        ConstraintValidator<ValidEvaluateFunction, StableMatchingProblemDto> {
 
   private static final Pattern VARIABLE_PATTERN = Pattern.compile("(P\\d+|W\\d+|R\\d+)");
   private static final Pattern OPERATOR_PATTERN = Pattern.compile("[+\\-*/^]{2,}");
@@ -25,16 +26,6 @@ public class EvaluateFunctionValidator implements
   private static final Pattern BRACKET_PATTERN = Pattern.compile("[()]");
 
 
-
-  private static class ValidationError {
-    private final String message;
-    private final int position;
-
-    public ValidationError(String message, int position) {
-      this.message = message;
-      this.position = position;
-    }
-  }
   /**
    * Validates the array of evaluate functions. Each function is checked to ensure it is either the
    * default evaluate function or a valid mathematical expression with supported variables.
@@ -44,30 +35,25 @@ public class EvaluateFunctionValidator implements
    * @return true if all evaluate functions are valid, false otherwise
    */
   @Override
-  public boolean isValid(String[] values, ConstraintValidatorContext context) {
+  public boolean isValid(StableMatchingProblemDto dto, ConstraintValidatorContext context) {
+    String[] values = dto.getEvaluateFunctions();
+    boolean isValid = true;
     for (String func : values) {
       if (func.equalsIgnoreCase(StableMatchingConst.DEFAULT_EVALUATE_FUNC)) {
         continue;
       }
 
-      if (validateExp4j(func)) {
-        return true;
+      if (!validateExp4j(func)) {
+        collectAllErrors(context, func);
+        isValid = false;
       }
 
-      List<ValidationError> errors = collectAllErrors(func);
-
-      if (!errors.isEmpty()) {
-        context.disableDefaultConstraintViolation();
-
-        for (ValidationError error : errors) {
-          String message = formatErrorMessage(error, func);
-          context.buildConstraintViolationWithTemplate(message)
-                  .addConstraintViolation();
-        }
-        return false;
+      Set<String> variables = extractVariables(func);
+      if (!validateVariableLimits(context, variables, dto)) {
+        isValid = false;
       }
     }
-    return true;
+    return isValid;
   }
 
   private boolean validateExp4j(String expression) {
@@ -94,34 +80,67 @@ public class EvaluateFunctionValidator implements
       return false;
     }
   }
-
-  private List<ValidationError> collectAllErrors(String expression) {
-    List<ValidationError> errors = new ArrayList<>();
-
-    ValidationError bracketError = checkBrackets(expression);
-    if (bracketError != null) {
-      errors.add(bracketError);
-    }
-
-    ValidationError operatorError = checkConsecutiveOperators(expression);
-    if (operatorError != null) {
-      errors.add(operatorError);
-    }
-
-    ValidationError charError = checkInvalidCharacters(expression);
-    if (charError != null) {
-      errors.add(charError);
-    }
-
-    ValidationError divisionByZeroError = checkDivisionByZero(expression);
-    if (divisionByZeroError != null) {
-      errors.add(divisionByZeroError);
-    }
-
-    return errors;
+  private void collectAllErrors(ConstraintValidatorContext context, String expression) {
+    checkBrackets(context, expression);
+    checkConsecutiveOperators(context, expression);
+    checkDivisionByZero(context, expression);
+    checkInvalidCharacters(context, expression);
   }
 
-  private ValidationError checkInvalidCharacters(String expression) {
+  private boolean validateVariableLimits(ConstraintValidatorContext context, Set<String> variables, StableMatchingProblemDto dto) {
+    boolean isValid = true;
+    for (String var : variables) {
+      if (var.startsWith("P") || var.startsWith("p")) {
+        try {
+          int index = Integer.parseInt(var.substring(1));
+          if (index > dto.getNumberOfProperty() || index < 1) {
+            addViolation(
+                    context,
+                    "evaluateFunctions",
+                    "Invalid P index: " + index + ". Must be between 1 and " + dto.getNumberOfProperty()
+            );
+            isValid = false;
+          }
+        } catch (NumberFormatException e) {
+          addViolation(context, "evaluateFunctions", "Invalid P variable format: " + var);
+          isValid = false;
+        }
+      } else if (var.startsWith("W") || var.startsWith("w")) {
+        try {
+          int index = Integer.parseInt(var.substring(1));
+          if (index > dto.getNumberOfProperty() || index < 1) {
+            addViolation(
+                    context,
+                    "evaluateFunctions",
+                    "Invalid W index: " + index + ". Must be between 1 and " + dto.getNumberOfProperty()
+            );
+            isValid = false;
+          }
+        } catch (NumberFormatException e) {
+          addViolation(context, "evaluateFunctions", "Invalid W variable format: " + var);
+          isValid = false;
+        }
+      }  else if (var.startsWith("R") || var.startsWith("r")) {
+        try {
+          int index = Integer.parseInt(var.substring(1));
+          if (index > dto.getNumberOfProperty() || index < 1) {
+            addViolation(
+                    context,
+                    "evaluateFunctions",
+                    "Invalid R index: " + index + ". Must be between 1 and " + dto.getNumberOfProperty()
+            );
+            isValid = false;
+          }
+        } catch (NumberFormatException e) {
+          addViolation(context, "evaluateFunctions", "Invalid R variable format: " + var);
+          isValid = false;
+        }
+      }
+    }
+    return isValid;
+  }
+
+  private void checkInvalidCharacters(ConstraintValidatorContext context, String expression) {
     StringBuilder currentToken = new StringBuilder();
     int position = 0;
 
@@ -130,8 +149,7 @@ public class EvaluateFunctionValidator implements
 
       if (Character.isWhitespace(c)) {
         if (currentToken.length() > 0) {
-          ValidationError error = validateToken(currentToken.toString(), position);
-          if (error != null) return error;
+          validateToken(context, currentToken.toString(), position);
           currentToken = new StringBuilder();
         }
         continue;
@@ -139,13 +157,13 @@ public class EvaluateFunctionValidator implements
 
       if (isSingleCharacterToken(c)) {
         if (currentToken.length() > 0) {
-          ValidationError error = validateToken(currentToken.toString(), position);
-          if (error != null) return error;
+          validateToken(context, currentToken.toString(), position);
           currentToken = new StringBuilder();
         }
 
         if (!isValidSingleCharacter(c)) {
-          return new ValidationError("Invalid character '" + c + "'", i);
+          addViolation(context, "evaluateFunctions", "Invalid character '" + c + "' at position " + i);
+          return;
         }
         continue;
       }
@@ -157,10 +175,8 @@ public class EvaluateFunctionValidator implements
     }
 
     if (currentToken.length() > 0) {
-      return validateToken(currentToken.toString(), position);
+      validateToken(context, currentToken.toString(), position);
     }
-
-    return null;
   }
 
   private boolean isSingleCharacterToken(char c) {
@@ -173,19 +189,19 @@ public class EvaluateFunctionValidator implements
             || BRACKET_PATTERN.matcher(String.valueOf(c)).matches();
   }
 
-  private ValidationError validateToken(String token, int position) {
+  private void validateToken(ConstraintValidatorContext context, String token, int position) {
     if (VARIABLE_PATTERN.matcher(token).matches()) {
-      return null;
+      return;
     }
 
     if (NUMBER_PATTERN.matcher(token).matches()) {
-      return null;
+      return;
     }
 
-    return new ValidationError("Invalid token '" + token + "'", position);
+    addViolation(context, "evaluateFunctions", "Invalid token '" + token + "' at position " + position);
   }
 
-  private ValidationError checkBrackets(String expression) {
+  private void checkBrackets(ConstraintValidatorContext context, String expression) {
     Stack<Integer> stack = new Stack<>();
 
     for (int i = 0; i < expression.length(); i++) {
@@ -194,17 +210,17 @@ public class EvaluateFunctionValidator implements
         stack.push(i);
       } else if (current == ')') {
         if (stack.isEmpty()) {
-          return new ValidationError("Unmatched closing bracket", i);
+          addViolation(context, "evaluateFunctions", "Unmatched closing bracket at position " + i);
+        } else {
+          stack.pop();
         }
-        stack.pop();
       }
     }
 
-    if (!stack.isEmpty()) {
-      return new ValidationError("Unmatched opening bracket", stack.peek());
+    while (!stack.isEmpty()) {
+      int pos = stack.pop();
+      addViolation(context, "evaluateFunctions", "Unmatched opening bracket at position " + pos);
     }
-
-    return null;
   }
 
   /**
@@ -223,28 +239,24 @@ public class EvaluateFunctionValidator implements
     return variables;
   }
 
-  private ValidationError checkConsecutiveOperators(String expression) {
+  private void checkConsecutiveOperators(ConstraintValidatorContext context, String expression) {
     Matcher matcher = OPERATOR_PATTERN.matcher(expression);
-    if (matcher.find()) {
-      return new ValidationError(
-              "Invalid consecutive operators: " + matcher.group(),
-              matcher.start()
-      );
+    while (matcher.find()) {
+      int pos = matcher.start();
+      addViolation(context, "evaluateFunctions", "Consecutive operators at position " + pos);
     }
-    return null;
   }
 
-  private ValidationError checkDivisionByZero(String expression) {
+  private void checkDivisionByZero(ConstraintValidatorContext context, String expression) {
     for (int i = 0; i < expression.length(); i++) {
       char c = expression.charAt(i);
       if (c == '/') {
         String denominator = extractDenominator(expression, i + 1);
-        if (denominator.equals("0") || denominator.equals("0.0")) {
-          return new ValidationError("Division by zero", i);
+        if (denominator.matches("0(\\.0+)?")) {
+          addViolation(context, "evaluateFunctions", "Division by zero at position " + (i + 1));
         }
       }
     }
-    return null;
   }
 
   private String extractDenominator(String expression, int startPos) {
@@ -262,11 +274,11 @@ public class EvaluateFunctionValidator implements
     return denominator.toString().trim();
   }
 
-  private String formatErrorMessage(ValidationError error, String expression) {
-    return String.format("%s at position %d in function: %s",
-            error.message,
-            error.position,
-            expression);
+  private void addViolation(ConstraintValidatorContext context, String field, String message) {
+    context.disableDefaultConstraintViolation();
+    context.buildConstraintViolationWithTemplate(message)
+            .addPropertyNode(field)
+            .addConstraintViolation();
   }
 
   // .-..-.

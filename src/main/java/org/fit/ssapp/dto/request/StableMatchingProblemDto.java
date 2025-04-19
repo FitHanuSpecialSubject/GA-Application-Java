@@ -24,6 +24,7 @@ import org.fit.ssapp.dto.validator.*;
 @ValidIndividualArrayPropertyCount
 @ValidStableMatching
 @ValidMatrixDimension
+@ValidEvaluateFunction
 @Builder
 public class StableMatchingProblemDto implements ProblemRequestDto {
 
@@ -53,7 +54,6 @@ public class StableMatchingProblemDto implements ProblemRequestDto {
   private double[][] individualProperties;
 
   @NotNull(message = ErrMessage.NOT_BLANK)
-  @ValidEvaluateFunction
   private String[] evaluateFunctions;
 
   @NotEmpty(message = ErrMessage.NOT_BLANK)

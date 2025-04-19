@@ -158,13 +158,6 @@ public class StableMatchingService implements ProblemService {
                       .message("[Service] Stable Matching: BAD REQUEST")
                       .status(HttpStatus.BAD_REQUEST.value()).build()
       );
-    } catch (ArrayIndexOutOfBoundsException e) {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-              Response.builder()
-                      .data(null)
-                      .message("errors: " + e.getMessage())
-                      .status(HttpStatus.BAD_REQUEST.value()).build()
-      );
     } catch (Exception e) {
       log.error("[Service] Stable Matching: Error solving stable matching problem: {}",
               e.getMessage(),
