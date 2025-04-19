@@ -16,8 +16,6 @@ public class StableMatchingValidator implements ConstraintValidator<ValidStableM
     public boolean isValid(StableMatchingProblemDto dto, ConstraintValidatorContext context) {
         boolean isValid = true;
 
-        isValid = new PopulationAndGenerationThreshold().validateThreshold(dto, context, validationConfig);
-
         if (dto.getNumberOfIndividuals() < validationConfig.getMinIndividuals()) {
             context.disableDefaultConstraintViolation();
             context.buildConstraintViolationWithTemplate("Number of individuals must be at least " + validationConfig.getMinIndividuals())

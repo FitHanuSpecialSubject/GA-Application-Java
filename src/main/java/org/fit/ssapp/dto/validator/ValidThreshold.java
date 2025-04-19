@@ -5,12 +5,11 @@ import jakarta.validation.Payload;
 import java.lang.annotation.*;
 
 @Documented
-@Constraint(validatedBy = GameTheoryValidator.class)
+@Constraint(validatedBy = ThresholdValidator.class)
 @Target({ ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ValidGameTheory {
-    String message() default "Invalid GameTheoryProblemDto values.";
+public @interface ValidThreshold {
+    String message() default "Invalid StableMatchingProblemDto values.";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 }
-

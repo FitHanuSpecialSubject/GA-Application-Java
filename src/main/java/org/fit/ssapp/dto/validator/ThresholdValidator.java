@@ -2,11 +2,17 @@ package org.fit.ssapp.dto.validator;
 
 import org.fit.ssapp.config.ValidationConfig;
 import org.fit.ssapp.dto.request.ProblemRequestDto;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
-public class PopulationAndGenerationThreshold {
-    public boolean validateThreshold(ProblemRequestDto dto, ConstraintValidatorContext context, ValidationConfig validationConfig) {
+public class ThresholdValidator implements ConstraintValidator<ValidThreshold, ProblemRequestDto> {
+    @Autowired
+    private ValidationConfig validationConfig;
+
+
+    public boolean isValid(ProblemRequestDto dto, ConstraintValidatorContext context) {
         boolean isValid = true;
         int threshold = validationConfig.getThreshold();
 
@@ -26,4 +32,5 @@ public class PopulationAndGenerationThreshold {
         }
         return isValid;
     }
+
 }
