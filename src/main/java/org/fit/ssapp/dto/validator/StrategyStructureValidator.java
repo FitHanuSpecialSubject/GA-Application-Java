@@ -83,10 +83,11 @@ public class StrategyStructureValidator implements ConstraintValidator<ValidStra
 
     private void addViolation(ConstraintValidatorContext context, String field, String message) {
         context.disableDefaultConstraintViolation();
-        context.buildConstraintViolationWithTemplate(
-                String.format("field: \"%s\", message: \"%s\"", field, message)
-        ).addConstraintViolation();
+        context.buildConstraintViolationWithTemplate(message)
+                .addPropertyNode(field)
+                .addConstraintViolation();
     }
+
 }
 
 
