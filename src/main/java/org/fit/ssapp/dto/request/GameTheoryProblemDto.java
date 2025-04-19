@@ -8,6 +8,7 @@ import org.fit.ssapp.ss.gt.NormalPlayer;
 import org.fit.ssapp.ss.gt.SpecialPlayer;
 import org.fit.ssapp.dto.validator.ValidPayoffFunction;
 import org.fit.ssapp.dto.validator.ValidFitnessFunctionGT;
+import org.fit.ssapp.dto.validator.ValidThreshold;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -29,6 +30,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @ValidFitnessFunctionGT
 @ValidPayoffFunction
+@ValidThreshold
 public class GameTheoryProblemDto implements ProblemRequestDto {
   private SpecialPlayer specialPlayer;
 
