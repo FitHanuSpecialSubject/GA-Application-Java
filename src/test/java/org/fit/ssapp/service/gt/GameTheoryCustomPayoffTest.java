@@ -89,7 +89,7 @@ public class GameTheoryCustomPayoffTest {
       "NSGAIII,P2p1*P1p2",
       "eMOEA,P1p1-P2p2",
       "PESA2,P1p1/P2p2",
-      "VEGA,(P1p1+P2p1)/2-p1",
+      "VEGA,p1+p2-p3",
       "OMOPSO,P1p1+P2p2-P1p3",
       "SMPSO,P1p1*p2/P2p3"
   })

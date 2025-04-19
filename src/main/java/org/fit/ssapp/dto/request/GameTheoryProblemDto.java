@@ -6,8 +6,8 @@ import java.util.List;
 import org.fit.ssapp.ss.gt.Conflict;
 import org.fit.ssapp.ss.gt.NormalPlayer;
 import org.fit.ssapp.ss.gt.SpecialPlayer;
-import org.fit.ssapp.dto.validator.ValidFitnessFunction;
 import org.fit.ssapp.dto.validator.ValidPayoffFunction;
+import org.fit.ssapp.dto.validator.ValidFitnessFunctionGT;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -27,6 +27,8 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@ValidFitnessFunctionGT
+@ValidPayoffFunction
 public class GameTheoryProblemDto implements ProblemRequestDto {
   private SpecialPlayer specialPlayer;
 
@@ -38,11 +40,9 @@ public class GameTheoryProblemDto implements ProblemRequestDto {
 
   private List<Conflict> conflictSet = new ArrayList<>();
 
-  @ValidFitnessFunction
   @NotNull(message = "Fitness function cannot be null")
   private String fitnessFunction;
 
-  @ValidPayoffFunction
   @NotNull(message = "Default payoff function is required")
   @NotBlank(message = "Default payoff function is required")
   private String defaultPayoffFunction;
@@ -50,7 +50,6 @@ public class GameTheoryProblemDto implements ProblemRequestDto {
   @NotNull(message = "Algorithm is required")
   @NotBlank(message = "Algorithm cannot be empty")
   private String algorithm;
-
 
   private boolean isMaximizing;
   private String distributedCores;

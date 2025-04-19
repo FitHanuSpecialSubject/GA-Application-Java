@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.hamcrest.Matchers.containsString;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -128,12 +129,16 @@ public class GameTheoryCustomFitnessTest {
   @ValueSource(strings = {
       "(u1 + u2 + ) / 3 - (u4 + u5",
       "u1 + u2 * / u3",
+      "u12 + u3",
+      "log()",
+      "log(2,3)",
       "INVALID",
       "code qua chien"
   })
   void invalidFunction(String function) throws Exception {
     GameTheoryProblemDto invalidDto = setUpTestCase();
     invalidDto.setFitnessFunction(function);
+    invalidDto.setAlgorithm("NSGAII");
 
     this.mockMvc
         .perform(post("/api/game-theory-solver")
@@ -143,6 +148,7 @@ public class GameTheoryCustomFitnessTest {
         .andExpect(status().isBadRequest())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON));
   }
+
 
   @Test
   void InvalidDto() throws Exception {

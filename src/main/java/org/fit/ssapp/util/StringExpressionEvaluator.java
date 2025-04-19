@@ -5,7 +5,9 @@ import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import net.objecthunter.exp4j.Expression;
@@ -63,6 +65,9 @@ public class StringExpressionEvaluator {
       Pattern generalPattern = Pattern.compile("(P[0-9]+)?" + nonRelativePattern.pattern());
       Matcher generalMatcher = generalPattern.matcher(expression);
 
+      // Collect all invalid indices before processing
+      Set<String> invalidReferences = new HashSet<>();
+
       while (generalMatcher.find()) {
         String placeholder = generalMatcher.group();
         if (placeholder.contains("P")) {
@@ -76,7 +81,8 @@ public class StringExpressionEvaluator {
 
           // Validate player index
           if (ji[0] < 0 || ji[0] >= normalPlayers.size()) {
-            throw new IllegalArgumentException("Invalid player index: " + (ji[0] + 1));
+            invalidReferences.add("P" + (ji[0] + 1) + " (player index out of bounds, max: " + normalPlayers.size() + ")");
+            continue;
           }
 
           NormalPlayer otherPlayer = normalPlayers.get(ji[0]);
@@ -84,7 +90,9 @@ public class StringExpressionEvaluator {
 
           // Validate property index
           if (ji[1] < 0 || ji[1] >= otherPlayerStrategy.getProperties().size()) {
-            throw new IllegalArgumentException("Invalid property index: " + (ji[1] + 1) + " for player " + (ji[0] + 1));
+            invalidReferences.add("p" + (ji[1] + 1) + " for player " + (ji[0] + 1) + 
+                " (property index out of bounds, max: " + otherPlayerStrategy.getProperties().size() + ")");
+            continue;
           }
 
           double propertyValue = otherPlayerStrategy.getProperties().get(ji[1]);
@@ -93,11 +101,18 @@ public class StringExpressionEvaluator {
           // non-relative variables
           int index = Integer.parseInt(placeholder.substring(1)) - 1;
           if (index < 0 || index >= strategy.getProperties().size()) {
-            throw new IllegalArgumentException("Invalid property index: " + (index + 1));
+            invalidReferences.add(placeholder + " (property index out of bounds, max: " + strategy.getProperties().size() + ")");
+            continue;
           }
           double propertyValue = strategy.getProperties().get(index);
           expression = expression.replaceAll(placeholder, formatDouble(propertyValue));
         }
+      }
+
+      // If there are any invalid references, throw an exception with detailed message
+      if (!invalidReferences.isEmpty()) {
+        throw new IllegalArgumentException("Invalid property reference(s) in payoff function '" + payoffFunction + "': " + 
+            String.join(", ", invalidReferences));
       }
 
       // Try to evaluate the expression to validate syntax
@@ -157,16 +172,26 @@ public class StringExpressionEvaluator {
     // Validate payoff function syntax
     try {
       String expression = payoffFunction;
+      
+      // Collect all invalid indices before processing
+      Set<String> invalidReferences = new HashSet<>();
 
       Matcher nonRelativeMatcher = nonRelativePattern.matcher(expression);
       while (nonRelativeMatcher.find()) {
         String placeholder = nonRelativeMatcher.group();
         int index = Integer.parseInt(placeholder.substring(1)) - 1;
         if (index < 0 || index >= strategy.getProperties().size()) {
-          throw new IllegalArgumentException("Invalid property index: " + (index + 1));
+          invalidReferences.add(placeholder + " (property index out of bounds, max: " + strategy.getProperties().size() + ")");
+          continue;
         }
         double propertyValue = strategy.getProperties().get(index);
         expression = expression.replaceAll(placeholder, formatDouble(propertyValue));
+      }
+      
+      // If there are any invalid references, throw an exception with detailed message
+      if (!invalidReferences.isEmpty()) {
+        throw new IllegalArgumentException("Invalid property reference(s) in payoff function '" + payoffFunction + "': " + 
+            String.join(", ", invalidReferences));
       }
 
       // Handle relative variables
@@ -201,49 +226,85 @@ public class StringExpressionEvaluator {
    *
    * @param payoffs         Array of payoff values.
    * @param fitnessFunction The fitness function as a string.
-   * @return The computed fitness value as a {@code BigDecimal}.
-   * @throws IllegalArgumentException If the function contains invalid variables.
+   * @return A {@code BigDecimal} result of the fitness function.
    */
   public static BigDecimal evaluateFitnessValue(double[] payoffs, String fitnessFunction) {
-    if (fitnessFunction == null || fitnessFunction.isBlank() || fitnessFunction.equalsIgnoreCase("DEFAULT")) {
-      // if the fitnessFunction is absent or DEFAULT,
-      // the fitness value is the average of all payoffs of all chosen strategies by default
-      List<Double> payoffList = new ArrayList<>();
+    // Check for null or default case
+    if (fitnessFunction == null || fitnessFunction.isEmpty() || fitnessFunction.equalsIgnoreCase("DEFAULT")) {
+      // Calculate the sum of payoffs if DEFAULT
+      double sum = 0;
       for (double payoff : payoffs) {
-        payoffList.add(payoff);
+        sum += payoff;
       }
-      return calculateByDefault(payoffList, "SUM");
+      return new BigDecimal(sum).setScale(10, RoundingMode.HALF_UP);
     }
 
-    // Check if it's a default function
-    if (Arrays.stream(DefaultFunction.values())
-        .anyMatch(f -> f.name().equalsIgnoreCase(fitnessFunction))) {
-      List<Double> payoffList = new ArrayList<>();
+    // If it's a built-in function (SUM, AVERAGE, etc.)
+    if (checkIfIsDefaultFunction(fitnessFunction)) {
+      List<Double> values = new ArrayList<>();
       for (double payoff : payoffs) {
-        payoffList.add(payoff);
+        values.add(payoff);
       }
-      return calculateByDefault(payoffList, fitnessFunction);
+      return calculateByDefault(values, fitnessFunction);
     }
 
-    try {
-      String expression = fitnessFunction;
-      Matcher fitnessMatcher = fitnessPattern.matcher(expression);
-      while (fitnessMatcher.find()) {
-        String placeholder = fitnessMatcher.group();
-        // indices should account for offset from base 1 index of variables
-        int index = Integer.parseInt(placeholder.substring(1)) - 1;
-        if (index >= payoffs.length) {
-          throw new IllegalArgumentException("Invalid payoff index: " + (index + 1) + ". Maximum allowed index is " + payoffs.length);
-        }
-        double propertyValue = payoffs[index];
-        expression = expression.replaceAll(placeholder, formatDouble(propertyValue));
-      }
+    // Actual number of players
+    int playerCount = payoffs.length;
 
-      double val = evaluateExpression(expression);
-      return new BigDecimal(val).setScale(10, RoundingMode.HALF_UP);
-    } catch (Exception e) {
-      throw new IllegalArgumentException("Invalid fitness function: " + fitnessFunction, e);
+    // Find all 'u' variables in the expression
+    Pattern uPattern = Pattern.compile("u(\\d+)");
+    Matcher matcher = uPattern.matcher(fitnessFunction);
+    
+    // Check if all 'u' variables are valid before proceeding
+    Set<Integer> invalidIndices = new HashSet<>();
+    while (matcher.find()) {
+      int playerIndex = Integer.parseInt(matcher.group(1));
+      if (playerIndex < 1 || playerIndex > playerCount) {
+        invalidIndices.add(playerIndex);
+      }
     }
+    
+    // If any invalid indices are found, throw an exception with detailed message
+    if (!invalidIndices.isEmpty()) {
+      String message = String.format(
+          "Error in fitness function '%s': Variable %s refers to non-existent player. " +
+          "Current player count is %d (valid variables are u1 to u%d).",
+          fitnessFunction,
+          invalidIndices.size() == 1 ? "u" + invalidIndices.iterator().next() : "variables " + formatInvalidIndices(invalidIndices),
+          playerCount,
+          playerCount
+      );
+      throw new IllegalArgumentException(message);
+    }
+
+    String expression = fitnessFunction;
+    matcher.reset();
+    
+    while (matcher.find()) {
+      String variable = matcher.group(0);
+      int index = Integer.parseInt(matcher.group(1)) - 1; // Convert to 0-based index
+      double value = payoffs[index];
+      expression = expression.replaceAll(variable, formatDouble(value));
+    }
+
+    double val = evaluateExpression(expression);
+    return new BigDecimal(val).setScale(10, RoundingMode.HALF_UP);
+  }
+
+  /**
+   * Format a list of invalid indices for error message
+   */
+  private static String formatInvalidIndices(Set<Integer> indices) {
+    StringBuilder sb = new StringBuilder();
+    int count = 0;
+    for (Integer idx : indices) {
+      if (count > 0) {
+        sb.append(count == indices.size() - 1 ? " and " : ", ");
+      }
+      sb.append("u").append(idx);
+      count++;
+    }
+    return sb.toString();
   }
 
   /**
