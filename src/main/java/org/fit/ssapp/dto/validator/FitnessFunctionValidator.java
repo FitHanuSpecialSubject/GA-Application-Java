@@ -18,7 +18,7 @@ import org.fit.ssapp.constants.StableMatchingConst;
  * - **S{number}** → Represents satisfaction-related variables.
  * - **SIGMA{expression}** → Represents a summation expression inside `{}`.
  */
-public class FitnessFunctionValidator implements ConstraintValidator<ValidFitnessFunction, String> {
+public class FitnessFunctionValidator implements ConstraintValidator<ValidFitnessFunctionSMT, String> {
 
   private static final Pattern VARIABLE_PATTERN = Pattern.compile("(M\\d+|S\\d+|SIGMA\\{[^}]+\\})");
   private static final Pattern OPERATOR_PATTERN = Pattern.compile("[+\\-*/^]{2,}");
@@ -104,8 +104,13 @@ public class FitnessFunctionValidator implements ConstraintValidator<ValidFitnes
     }
 
     ValidationError sisgmaError = checkSigmaExpressions(expression);
-    if (operatorError != null) {
+    if (sisgmaError != null) {
       errors.add(sisgmaError);
+    }
+
+    ValidationError divisionByZeroError = checkDivisionByZero(expression);
+    if (divisionByZeroError != null) {
+      errors.add(divisionByZeroError);
     }
 
     return errors;
@@ -154,6 +159,31 @@ public class FitnessFunctionValidator implements ConstraintValidator<ValidFitnes
     } catch (Exception e) {
       return false;
     }
+  }
+
+  private ValidationError checkDivisionByZero(String expression) {
+    for (int i = 0; i < expression.length(); i++) {
+      char c = expression.charAt(i);
+      if (c == '/') {
+        String denominator = extractDenominator(expression, i + 1);
+        if (denominator.equals("0") || denominator.equals("0.0")) {
+          return new ValidationError("Division by zero", i);
+        }
+      }
+    }
+    return null;
+  }
+
+  private String extractDenominator(String expression, int startPos) {
+    StringBuilder denominator = new StringBuilder();
+    for (int i = startPos; i < expression.length(); i++) {
+      char c = expression.charAt(i);
+      if (Character.isWhitespace(c)) {
+        continue;
+      }
+      denominator.append(c);
+    }
+    return denominator.toString().trim();
   }
 
   private ValidationError checkBrackets(String expression) {
