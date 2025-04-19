@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+
+import org.fit.ssapp.dto.response.ValidationError;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -48,19 +50,10 @@ public class GlobalExceptionHandler {
    * @return ResponseEntity with validation errors
    */
   @ExceptionHandler(MethodArgumentNotValidException.class)
-  public ResponseEntity<Map<String, Object>> handleValidationExceptions(MethodArgumentNotValidException ex) {
-    logger.warning("Invalid request body!");
-    Map<String, Object> errors = new HashMap<>();
-    errors.put("errors", ex.getBindingResult().getAllErrors()
-        .stream()
-        .map(error -> {
-          if (error instanceof FieldError) {
-            return ((FieldError) error).getField() + ": " + error.getDefaultMessage();
-          }
-          return error.getDefaultMessage();
-        })
-        .collect(Collectors.toList()));
-    return ResponseEntity.badRequest().body(errors);
+  public ResponseEntity<ValidationError> handleValidationExceptions(MethodArgumentNotValidException ex) {
+    logger.warning("Invalid request: " + ex.getTitleMessageCode());
+    ValidationError response = new ValidationError(ex.getBindingResult());
+    return ResponseEntity.badRequest().body(response);
   }
 
   /**
