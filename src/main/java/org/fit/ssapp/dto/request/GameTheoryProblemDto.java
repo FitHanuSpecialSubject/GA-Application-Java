@@ -6,8 +6,8 @@ import java.util.List;
 import org.fit.ssapp.ss.gt.Conflict;
 import org.fit.ssapp.ss.gt.NormalPlayer;
 import org.fit.ssapp.ss.gt.SpecialPlayer;
-import org.fit.ssapp.dto.validator.ValidFitnessFunction;
 import org.fit.ssapp.dto.validator.ValidPayoffFunction;
+import org.fit.ssapp.dto.validator.ValidFitnessFunctionGT;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -38,7 +38,7 @@ public class GameTheoryProblemDto implements ProblemRequestDto {
 
   private List<Conflict> conflictSet = new ArrayList<>();
 
-  @ValidFitnessFunction
+  @ValidFitnessFunctionGT
   @NotNull(message = "Fitness function cannot be null")
   private String fitnessFunction;
 
