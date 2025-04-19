@@ -61,11 +61,11 @@ public class GameTheoryProblemDto implements ProblemRequestDto {
 
   @NotNull(message = "Generation is required")
   @Min(value = 1, message = "Generation must be greater than 0")
-  private Integer generation;
+  private int generation;
 
   @NotNull(message = "Population size is required")
   @Min(value = 1, message = "Population size must be greater than 0")
-  private Integer populationSize;
+  private int populationSize;
 
   @Override
   public String toString() {

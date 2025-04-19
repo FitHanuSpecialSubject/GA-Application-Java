@@ -15,22 +15,8 @@ public class StableMatchingValidator implements ConstraintValidator<ValidStableM
     @Override
     public boolean isValid(StableMatchingProblemDto dto, ConstraintValidatorContext context) {
         boolean isValid = true;
-        int threshold = validationConfig.getThreshold();
 
-        if (dto.getPopulationSize() * dto.getGeneration() > threshold) {
-            context.disableDefaultConstraintViolation();
-            // Violation for the 'generation' field
-            context.buildConstraintViolationWithTemplate("Threshold (generation * populationSize) must not exceed " + threshold)
-                    .addPropertyNode("generation")
-                    .addConstraintViolation();
-
-            // Violation for the 'populationSize' field
-            context.buildConstraintViolationWithTemplate("Threshold (generation * populationSize) must not exceed " + threshold)
-                    .addPropertyNode("populationSize")
-                    .addConstraintViolation();
-
-            isValid = false;
-        }
+        isValid = new PopulationAndGenerationThreshold().validateThreshold(dto, context, validationConfig);
 
         if (dto.getNumberOfIndividuals() < validationConfig.getMinIndividuals()) {
             context.disableDefaultConstraintViolation();

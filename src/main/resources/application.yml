@@ -4,6 +4,6 @@ gametheory:
   runconfig: 10
 
 validation:
-  threshold: 3000000
+  threshold: 10000
   individuals:
     min: 3
