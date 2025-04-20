@@ -31,4 +31,11 @@ public class GameTheoryConst {
    */
   public static final Set<String> FITNESS_VARIABLE_PREFIXES = Set.of("u");
 
+  /**
+   * Common aggregation functions for payoff and fitness calculations
+   */
+  public static final Set<String> AGGREGATION_FUNCTIONS = Set.of(
+      "SUM", "AVERAGE", "MIN", "MAX", "PRODUCT", "MEDIAN", "RANGE"
+  );
+
 }
