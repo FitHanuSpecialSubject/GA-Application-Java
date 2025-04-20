@@ -20,7 +20,7 @@ public class EvaluateFunctionValidator implements
         ConstraintValidator<ValidEvaluateFunction, StableMatchingProblemDto> {
 
   private static final Pattern VARIABLE_PATTERN = Pattern.compile("(P\\d+|W\\d+|R\\d+)");
-  private static final Pattern OPERATOR_PATTERN = Pattern.compile("[+\\-*/^]{2,}");
+  private static final Pattern OPERATOR_PATTERN = Pattern.compile("([+\\-*/^]\\s*[+\\-*/^])");
   private static final Pattern NUMBER_PATTERN = Pattern.compile("\\d+(\\.\\d+)?");
   private static final Pattern SINGLE_OPERATOR_PATTERN = Pattern.compile("[+\\-*/^]");
   private static final Pattern BRACKET_PATTERN = Pattern.compile("[()]");
@@ -48,8 +48,8 @@ public class EvaluateFunctionValidator implements
         isValid = false;
       }
 
-      Set<String> variables = extractVariables(func);
-      if (!validateVariableLimits(context, variables, dto)) {
+//      Set<String> variables = extractVariables(func);
+      if (!validateVariableLimits(context, func, dto)) {
         isValid = false;
       }
     }
@@ -87,17 +87,20 @@ public class EvaluateFunctionValidator implements
     checkInvalidCharacters(context, expression);
   }
 
-  private boolean validateVariableLimits(ConstraintValidatorContext context, Set<String> variables, StableMatchingProblemDto dto) {
+  private boolean validateVariableLimits(ConstraintValidatorContext context, String function, StableMatchingProblemDto dto) {
     boolean isValid = true;
+
+    Set<String> variables = extractVariables(function);
     for (String var : variables) {
       if (var.startsWith("P") || var.startsWith("p")) {
         try {
           int index = Integer.parseInt(var.substring(1));
+          int wrongIndex = function.indexOf(String.valueOf(index));
           if (index > dto.getNumberOfProperty() || index < 1) {
             addViolation(
                     context,
                     "evaluateFunctions",
-                    "Invalid P index: " + index + ". Must be between 1 and " + dto.getNumberOfProperty()
+                    "Invalid P index: " + index + ", at position " + wrongIndex + ". Must be between 1 and " + dto.getNumberOfProperty()
             );
             isValid = false;
           }
@@ -108,11 +111,12 @@ public class EvaluateFunctionValidator implements
       } else if (var.startsWith("W") || var.startsWith("w")) {
         try {
           int index = Integer.parseInt(var.substring(1));
+          int wrongIndex = function.indexOf(String.valueOf(index));
           if (index > dto.getNumberOfProperty() || index < 1) {
             addViolation(
                     context,
                     "evaluateFunctions",
-                    "Invalid W index: " + index + ". Must be between 1 and " + dto.getNumberOfProperty()
+                    "Invalid W index: " + index + ", at position " + wrongIndex + ". Must be between 1 and " + dto.getNumberOfProperty()
             );
             isValid = false;
           }
@@ -123,11 +127,12 @@ public class EvaluateFunctionValidator implements
       }  else if (var.startsWith("R") || var.startsWith("r")) {
         try {
           int index = Integer.parseInt(var.substring(1));
+          int wrongIndex = function.indexOf(String.valueOf(index));
           if (index > dto.getNumberOfProperty() || index < 1) {
             addViolation(
                     context,
                     "evaluateFunctions",
-                    "Invalid R index: " + index + ". Must be between 1 and " + dto.getNumberOfProperty()
+                    "Invalid R index: " + index + ", at position " + wrongIndex + ". Must be between 1 and " + dto.getNumberOfProperty()
             );
             isValid = false;
           }
@@ -195,6 +200,10 @@ public class EvaluateFunctionValidator implements
     }
 
     if (NUMBER_PATTERN.matcher(token).matches()) {
+      return;
+    }
+
+    if(validateExp4j(token)){
       return;
     }
 
