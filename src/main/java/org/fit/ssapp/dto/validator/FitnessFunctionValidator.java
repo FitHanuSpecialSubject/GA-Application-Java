@@ -22,7 +22,10 @@ import org.fit.ssapp.dto.request.StableMatchingProblemDto;
 public class FitnessFunctionValidator implements ConstraintValidator<ValidFitnessFunctionSMT, StableMatchingProblemDto> {
 
   private static final Pattern VARIABLE_PATTERN = Pattern.compile("(M\\d+|S\\d+|SIGMA\\{[^}]+\\})");
-  private static final Pattern OPERATOR_PATTERN = Pattern.compile("[+\\-*/^]{2,}");
+  private static final Pattern OPERATOR_PATTERN = Pattern.compile("([+\\-*/^]\\s*[+\\-*/^])");
+  private static final Pattern NUMBER_PATTERN = Pattern.compile("\\d+(\\.\\d+)?");
+  private static final Pattern SINGLE_OPERATOR_PATTERN = Pattern.compile("[+\\-*/^]");
+  private static final Pattern BRACKET_PATTERN = Pattern.compile("[(){}]");
 
   /**
    * Validates the fitness function by checking its syntax and allowed variables.
@@ -39,19 +42,14 @@ public class FitnessFunctionValidator implements ConstraintValidator<ValidFitnes
       return true;
     }
 
-    if (!checkSigmaExpressions(context, value)) {
+    if (!checkExpressions(context, value, dto )) { // sigma and out of index for Si and Mi
       isValid = false;
     }
 
     String modifiedExpression = replaceSigma(value);
 
     if (!validateExp4j(modifiedExpression)) {
-      collectAllErrors(context, modifiedExpression);
-      isValid = false;
-    }
-
-    Set<String> variables = extractVariablesWithoutSigma(value);
-    if (!validateVariableLimits(context, variables, dto)) {
+      collectAllErrors(context, value);
       isValid = false;
     }
 
@@ -95,9 +93,10 @@ public class FitnessFunctionValidator implements ConstraintValidator<ValidFitnes
     checkBrackets(context, expression);
     checkConsecutiveOperators(context, expression);
     checkDivisionByZero(context, expression);
+    checkInvalidCharacters(context, expression);
   }
 
-  private boolean checkSigmaExpressions(ConstraintValidatorContext context, String expression) {
+  private boolean checkExpressions(ConstraintValidatorContext context, String expression, StableMatchingProblemDto dto ) {
     boolean isValid = true;
     try {
       Set<String> variables = extractVariables(expression);
@@ -109,6 +108,14 @@ public class FitnessFunctionValidator implements ConstraintValidator<ValidFitnes
           if (!validateInnerSigmaExpression(innerExpression)) {
             addViolation(context, "expression",
                     "Invalid expression inside SIGMA: " + innerExpression);
+            isValid = false;
+          }
+
+          if (!validateVariableLimits(context,expression, innerExpression, dto)) {
+            isValid = false;
+          }
+        } else {
+          if (!validateVariableLimits(context,expression, var, dto)) {
             isValid = false;
           }
         }
@@ -143,17 +150,19 @@ public class FitnessFunctionValidator implements ConstraintValidator<ValidFitnes
     }
   }
 
-  private boolean validateVariableLimits(ConstraintValidatorContext context, Set<String> variables, StableMatchingProblemDto dto) {
+  private boolean validateVariableLimits(ConstraintValidatorContext context, String function, String var, StableMatchingProblemDto dto) {
     boolean isValid = true;
-    for (String var : variables) {
-      if (var.startsWith("S") && !var.startsWith("SIGMA")) {
+//    Set<String> variables = extractVariables(function);
+//    for (String var : variables) {
+      if (var.matches("S\\d+.*") && !var.startsWith("SIGMA{")) {
         try {
           int index = Integer.parseInt(var.substring(1));
+          int wrongIndex = function.indexOf(String.valueOf(index));
           if (index > dto.getNumberOfSets() || index < 1) {
             addViolation(
                     context,
                     "fitnessFunction",
-                    "Invalid S index: " + index + ". Must be between 1 and " + dto.getNumberOfSets()
+                    "Invalid S index: " + index + ", at position " + wrongIndex + ". Must be between 1 and " + dto.getNumberOfSets()
             );
             isValid = false;
           }
@@ -164,12 +173,13 @@ public class FitnessFunctionValidator implements ConstraintValidator<ValidFitnes
       } else if (var.startsWith("M")) {
         try {
           int index = Integer.parseInt(var.substring(1));
+          int wrongIndex = function.indexOf(String.valueOf(index));
           int maxM = dto.getIndividualSetIndices().length;
           if (index > maxM || index < 1) {
             addViolation(
                     context,
                     "fitnessFunction",
-                    "Invalid M index: " + index + ". Must be between 1 and " + maxM
+                    "Invalid M index: " + index + ", at position " + wrongIndex + ". Must be between 1 and " + maxM
             );
             isValid = false;
           }
@@ -178,9 +188,112 @@ public class FitnessFunctionValidator implements ConstraintValidator<ValidFitnes
           isValid = false;
         }
       }
-    }
     return isValid;
   }
+
+  private void checkInvalidCharacters(ConstraintValidatorContext context, String expression) {
+    StringBuilder currentToken = new StringBuilder();
+    int position = 0;
+    int i = 0;
+
+    while (i < expression.length()) {
+      char c = expression.charAt(i);
+
+      if (i + 4 < expression.length() && expression.substring(i, i + 5).equals("SIGMA")) {
+        if (currentToken.length() > 0) {
+          validateToken(context, currentToken.toString(), position);
+          currentToken = new StringBuilder();
+        }
+
+        int openBracket = expression.indexOf('{', i + 5);
+        if (openBracket != -1) {
+          int closeBracket = findClosingBracket(expression, openBracket);
+          if (closeBracket != -1) {
+            i = closeBracket + 1;
+            continue;
+          }
+        }
+        i++;
+        continue;
+      }
+
+      // Xử lý khoảng trắng
+      if (Character.isWhitespace(c)) {
+        if (currentToken.length() > 0) {
+          validateToken(context, currentToken.toString(), position);
+          currentToken = new StringBuilder();
+        }
+        i++;
+        continue;
+      }
+
+      // Xử lý ký tự đơn
+      if (isSingleCharacterToken(c)) {
+        if (currentToken.length() > 0) {
+          validateToken(context, currentToken.toString(), position);
+          currentToken = new StringBuilder();
+        }
+
+        if (!isValidSingleCharacter(c)) {
+          addViolation(context, "evaluateFunctions", "Invalid character '" + c + "' at position " + i);
+          return;
+        }
+        i++;
+        continue;
+      }
+
+      if (currentToken.length() == 0) {
+        position = i;
+      }
+      currentToken.append(c);
+      i++;
+    }
+
+    if (currentToken.length() > 0) {
+      validateToken(context, currentToken.toString(), position);
+    }
+  }
+
+  private int findClosingBracket(String expression, int openBracketPos) {
+    int count = 1;
+    for (int i = openBracketPos + 1; i < expression.length(); i++) {
+      if (expression.charAt(i) == '{') {
+        count++;
+      } else if (expression.charAt(i) == '}') {
+        count--;
+        if (count == 0) {
+          return i;
+        }
+      }
+    }
+    return -1;
+  }
+  private boolean isSingleCharacterToken(char c) {
+    return SINGLE_OPERATOR_PATTERN.matcher(String.valueOf(c)).matches()
+            || BRACKET_PATTERN.matcher(String.valueOf(c)).matches();
+  }
+
+  private boolean isValidSingleCharacter(char c) {
+    return SINGLE_OPERATOR_PATTERN.matcher(String.valueOf(c)).matches()
+            || BRACKET_PATTERN.matcher(String.valueOf(c)).matches();
+  }
+
+  private void validateToken(ConstraintValidatorContext context, String token, int position) {
+    if (VARIABLE_PATTERN.matcher(token).matches()) {
+      return;
+    }
+
+    if (NUMBER_PATTERN.matcher(token).matches()) {
+      return;
+    }
+
+    if(validateExp4j(token)){
+      return;
+    }
+
+    addViolation(context, "evaluateFunctions", "Invalid token '" + token + "' at position " + position);
+  }
+
 
   private void checkDivisionByZero(ConstraintValidatorContext context, String expression) {
     for (int i = 0; i < expression.length(); i++) {
