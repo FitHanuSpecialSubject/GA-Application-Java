@@ -191,7 +191,7 @@ public class GTIntegrationTest {
     dto.setDistributedCores("all");
     dto.setMaxTime(5000);
     dto.setGeneration(100);
-    dto.setPopulationSize(1000);
+    dto.setPopulationSize(100);
     return dto;
   }
 
