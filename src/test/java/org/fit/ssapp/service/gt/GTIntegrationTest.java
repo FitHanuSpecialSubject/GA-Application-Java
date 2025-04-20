@@ -190,7 +190,7 @@ public class GTIntegrationTest {
     dto.setMaximizing(false);
     dto.setDistributedCores("all");
     dto.setMaxTime(5000);
-    dto.setGeneration(50);
+    dto.setGeneration(100);
     dto.setPopulationSize(100);
     return dto;
   }

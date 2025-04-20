@@ -59,7 +59,7 @@ public class StableMatchingProblemDtoTest {
             {1, 2},
             {2, 3}
     });
-    dto.setPopulationSize(500);
+    dto.setPopulationSize(100);
     dto.setGeneration(50);
     dto.setMaxTime(3600);
     dto.setAlgorithm("Genetic Algorithm");

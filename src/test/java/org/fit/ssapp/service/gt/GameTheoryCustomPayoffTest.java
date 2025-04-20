@@ -203,8 +203,9 @@ public class GameTheoryCustomPayoffTest {
     dto.setMaximizing(true);
     dto.setDistributedCores("all");
     dto.setMaxTime(5000);
-    dto.setGeneration(50);  
-    dto.setPopulationSize(100); 
+    dto.setGeneration(100);
+    dto.setPopulationSize(100);
+
     return dto;
   }
 
