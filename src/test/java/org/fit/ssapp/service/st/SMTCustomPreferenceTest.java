@@ -184,7 +184,7 @@ public class SMTCustomPreferenceTest {
     return Stream.of(
             Arguments.of(
                     "NSGAII",
-                    "R1x * W2",
+                    "R1 * W2",
                     new String[][]{
                             {"1", "1.1", "1--"},
                             {"1++", "1.1", "1.1"},
