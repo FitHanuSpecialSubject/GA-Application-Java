@@ -46,7 +46,7 @@ public class FitnessFunctionValidator implements ConstraintValidator<ValidFitnes
       isValid = false;
     }
 
-    String modifiedExpression = replaceSigma(value);
+    String modifiedExpression = replaceExpression(value);
 
     if (!validateExp4j(modifiedExpression)) {
       collectAllErrors(context, value);
@@ -56,8 +56,11 @@ public class FitnessFunctionValidator implements ConstraintValidator<ValidFitnes
     return isValid;
   }
 
-  private String replaceSigma(String expression) {
-    return expression.replaceAll("SIGMA\\{[^}]*\\}", "1.0");
+  private String replaceExpression(String expression) {
+    return expression
+            .replaceAll("SIGMA\\{[^}]*\\}", "1.0")
+            .replaceAll("M\\d+", "1.0")
+            .replaceAll("S\\d+", "1.0");
   }
   private boolean validateExp4j(String expression) {
     try {
@@ -102,23 +105,9 @@ public class FitnessFunctionValidator implements ConstraintValidator<ValidFitnes
       Set<String> variables = extractVariables(expression);
 
       for (String var : variables) {
-        if (var.startsWith("SIGMA{") && var.endsWith("}")) {
-          String innerExpression = var.substring(6, var.length() - 1);
-
-          if (!validateInnerSigmaExpression(innerExpression)) {
-            addViolation(context, "expression",
-                    "Invalid expression inside SIGMA: " + innerExpression);
-            isValid = false;
-          }
-
-          if (!validateVariableLimits(context,expression, innerExpression, dto)) {
-            isValid = false;
-          }
-        } else {
           if (!validateVariableLimits(context,expression, var, dto)) {
             isValid = false;
           }
-        }
       }
     } catch (Exception e) {
       addViolation(context, "expression",
@@ -128,49 +117,27 @@ public class FitnessFunctionValidator implements ConstraintValidator<ValidFitnes
     return isValid ;
   }
 
-  private boolean validateInnerSigmaExpression(String innerExpression) {
-    try {
-      Set<String> innerVars = extractVariables(innerExpression);
-
-      ExpressionBuilder builder = new ExpressionBuilder(innerExpression);
-      for (String var : innerVars) {
-        builder.variable(var);
-      }
-
-      Expression exp = builder.build();
-
-      for (String var : innerVars) {
-        exp.setVariable(var, 1.0);
-      }
-
-      exp.evaluate();
-      return true;
-    } catch (Exception e) {
-      return false;
-    }
-  }
-
   private boolean validateVariableLimits(ConstraintValidatorContext context, String function, String var, StableMatchingProblemDto dto) {
     boolean isValid = true;
-//    Set<String> variables = extractVariables(function);
-//    for (String var : variables) {
-      if (var.matches("S\\d+.*") && !var.startsWith("SIGMA{")) {
+      if (var.matches("SIGMA\\{S[0-9]+}")) {
+        String innerExpression = var.substring(6, var.length() - 1);
         try {
-          int index = Integer.parseInt(var.substring(1));
+          int index = Integer.parseInt(innerExpression.substring(1));
           int wrongIndex = function.indexOf(String.valueOf(index));
           if (index > dto.getNumberOfSets() || index < 1) {
             addViolation(
                     context,
                     "fitnessFunction",
-                    "Invalid S index: " + index + ", at position " + wrongIndex + ". Must be between 1 and " + dto.getNumberOfSets()
+                    "Invalid after SIGMA index: " + index + ", at position " + wrongIndex + ". Must be between 1 and " + dto.getNumberOfSets()
             );
             isValid = false;
           }
         } catch (NumberFormatException e) {
-          addViolation(context, "fitnessFunction", "Invalid S variable format: " + var);
+          int wrongIndex = function.indexOf(var.substring(1)) + 5;
+          addViolation(context, "evaluateFunctions", "Invalid after SIGMA variable format: " + var + ", at position " + wrongIndex);
           isValid = false;
         }
-      } else if (var.startsWith("M")) {
+      } else if (var.matches("M\\d+.*")) {
         try {
           int index = Integer.parseInt(var.substring(1));
           int wrongIndex = function.indexOf(String.valueOf(index));
@@ -184,9 +151,31 @@ public class FitnessFunctionValidator implements ConstraintValidator<ValidFitnes
             isValid = false;
           }
         } catch (NumberFormatException e) {
-          addViolation(context, "fitnessFunction", "Invalid M variable format: " + var);
+          int wrongIndex = function.indexOf(var.substring(1));
+          addViolation(context, "evaluateFunctions", "Invalid M variable format: " + var + ", at position " + wrongIndex);
           isValid = false;
         }
+      } else if (var.matches("S\\d+.*")) {
+        try {
+          int index = Integer.parseInt(var.substring(1));
+          int wrongIndex = function.indexOf(String.valueOf(index));
+          if (index > dto.getNumberOfSets() || index < 1) {
+            addViolation(
+                    context,
+                    "fitnessFunction",
+                    "Invalid S index: " + index + ", at position " + wrongIndex + ". Must be between 1 and " + dto.getNumberOfSets()
+            );
+            isValid = false;
+          }
+        } catch (NumberFormatException e) {
+          int wrongIndex = function.indexOf(var.substring(1));
+          addViolation(context, "evaluateFunctions", "Invalid S variable format: " + var + ", at position " + wrongIndex);
+          isValid = false;
+        }
+      } else {
+        int wrongIndex = function.indexOf(var.substring(1)) + 5;
+        addViolation(context, "evaluateFunctions", "Invalid inner Sigma format: " + var + ", at position " + wrongIndex);
+        isValid = false;
       }
     return isValid;
   }
