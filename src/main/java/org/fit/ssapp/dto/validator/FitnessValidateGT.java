@@ -3,6 +3,7 @@ package org.fit.ssapp.dto.validator;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -29,15 +30,15 @@ public class FitnessValidateGT implements ConstraintValidator<ValidFitnessFuncti
 
   // Pattern to match standard mathematical functions
   private static final Pattern FUNCTION_PATTERN = Pattern.compile("(abs|sqrt|log|exp|ceil|floor|sin|cos|tan|pow)\\(");
-
-  // Pattern to match potential division by zero
-  private static final Pattern DIVISION_PATTERN = Pattern.compile("([^\\s\\)\\(]+)/([^\\s\\)\\(]+)");
-
+  
+  // Pattern to match player 
+  private static final Pattern VARIABLE_PATTERN = Pattern.compile("(u([0-9]+))");
+  
   // Pattern to match function with arguments
   private static final Pattern FUNCTION_ARGS_PATTERN = Pattern.compile("(abs|sqrt|log|exp|ceil|floor|sin|cos|tan|pow)\\(([^()]*)\\)");
 
-  // Pattern to match invalid operators
-  private static final Pattern INVALID_OPERATOR_PATTERN = Pattern.compile("[^+\\-*/()\\d\\w\\s,.\\^%]");
+  // Danh sách các ký tự hợp lệ trong biểu thức
+  private static final String VALID_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+-*/()^%,. \t\n\r";
 
   // Map of function names to number of arguments
   private static final Map<String, Integer> FUNCTION_ARGS_COUNT = new HashMap<>();
@@ -141,8 +142,7 @@ public class FitnessValidateGT implements ConstraintValidator<ValidFitnessFuncti
   }
 
   /**
-   * Finds all player indices in the expression without using regex
-   * Uses character-by-character tokenizer approach
+   * Finds all player indices in the expression using regex pattern
    *
    * @param expression Expression to analyze
    * @return Set of player indices found
@@ -152,23 +152,15 @@ public class FitnessValidateGT implements ConstraintValidator<ValidFitnessFuncti
     if (expression == null || expression.isEmpty()) {
       return indices;
     }
-    char[] chars = expression.toCharArray();
-    for (int i = 0; i < chars.length - 1; i++) {
-      if (chars[i] == 'u' && Character.isDigit(chars[i + 1])) {
-        // Found a 'u' variable, read the index
-        StringBuilder indexStr = new StringBuilder();
-        int j = i + 1;
-
-        while (j < chars.length && Character.isDigit(chars[j])) {
-          indexStr.append(chars[j]);
-          j++;
-        }
-        try {
-          int playerIndex = Integer.parseInt(indexStr.toString());
-          indices.add(playerIndex);
-        } catch (NumberFormatException e) {
-          // Skip if parsing fails
-        }
+    
+    Matcher matcher = VARIABLE_PATTERN.matcher(expression);
+    while (matcher.find()) {
+      try {
+        // Group 2 is the number after 'u'
+        int playerIndex = Integer.parseInt(matcher.group(2));
+        indices.add(playerIndex);
+      } catch (NumberFormatException e) {
+        // Skip if parsing fails
       }
     }
 
@@ -288,15 +280,7 @@ public class FitnessValidateGT implements ConstraintValidator<ValidFitnessFuncti
         return false;
       }
 
-      // Perform math operation validation with test values
-      errors = validateMathOperations(expression, variables);
-      if (!errors.isEmpty()) {
-        context.disableDefaultConstraintViolation();
-        context.buildConstraintViolationWithTemplate(errors.get(0).getMessage())
-            .addPropertyNode("fitnessFunction")
-            .addConstraintViolation();
-        return false;
-      }
+      // will be caught at runtime instead of pre-validation
     } catch (Exception e) {
       context.disableDefaultConstraintViolation();
       context.buildConstraintViolationWithTemplate(
@@ -342,270 +326,296 @@ public class FitnessValidateGT implements ConstraintValidator<ValidFitnessFuncti
       return errors;
     }
 
-    // Check for invalid operators
-    Matcher invalidOpMatcher = INVALID_OPERATOR_PATTERN.matcher(func);
-    if (invalidOpMatcher.find()) {
-      String invalidOp = invalidOpMatcher.group();
-      errors.add(new ValidationError("Invalid operator: Unrecognized operator '" + invalidOp + "' in '" + func + "'", func));
-    }
-
-    // Check for missing operators between variables or after variables
-    ValidationError missingOperatorError = checkMissingOperators(func);
-    if (missingOperatorError != null) {
-      errors.add(missingOperatorError);
-    }
-
-    // Check parentheses matching using Stack
-    Stack<Integer> parenStack = new Stack<>();
+    // check for invalid char
     for (int i = 0; i < func.length(); i++) {
       char c = func.charAt(i);
-      if (c == '(') {
-        parenStack.push(i);
-      } else if (c == ')') {
-        if (parenStack.isEmpty()) {
-          errors.add(new ValidationError("Invalid syntax: Extra closing parenthesis at position " + i + " in '" + func + "'", func));
-        } else {
-          parenStack.pop();
-        }
+      if (VALID_CHARS.indexOf(c) == -1) {
+        errors.add(new ValidationError("Invalid character: Unrecognized character '" + c + "' at position " + i + " in '" + func + "'", func));
+        break;
       }
     }
 
-    if (!parenStack.isEmpty()) {
-      int position = parenStack.peek();
-      errors.add(new ValidationError("Invalid syntax: Unclosed opening parenthesis at position " + position + " in '" + func + "'", func));
+    // Tokenize the expression
+    List<Token> tokens = tokenize(func);
+    
+    // Validate parentheses using tokens
+    ValidationError parenError = validateParentheses(tokens, func);
+    if (parenError != null) {
+      errors.add(parenError);
+      return errors;
+    }
+    
+    // Validate operator usage
+    ValidationError operatorError = validateOperators(tokens, func);
+    if (operatorError != null) {
+      errors.add(operatorError);
     }
 
-    // Check function arguments
-    Matcher funcArgsMatcher = FUNCTION_ARGS_PATTERN.matcher(func);
-    while (funcArgsMatcher.find()) {
-      String funcName = funcArgsMatcher.group(1).toLowerCase();
-      String args = funcArgsMatcher.group(2).trim();
-
-      // Verify function exists
-      if (!FUNCTION_ARGS_COUNT.containsKey(funcName)) {
-        errors.add(new ValidationError("Invalid function: Function '" + funcName + "' does not exist in '" + func + "'", func));
-        continue;
-      }
-
-      // Check empty arguments
-      if (args.isEmpty()) {
-        errors.add(new ValidationError("Invalid function syntax: Missing argument for " + funcName + " function in '" + funcName + "()'", func));
-        continue;
-      }
-
-      // Check if arguments contain placeholders or incomplete data
-      if (args.contains("?") || args.contains("...")) {
-        errors.add(new ValidationError("Invalid function syntax: Incomplete arguments for " + funcName + " function in '" + funcName + "(" + args + ")'", func));
-        continue;
-      }
-
-      // Count arguments
-      int expectedArgCount = FUNCTION_ARGS_COUNT.get(funcName);
-      String[] argArray = args.split(",");
-      if (argArray.length != expectedArgCount) {
-        errors.add(new ValidationError(
-            "Invalid function syntax: " + funcName + " requires " + expectedArgCount +
-                " argument(s), but found " + argArray.length + " in '" + funcName + "(" + args + ")'", func));
-      }
+    // Validate function arguments
+    ValidationError functionError = validateFunctionArguments(tokens, func);
+    if (functionError != null) {
+      errors.add(functionError);
     }
 
     return errors;
   }
 
-  /**
-   * Checks if operators are missing between variables or after variables in the expression.
-   * This ensures that expressions like "u1u2" or "u1p1" are detected as invalid.
-   *
-   * @param func Function expression to check
-   * @return ValidationError if missing operators found, null otherwise
-   */
-  private ValidationError checkMissingOperators(String func) {
-    if (func == null || func.isEmpty()) {
-      return null;
+  // Token types for expression parsing
+  private enum TokenType {
+    NUMBER, VARIABLE, OPERATOR, FUNCTION, OPEN_PAREN, CLOSE_PAREN, COMMA, WHITESPACE
+  }
+
+  // Token class to hold token information
+  private static class Token {
+    private final TokenType type;
+    private final String value;
+    private final int position;
+
+    public Token(TokenType type, String value, int position) {
+      this.type = type;
+      this.value = value;
+      this.position = position;
     }
-    char[] chars = func.toCharArray();
-    boolean inVariable = false;
-    boolean expectOperator = false;
-    int variableStartPos = -1;
+  }
 
-    for (int i = 0; i < chars.length; i++) {
-      char c = chars[i];
-
-      // Skip whitespace
+  // Tokenize the expression into a list of tokens
+  private List<Token> tokenize(String expression) {
+    List<Token> tokens = new ArrayList<>();
+    StringBuilder buffer = new StringBuilder();
+    TokenType currentTokenType = null;
+    
+    // Define lists of single-character tokens that should be processed immediately
+    List<Character> singleCharTokens = new ArrayList<>();
+    Collections.addAll(singleCharTokens, '+', '-', '*', '/', '(', ')', ',', '^', '%');
+    
+    for (int i = 0; i < expression.length(); i++) {
+      char c = expression.charAt(i);
+      
+      // Handle whitespace
       if (Character.isWhitespace(c)) {
+        if (buffer.length() > 0) {
+          addToken(tokens, currentTokenType, buffer.toString(), i - buffer.length());
+          buffer = new StringBuilder();
+          currentTokenType = null;
+        }
         continue;
       }
-
-      // Check if we're starting a variable
-      if (!inVariable && (c == 'u' || c == 'p' || c == 'P') && i + 1 < chars.length && Character.isDigit(chars[i + 1])) {
-        inVariable = true;
-        variableStartPos = i;
+      
+      // Determine token type for current character
+      TokenType charType = getTokenType(c, expression, i);
+      
+      // Special cases for single-character tokens (operators, parentheses, comma)
+      if (singleCharTokens.contains(c)) {
+        // If there's a token in the buffer, add it first
+        if (buffer.length() > 0) {
+          addToken(tokens, currentTokenType, buffer.toString(), i - buffer.length());
+          buffer = new StringBuilder();
+        }
+        
+        // Add the single-character token
+        tokens.add(new Token(charType, String.valueOf(c), i));
+        currentTokenType = null;
         continue;
       }
-
-      // If we're in a variable and find a digit, continue
-      if (inVariable && Character.isDigit(c)) {
-        continue;
+      
+      // If token type changes, add the current token and start a new one
+      if (currentTokenType != null && charType != currentTokenType) {
+        addToken(tokens, currentTokenType, buffer.toString(), i - buffer.length());
+        buffer = new StringBuilder();
       }
-
-      // If we were in a variable but now find a letter, check if it's the end of a variable
-      if (inVariable && !Character.isDigit(c)) {
-        inVariable = false;
-        expectOperator = true;
-
-        // If the current character is a variable start (u, p, P) but we're expecting an operator,
-        // it means we have variables next to each other without an operator
-        if ((c == 'u' || c == 'p' || c == 'P') && i + 1 < chars.length && Character.isDigit(chars[i + 1])) {
+      
+      // Add character to current buffer
+      buffer.append(c);
+      currentTokenType = charType;
+    }
+    
+    // Add final token if buffer is not empty
+    if (buffer.length() > 0) {
+      addToken(tokens, currentTokenType, buffer.toString(), expression.length() - buffer.length());
+    }
+    
+    return tokens;
+  }
+  
+  // Helper method to add a token to the list
+  private void addToken(List<Token> tokens, TokenType type, String value, int position) {
+    if (type != null) {
+      tokens.add(new Token(type, value, position));
+    }
+  }
+  
+  // Determine token type for a character
+  private TokenType getTokenType(char c, String expression, int position) {
+    // Define lists of characters for each type
+    List<Character> operators = new ArrayList<>();
+    Collections.addAll(operators, '+', '-', '*', '/', '^', '%');
+    
+    List<Character> punctuation = new ArrayList<>();
+    Collections.addAll(punctuation, '(', ')', ',');
+    
+    if (Character.isDigit(c) || c == '.') {
+      return TokenType.NUMBER;
+    } else if (c == 'u' && position + 1 < expression.length() && 
+               Character.isDigit(expression.charAt(position + 1))) {
+      return TokenType.VARIABLE;
+    } else if (c == '(') {
+      return TokenType.OPEN_PAREN;
+    } else if (c == ')') {
+      return TokenType.CLOSE_PAREN;
+    } else if (c == ',') {
+      return TokenType.COMMA;
+    } else if (operators.contains(c)) {
+      return TokenType.OPERATOR;
+    } else if (Character.isLetter(c)) {
+      // Check if this might be a function
+      StringBuilder potentialFunction = new StringBuilder();
+      potentialFunction.append(c);
+      
+      int j = position + 1;
+      while (j < expression.length() && Character.isLetter(expression.charAt(j))) {
+        potentialFunction.append(expression.charAt(j));
+        j++;
+      }
+      
+      String func = potentialFunction.toString().toLowerCase();
+      if (FUNCTION_ARGS_COUNT.containsKey(func)) {
+        return TokenType.FUNCTION;
+      }
+      
+      return TokenType.VARIABLE;
+    }
+    
+    return TokenType.WHITESPACE;
+  }
+  
+  // Validate parentheses using tokens
+  private ValidationError validateParentheses(List<Token> tokens, String expression) {
+    Stack<Integer> parenStack = new Stack<>();
+    
+    for (Token token : tokens) {
+      if (token.type == TokenType.OPEN_PAREN) {
+        parenStack.push(token.position);
+      } else if (token.type == TokenType.CLOSE_PAREN) {
+        if (parenStack.isEmpty()) {
+          return new ValidationError("Invalid syntax: Extra closing parenthesis at position " + token.position + " in '" + expression + "'", expression);
+        }
+        parenStack.pop();
+      }
+    }
+    
+    if (!parenStack.isEmpty()) {
+      int position = parenStack.peek();
+      return new ValidationError("Invalid syntax: Unclosed opening parenthesis at position " + position + " in '" + expression + "'", expression);
+    }
+    
+    return null;
+  }
+  
+  // Validate operator usage
+  private ValidationError validateOperators(List<Token> tokens, String expression) {
+    for (int i = 0; i < tokens.size(); i++) {
+      Token token = tokens.get(i);
+      
+      // Check for variables next to each other without operators
+      if (token.type == TokenType.VARIABLE && i > 0) {
+        Token prevToken = tokens.get(i - 1);
+        if (prevToken.type == TokenType.VARIABLE) {
           return new ValidationError(
-              "Invalid syntax: Missing operator between variables at position " + i +
-                  " in '" + func + "'. Variables must be separated by operators.",
-              func);
+              "Invalid syntax: Missing operator between variables at position " + token.position +
+              " in '" + expression + "'. Variables must be separated by operators.",
+              expression);
+        }
+        
+        // Check for variables followed by open parentheses without an operator
+        if (prevToken.type == TokenType.VARIABLE && token.type == TokenType.OPEN_PAREN) {
+          return new ValidationError(
+              "Invalid syntax: Missing operator between variable and '(' at position " + token.position +
+              " in '" + expression + "'. Implicit multiplication is not supported.",
+              expression);
         }
       }
-
-      // If we're expecting an operator, check if we got one
-      if (expectOperator) {
-        if (c == '+' || c == '-' || c == '*' || c == '/' || c == ')' || c == ',' || c == '^') {
-          expectOperator = false;
-        } else if (c == '(') {
-          // Opening parenthesis after a variable requires an implicit multiplication operator
-          // which is not allowed in our syntax
+      
+      // Two operators in a row is invalid (exception: unary minus can follow another operator)
+      if (token.type == TokenType.OPERATOR && i > 0) {
+        Token prevToken = tokens.get(i - 1);
+        List<String> allowedBeforeMinus = new ArrayList<>();
+        Collections.addAll(allowedBeforeMinus, "+", "-", "*", "/", "^");
+        
+        if (prevToken.type == TokenType.OPERATOR && 
+            !(token.value.equals("-") && allowedBeforeMinus.contains(prevToken.value))) {
           return new ValidationError(
-              "Invalid syntax: Missing operator between variable and '(' at position " + i +
-                  " in '" + func + "'. Implicit multiplication is not supported.",
-              func);
-        } else if (!Character.isDigit(c) && !Character.isWhitespace(c)) {
-          return new ValidationError(
-              "Invalid syntax: Expected operator after variable at position " + i +
-                  " in '" + func + "'.",
-              func);
+              "Invalid syntax: Two operators in a row at position " + token.position +
+              " in '" + expression + "'.",
+              expression);
         }
       }
     }
-
+    
+    return null;
+  }
+  
+  // Validate function arguments
+  private ValidationError validateFunctionArguments(List<Token> tokens, String expression) {
+    for (int i = 0; i < tokens.size(); i++) {
+      Token token = tokens.get(i);
+      
+      if (token.type == TokenType.FUNCTION && i + 1 < tokens.size() && tokens.get(i + 1).type == TokenType.OPEN_PAREN) {
+        String funcName = token.value.toLowerCase();
+        
+        // Find matching closing parenthesis
+        int openCount = 1;
+        int j = i + 2;
+        List<String> args = new ArrayList<>();
+        StringBuilder currentArg = new StringBuilder();
+        
+        while (j < tokens.size() && openCount > 0) {
+          Token current = tokens.get(j);
+          
+          if (current.type == TokenType.OPEN_PAREN) {
+            openCount++;
+            currentArg.append(current.value);
+          } else if (current.type == TokenType.CLOSE_PAREN) {
+            openCount--;
+            if (openCount > 0) {
+              currentArg.append(current.value);
+            } else if (currentArg.length() > 0) {
+              args.add(currentArg.toString());
+            }
+          } else if (current.type == TokenType.COMMA && openCount == 1) {
+            args.add(currentArg.toString());
+            currentArg = new StringBuilder();
+          } else {
+            currentArg.append(current.value);
+          }
+          
+          j++;
+        }
+        // Check if function exists
+        if (!FUNCTION_ARGS_COUNT.containsKey(funcName)) {
+          return new ValidationError("Invalid function: Function '" + funcName + "' does not exist in '" + expression + "'", expression);
+        }
+        
+        // Check empty arguments
+        if (args.isEmpty() || (args.size() == 1 && args.get(0).trim().isEmpty())) {
+          return new ValidationError("Invalid function syntax: Missing argument for " + funcName + " function in '" + funcName + "()'", expression);
+        }
+        
+        // Check argument count
+        int expectedArgCount = FUNCTION_ARGS_COUNT.get(funcName);
+        if (args.size() != expectedArgCount) {
+          return new ValidationError(
+              "Invalid function syntax: " + funcName + " requires " + expectedArgCount +
+              " argument(s), but found " + args.size() + " in '" + funcName + "(" + String.join(",", args) + ")'", 
+              expression);
+        }
+      }
+    }
     return null;
   }
 
   /**
-   * Validates math operations by testing with boundary values.
-   *
-   * @param expression The expression to validate.
-   * @param variables The set of variables in the expression.
-   * @return A list of validation errors.
-   */
-  private List<ValidationError> validateMathOperations(Expression expression, Set<String> variables) {
-    List<ValidationError> errors = new ArrayList<>();
-    String expressionString = expression.toString();
-
-    // Test for division by zero
-    Matcher divisionMatcher = DIVISION_PATTERN.matcher(expressionString);
-    while (divisionMatcher.find()) {
-      String denominator = divisionMatcher.group(2);
-      // If denominator is a constant 0
-      if (denominator.equals("0")) {
-        errors.add(new ValidationError(
-            "Invalid fitness function: Division by zero detected in '" + divisionMatcher.group() + "'",
-            expressionString));
-        continue;
-      }
-
-      // If denominator is a variable, test with 0
-      if (variables.contains(denominator)) {
-        try {
-          // Backup all variables with default value 1
-          Map<String, Double> varBackup = new HashMap<>();
-          for (String var : variables) {
-            varBackup.put(var, 1.0);
-            expression.setVariable(var, 1.0);
-          }
-
-          // Test with denominator = 0
-          expression.setVariable(denominator, 0.0);
-          expression.evaluate();
-
-          // Restore variables
-          for (Map.Entry<String, Double> entry : varBackup.entrySet()) {
-            expression.setVariable(entry.getKey(), entry.getValue());
-          }
-        } catch (ArithmeticException | IllegalArgumentException e) {
-          errors.add(new ValidationError(
-              "Invalid fitness function: Potential division by zero with variable '" + denominator + "'",
-              expressionString));
-        }
-      }
-    }
-
-    // Check for sqrt of negative numbers
-    if (expressionString.contains("sqrt(")) {
-      // Test with negative values for sqrt arguments
-      for (String var : variables) {
-        try {
-          // Set all variables to positive values
-          for (String v : variables) {
-            expression.setVariable(v, 1.0);
-          }
-
-          // Then test with this variable negative
-          expression.setVariable(var, -1.0);
-          expression.evaluate();
-        } catch (IllegalArgumentException e) {
-          if (e.getMessage().contains("sqrt")) {
-            errors.add(new ValidationError(
-                "Invalid math operation: Square root of negative number when " + var + " is negative",
-                expressionString));
-          }
-        }
-      }
-    }
-
-    // Check for log of non-positive numbers
-    if (expressionString.contains("log(")) {
-      // Test with zero and negative values
-      for (String var : variables) {
-        // Test with zero
-        try {
-          // Set all variables to positive
-          for (String v : variables) {
-            expression.setVariable(v, 1.0);
-          }
-
-          // Test with this variable = 0
-          expression.setVariable(var, 0.0);
-          expression.evaluate();
-        } catch (IllegalArgumentException e) {
-          if (e.getMessage().contains("log")) {
-            errors.add(new ValidationError(
-                "Invalid math operation: Logarithm of zero when " + var + " = 0",
-                expressionString));
-          }
-        }
-
-        // Test with negative
-        try {
-          // Set all variables to positive
-          for (String v : variables) {
-            expression.setVariable(v, 1.0);
-          }
-
-          // Test with this variable negative
-          expression.setVariable(var, -1.0);
-          expression.evaluate();
-        } catch (IllegalArgumentException e) {
-          if (e.getMessage().contains("log")) {
-            errors.add(new ValidationError(
-                "Invalid math operation: Logarithm of negative number when " + var + " is negative",
-                expressionString));
-          }
-        }
-      }
-    }
-
-    return errors;
-  }
-
-  /**
    * Extracts valid variable names from a mathematical function.
-   * Uses the tokenizer approach to identify variables (u1, u2, etc).
+   * Uses regex pattern to identify variables (u1, u2, etc).
    *
    * @param func The mathematical function as a string.
    * @return A set of valid variable names found in the function.
@@ -617,21 +627,10 @@ public class FitnessValidateGT implements ConstraintValidator<ValidFitnessFuncti
       return variables;
     }
 
-    char[] chars = func.toCharArray();
-
-    for (int i = 0; i < chars.length - 1; i++) {
-      if (chars[i] == 'u' && Character.isDigit(chars[i + 1])) {
-        StringBuilder varName = new StringBuilder();
-        varName.append('u');
-
-        int j = i + 1;
-        while (j < chars.length && Character.isDigit(chars[j])) {
-          varName.append(chars[j]);
-          j++;
-        }
-
-        variables.add(varName.toString());
-      }
+    Matcher matcher = VARIABLE_PATTERN.matcher(func);
+    while (matcher.find()) {
+      //group1 is the complete variable (u1, u2, ...)
+      variables.add(matcher.group(1));
     }
 
     return variables;
