@@ -134,7 +134,7 @@ public class FitnessFunctionValidator implements ConstraintValidator<ValidFitnes
           }
         } catch (NumberFormatException e) {
           int wrongIndex = function.indexOf(var.substring(1)) + 5;
-          addViolation(context, "evaluateFunctions", "Invalid after SIGMA variable format: " + var + ", at position " + wrongIndex);
+          addViolation(context, "fitnessFunction", "Invalid after SIGMA variable format: " + var + ", at position " + wrongIndex);
           isValid = false;
         }
       } else if (var.matches("M\\d+.*")) {
@@ -152,7 +152,7 @@ public class FitnessFunctionValidator implements ConstraintValidator<ValidFitnes
           }
         } catch (NumberFormatException e) {
           int wrongIndex = function.indexOf(var.substring(1));
-          addViolation(context, "evaluateFunctions", "Invalid M variable format: " + var + ", at position " + wrongIndex);
+          addViolation(context, "fitnessFunction", "Invalid M variable format: " + var + ", at position " + wrongIndex);
           isValid = false;
         }
       } else if (var.matches("S\\d+.*")) {
@@ -169,12 +169,12 @@ public class FitnessFunctionValidator implements ConstraintValidator<ValidFitnes
           }
         } catch (NumberFormatException e) {
           int wrongIndex = function.indexOf(var.substring(1));
-          addViolation(context, "evaluateFunctions", "Invalid S variable format: " + var + ", at position " + wrongIndex);
+          addViolation(context, "fitnessFunction", "Invalid S variable format: " + var + ", at position " + wrongIndex);
           isValid = false;
         }
       } else {
         int wrongIndex = function.indexOf(var.substring(1)) + 5;
-        addViolation(context, "evaluateFunctions", "Invalid inner Sigma format: " + var + ", at position " + wrongIndex);
+        addViolation(context, "fitnessFunction", "Invalid inner Sigma format: " + var + ", at position " + wrongIndex);
         isValid = false;
       }
     return isValid;
@@ -224,7 +224,7 @@ public class FitnessFunctionValidator implements ConstraintValidator<ValidFitnes
         }
 
         if (!isValidSingleCharacter(c)) {
-          addViolation(context, "evaluateFunctions", "Invalid character '" + c + "' at position " + i);
+          addViolation(context, "fitnessFunction", "Invalid character '" + c + "' at position " + i);
           return;
         }
         i++;
@@ -280,7 +280,7 @@ public class FitnessFunctionValidator implements ConstraintValidator<ValidFitnes
       return;
     }
 
-    addViolation(context, "evaluateFunctions", "Invalid token '" + token + "' at position " + position);
+    addViolation(context, "fitnessFunction", "Invalid token '" + token + "' at position " + position);
   }
 
 
