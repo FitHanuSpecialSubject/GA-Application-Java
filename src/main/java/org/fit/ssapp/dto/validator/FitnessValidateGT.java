@@ -37,8 +37,8 @@ public class FitnessValidateGT implements ConstraintValidator<ValidFitnessFuncti
   // Pattern to match function with arguments
   private static final Pattern FUNCTION_ARGS_PATTERN = Pattern.compile("(abs|sqrt|log|exp|ceil|floor|sin|cos|tan|pow)\\(([^()]*)\\)");
 
-  // Danh sách các ký tự hợp lệ trong biểu thức
-  private static final String VALID_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+-*/()^%,. \t\n\r";
+  // [a-zA-Z0-9] - match all alphanumeric characters plus math operators and punctuation
+  private static final Pattern VALID_CHAR_PATTERN = Pattern.compile("[a-zA-Z0-9+\\-*/()^%,. ]");
 
   // Map of function names to number of arguments
   private static final Map<String, Integer> FUNCTION_ARGS_COUNT = new HashMap<>();
@@ -326,10 +326,10 @@ public class FitnessValidateGT implements ConstraintValidator<ValidFitnessFuncti
       return errors;
     }
 
-    // check for invalid char
+    // invalid char
     for (int i = 0; i < func.length(); i++) {
       char c = func.charAt(i);
-      if (VALID_CHARS.indexOf(c) == -1) {
+      if (!VALID_CHAR_PATTERN.matcher(String.valueOf(c)).matches()) {
         errors.add(new ValidationError("Invalid character: Unrecognized character '" + c + "' at position " + i + " in '" + func + "'", func));
         break;
       }

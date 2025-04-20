@@ -34,8 +34,13 @@ public class PayoffValidator implements ConstraintValidator<ValidPayoffFunction,
       Pattern.CASE_INSENSITIVE
   );
 
-  // all characters that can be used in the expression
-  private static final String VALID_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+-*/()^%,. \t\n\r";
+  // Pattern to match function with arguments - using all built-in functions from AppConst
+  private static final Pattern FUNCTION_ARGS_PATTERN = Pattern.compile(
+      "(" + FUNCTION_NAMES_REGEX + ")\\(([^()]*)\\)"
+  );
+
+  // [a-zA-Z0-9] - match all alphanumeric characters plus math operators and punctuation
+  private static final Pattern VALID_CHAR_PATTERN = Pattern.compile("[a-zA-Z0-9+\\-*/()^%,. ]");
 
   // Map of function names to number of arguments
   private static final Map<String, Integer> FUNCTION_ARGS_COUNT = new HashMap<>();
@@ -75,7 +80,7 @@ public class PayoffValidator implements ConstraintValidator<ValidPayoffFunction,
         // Find the highest property index in the expression
         String expression = (String) value;
         int maxPropertyIndex = findHighestPropertyVariable(expression);
-        return isValidString(expression, context, maxPropertyIndex);
+        return isValidString(expression, context, maxPropertyIndex, 0);
       }
       context.disableDefaultConstraintViolation();
       context.buildConstraintViolationWithTemplate("Invalid data type for payoff function validation")
@@ -88,7 +93,11 @@ public class PayoffValidator implements ConstraintValidator<ValidPayoffFunction,
     String payoffFunction = dto.getDefaultPayoffFunction();
 
     int maxPropertyCount = 0; // default value
+    int playerCount = 0; // default value
+    
     if (dto.getNormalPlayers() != null && !dto.getNormalPlayers().isEmpty()) {
+      playerCount = dto.getNormalPlayers().size();
+      
       var firstPlayer = dto.getNormalPlayers().get(0);
       if (firstPlayer.getStrategies() != null && !firstPlayer.getStrategies().isEmpty()) {
         var firstStrategy = firstPlayer.getStrategies().get(0);
@@ -97,9 +106,7 @@ public class PayoffValidator implements ConstraintValidator<ValidPayoffFunction,
         }
       }
     }
-
-    // Validate only defaultPayoffFunction - fitnessFunction is handled by FitnessValidateGT
-    return isValidString(payoffFunction, context, maxPropertyCount);
+    return isValidString(payoffFunction, context, maxPropertyCount, playerCount);
   }
 
   /**
@@ -165,9 +172,10 @@ public class PayoffValidator implements ConstraintValidator<ValidPayoffFunction,
    * @param value String expression to validate
    * @param context Validator context
    * @param propertyCount Maximum property count available
+   * @param playerCount Maximum player count available
    * @return true if the expression is valid, false otherwise
    */
-  private boolean isValidString(String value, ConstraintValidatorContext context, int propertyCount) {
+  private boolean isValidString(String value, ConstraintValidatorContext context, int propertyCount, int playerCount) {
     if (value == null || value.trim().isEmpty()) {
       context.disableDefaultConstraintViolation();
       context.buildConstraintViolationWithTemplate("Invalid expression: Empty expression")
@@ -196,6 +204,49 @@ public class PayoffValidator implements ConstraintValidator<ValidPayoffFunction,
           .addPropertyNode("defaultPayoffFunction")
           .addConstraintViolation();
       return false;
+    }
+
+    // check if there is any player index in the expression
+    if (playerCount > 0) {
+      Set<Integer> invalidPlayerIndices = new HashSet<>();
+      
+      Pattern playerPropertyPattern = Pattern.compile("P(\\d+)p\\d+");
+      Matcher matcher = playerPropertyPattern.matcher(value);
+      
+      while (matcher.find()) {
+        try {
+          int playerIndex = Integer.parseInt(matcher.group(1));
+          //check if the player index is valid
+          if (playerIndex < 1 || playerIndex > playerCount) {
+            invalidPlayerIndices.add(playerIndex);
+          }
+        } catch (NumberFormatException e) {
+        }
+      }
+      if (!invalidPlayerIndices.isEmpty()) {
+        context.disableDefaultConstraintViolation();
+        StringBuilder errorMsg = new StringBuilder("Invalid payoff function: Player ");
+        
+        if (invalidPlayerIndices.size() == 1) {
+          errorMsg.append("P").append(invalidPlayerIndices.iterator().next());
+        } else {
+          int count = 0;
+          for (Integer idx : invalidPlayerIndices) {
+            if (count > 0) {
+              errorMsg.append(count == invalidPlayerIndices.size() - 1 ? " and " : ", ");
+            }
+            errorMsg.append("P").append(idx);
+            count++;
+          }
+        }
+        errorMsg.append(" exceeds available players. Maximum player count is ").append(playerCount)
+               .append(" (valid players are P1 to P").append(playerCount).append(")");
+        
+        context.buildConstraintViolationWithTemplate(errorMsg.toString())
+            .addPropertyNode("defaultPayoffFunction")
+            .addConstraintViolation();
+        return false;
+      }
     }
 
     // First, perform detailed validation
@@ -271,10 +322,10 @@ public class PayoffValidator implements ConstraintValidator<ValidPayoffFunction,
       return errors;
     }
 
-    // Check for invalid characters
+    // Check for invalid characters using regex pattern
     for (int i = 0; i < func.length(); i++) {
       char c = func.charAt(i);
-      if (VALID_CHARS.indexOf(c) == -1) {
+      if (!VALID_CHAR_PATTERN.matcher(String.valueOf(c)).matches()) {
         errors.add(new ValidationError("Invalid character: Unrecognized character '" + c + "' at position " + i + " in '" + func + "'", func));
         break;
       }
@@ -360,7 +411,7 @@ public class PayoffValidator implements ConstraintValidator<ValidPayoffFunction,
         currentTokenType = null;
         continue;
       }
-      
+
       // If token type changes, add the current token and start a new one
       if (currentTokenType != null && charType != currentTokenType) {
         addToken(tokens, currentTokenType, buffer.toString(), i - buffer.length());
@@ -401,7 +452,7 @@ public class PayoffValidator implements ConstraintValidator<ValidPayoffFunction,
               (Character.isDigit(expression.charAt(position + 1)) || 
                (c == 'P' && expression.charAt(position + 1) == 'p'))) {
       return TokenType.VARIABLE;
-    } else if (c == '(') {
+        } else if (c == '(') {
       return TokenType.OPEN_PAREN;
     } else if (c == ')') {
       return TokenType.CLOSE_PAREN;
@@ -450,10 +501,10 @@ public class PayoffValidator implements ConstraintValidator<ValidPayoffFunction,
       int position = parenStack.peek();
       return new ValidationError("Invalid syntax: Unclosed opening parenthesis at position " + position + " in '" + expression + "'", expression);
     }
-    
+
     return null;
   }
-  
+
   // Validate operator usage
   private ValidationError validateOperators(List<Token> tokens, String expression) {
     for (int i = 0; i < tokens.size(); i++) {
