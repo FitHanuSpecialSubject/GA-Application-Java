@@ -105,7 +105,8 @@ public class EvaluateFunctionValidator implements
             isValid = false;
           }
         } catch (NumberFormatException e) {
-          addViolation(context, "evaluateFunctions", "Invalid P variable format: " + var);
+          int wrongIndex = function.indexOf(var.substring(1));
+          addViolation(context, "evaluateFunctions", "Invalid P variable format: " + var + ", at position " + wrongIndex);
           isValid = false;
         }
       } else if (var.startsWith("W") || var.startsWith("w")) {
@@ -121,7 +122,8 @@ public class EvaluateFunctionValidator implements
             isValid = false;
           }
         } catch (NumberFormatException e) {
-          addViolation(context, "evaluateFunctions", "Invalid W variable format: " + var);
+          int wrongIndex = function.indexOf(var.substring(1));
+          addViolation(context, "evaluateFunctions", "Invalid W variable format: " + var + ", at position " + wrongIndex);
           isValid = false;
         }
       }  else if (var.startsWith("R") || var.startsWith("r")) {
@@ -137,7 +139,8 @@ public class EvaluateFunctionValidator implements
             isValid = false;
           }
         } catch (NumberFormatException e) {
-          addViolation(context, "evaluateFunctions", "Invalid R variable format: " + var);
+          int wrongIndex = function.indexOf(var.substring(1));
+          addViolation(context, "evaluateFunctions", "Invalid R variable format: " + var + ", at position " + wrongIndex);
           isValid = false;
         }
       }
