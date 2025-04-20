@@ -11,4 +11,8 @@ public interface ProblemRequestDto {
    * @return algorithm code name.
    */
   String getAlgorithm();
+
+  int getGeneration();
+
+  int getPopulationSize();
 }

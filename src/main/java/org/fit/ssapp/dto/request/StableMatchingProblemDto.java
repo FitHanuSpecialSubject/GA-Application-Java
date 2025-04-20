@@ -23,8 +23,10 @@ import org.fit.ssapp.dto.validator.*;
 @ValidEvaluateFunctionCount
 @ValidIndividualArrayPropertyCount
 @ValidStableMatching
+@ValidThreshold
 @ValidMatrixDimension
 @ValidEvaluateFunction
+@ValidFitnessFunctionSMT
 @Builder
 public class StableMatchingProblemDto implements ProblemRequestDto {
 
@@ -57,7 +59,6 @@ public class StableMatchingProblemDto implements ProblemRequestDto {
   private String[] evaluateFunctions;
 
   @NotEmpty(message = ErrMessage.NOT_BLANK)
-  @ValidFitnessFunction
   private String fitnessFunction;
 
   private int[][] excludedPairs;

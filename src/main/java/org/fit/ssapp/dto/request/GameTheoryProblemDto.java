@@ -3,11 +3,13 @@ package org.fit.ssapp.dto.request;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.fit.ssapp.dto.validator.ValidStrategyStructure;
 import org.fit.ssapp.ss.gt.Conflict;
 import org.fit.ssapp.ss.gt.NormalPlayer;
 import org.fit.ssapp.ss.gt.SpecialPlayer;
 import org.fit.ssapp.dto.validator.ValidFitnessFunction;
 import org.fit.ssapp.dto.validator.ValidPayoffFunction;
+import org.fit.ssapp.dto.validator.ValidThreshold;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -27,6 +29,8 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@ValidStrategyStructure
+@ValidThreshold
 public class GameTheoryProblemDto implements ProblemRequestDto {
   private SpecialPlayer specialPlayer;
 
@@ -61,11 +65,11 @@ public class GameTheoryProblemDto implements ProblemRequestDto {
 
   @NotNull(message = "Generation is required")
   @Min(value = 1, message = "Generation must be greater than 0")
-  private Integer generation;
+  private int generation;
 
   @NotNull(message = "Population size is required")
   @Min(value = 1, message = "Population size must be greater than 0")
-  private Integer populationSize;
+  private int populationSize;
 
   @Override
   public String toString() {
