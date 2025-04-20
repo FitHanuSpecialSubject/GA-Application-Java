@@ -56,7 +56,7 @@ public class StrategyStructureValidator implements ConstraintValidator<ValidStra
         int actualCount = strategies != null ? strategies.size() : 0;
         if (actualCount != expectedCount) {
             addViolation(context,
-                    "normalPlayers.strategies",
+                    "normalPlayers",
                     String.format("At player index %d, expected %d strategies but found %d", playerIndex, expectedCount, actualCount));
             return false;
         }
@@ -72,7 +72,7 @@ public class StrategyStructureValidator implements ConstraintValidator<ValidStra
 
             if (actualCount != expectedPropertyCount) {
                 addViolation(context,
-                        "normalPlayers.strategies.properties",
+                        "normalPlayers",
                         String.format("At player index %d, strategy index %d, expected %d properties but found %d",
                                 playerIndex, j, expectedPropertyCount, actualCount));
                 valid = false;
