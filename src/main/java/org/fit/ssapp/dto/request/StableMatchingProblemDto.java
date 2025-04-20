@@ -25,9 +25,9 @@ import org.fit.ssapp.dto.validator.*;
 @ValidStableMatching
 @ValidThreshold
 @ValidMatrixDimension
+@ValidEvaluateFunction
 @ValidFitnessFunctionSMT
 @Builder
-
 public class StableMatchingProblemDto implements ProblemRequestDto {
 
   @Size(max = 255, message = ErrMessage.PROBLEM_NAME)
@@ -56,7 +56,6 @@ public class StableMatchingProblemDto implements ProblemRequestDto {
   private double[][] individualProperties;
 
   @NotNull(message = ErrMessage.NOT_BLANK)
-  @ValidEvaluateFunction
   private String[] evaluateFunctions;
 
   @NotEmpty(message = ErrMessage.NOT_BLANK)
