@@ -4,6 +4,9 @@ gametheory:
   runconfig: 10
 
 validation:
-  threshold: 10000
+  population:
+    max: 3000
+  generation:
+    max: 1000
   individuals:
     min: 3

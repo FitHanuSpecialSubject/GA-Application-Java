@@ -10,8 +10,11 @@ import lombok.Data;
 @ConfigurationProperties(prefix = "validation")
 @Data
 public class ValidationConfig {
-  @Value("${validation.threshold}")
-  private int threshold;
+  @Value("${validation.population.max}")
+  private int populationSize;
+
+  @Value("${validation.generation.max}")
+  private int generation;
 
   @Value("${validation.individuals.min}")
   private int minIndividuals;
