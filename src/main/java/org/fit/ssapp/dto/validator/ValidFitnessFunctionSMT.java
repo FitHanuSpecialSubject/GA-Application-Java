@@ -14,21 +14,19 @@ import java.lang.annotation.Target;
  * ## **Validation Logic:**
  * - Checks if the function is syntactically valid.
  * - Ensures only permitted variables and mathematical operations are used.
- * - Validates against mathematical errors like division by zero, sqrt of negative numbers, etc.
- * - Ensures functions have the correct number of arguments.
- * - If the function is invalid, a detailed error message is generated.
+ * - If the function is invalid, an error message is generated.
  */
-@Target({ElementType.FIELD, ElementType.TYPE})
+@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = FitnessValidateGT.class)
-public @interface ValidFitnessFunctionGT {
+@Constraint(validatedBy = FitnessFunctionValidator.class)
+public @interface ValidFitnessFunctionSMT {
 
   /**
    * The default error message when validation fails.
    *
    * @return A string containing the default error message.
    */
-  String message() default "Invalid fitness function";
+  String message() default "Invalid fitness function syntax";
 
   /**
    * Defines validation groups (optional).

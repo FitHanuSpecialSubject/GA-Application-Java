@@ -60,7 +60,7 @@ public class NormalizationTest {
                 "default"
         });
         dto.setFitnessFunction("default");
-        dto.setPopulationSize(500);
+        dto.setPopulationSize(100);
         dto.setGeneration(50);
         dto.setMaxTime(3600);
         dto.setAlgorithm("NSGAII");

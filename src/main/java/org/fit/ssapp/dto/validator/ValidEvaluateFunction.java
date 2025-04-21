@@ -17,7 +17,7 @@ import java.lang.annotation.Target;
  * - If the function is invalid, an error message is generated.
  *
  */
-@Target(ElementType.FIELD)
+@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = EvaluateFunctionValidator.class)
 public @interface ValidEvaluateFunction {
