@@ -28,7 +28,7 @@ public class ThresholdValidator implements ConstraintValidator<ValidThreshold, P
             context.disableDefaultConstraintViolation();
             // Violation for the 'populationSize' field
             context.buildConstraintViolationWithTemplate(
-                    "Generation must not exceed " + validationConfig.getGeneration())
+                    "generation must not exceed " + validationConfig.getGeneration())
                     .addPropertyNode("generation")
                     .addConstraintViolation();
             isValid = false;
