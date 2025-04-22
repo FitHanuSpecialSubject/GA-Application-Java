@@ -223,9 +223,11 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
    * Extracts satisfaction values for a specific set
    */
   private double[] getSatisfactoryOfASetByDefault(double[] satisfactions, int set) {
+    // Sử dụng Math.min(matchingData.getSize(), satisfactions.length) để tránh out of bounds.
+    int length = Math.min(matchingData.getSize(), satisfactions.length);
     List<Double> result = new ArrayList<>();
 
-    for (int i = 0; i < matchingData.getSize(); i++) {
+    for (int i = 0; i < length; i++) {
       result.add(satisfactions[i]);
     }
 
@@ -237,6 +239,7 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
 
     return temp;
   }
+
 
   /**
    * Converts double to String without scientific notation
