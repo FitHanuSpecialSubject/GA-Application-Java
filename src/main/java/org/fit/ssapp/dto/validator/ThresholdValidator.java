@@ -11,24 +11,28 @@ public class ThresholdValidator implements ConstraintValidator<ValidThreshold, P
     @Autowired
     private ValidationConfig validationConfig;
 
-
     public boolean isValid(ProblemRequestDto dto, ConstraintValidatorContext context) {
         boolean isValid = true;
-        int threshold = validationConfig.getThreshold();
 
-        if (dto.getPopulationSize() * dto.getGeneration() > threshold) {
+        if (dto.getPopulationSize() > validationConfig.getPopulationSize()) {
             context.disableDefaultConstraintViolation();
             // Violation for the 'generation' field
-            context.buildConstraintViolationWithTemplate("Threshold (generation * populationSize) must not exceed " + threshold)
-                    .addPropertyNode("generation")
-                    .addConstraintViolation();
-
-            // Violation for the 'populationSize' field
-            context.buildConstraintViolationWithTemplate("Threshold (generation * populationSize) must not exceed " + threshold)
+            context.buildConstraintViolationWithTemplate(
+                    "populationSize must not exceed " + validationConfig.getPopulationSize())
                     .addPropertyNode("populationSize")
                     .addConstraintViolation();
+            isValid = false;
+        }
 
-            isValid = false;    
+        if (dto.getGeneration() > validationConfig.getGeneration()) {
+            context.disableDefaultConstraintViolation();
+            // Violation for the 'populationSize' field
+            context.buildConstraintViolationWithTemplate(
+                    "generation must not exceed " + validationConfig.getGeneration())
+                    .addPropertyNode("generation")
+                    .addConstraintViolation();
+            isValid = false;
+
         }
         return isValid;
     }
