@@ -29,15 +29,20 @@ public class IndividualArraysSizeValidator implements
   @Override
   public boolean isValid(StableMatchingProblemDto dto, ConstraintValidatorContext context) {
     int expectedCount = dto.getNumberOfIndividuals();
-    return
-            dto.getIndividualSetIndices().length == expectedCount
-                    &&
-                    dto.getIndividualCapacities().length == expectedCount
-                    &&
-                    dto.getIndividualRequirements().length == expectedCount
-                    &&
-                    dto.getIndividualWeights().length == expectedCount
-                    &&
-                    dto.getIndividualProperties().length == expectedCount;
+
+    // Handle null arrays
+    if (dto.getIndividualSetIndices() == null ||
+            dto.getIndividualCapacities() == null ||
+            dto.getIndividualRequirements() == null ||
+            dto.getIndividualWeights() == null ||
+            dto.getIndividualProperties() == null) {
+      return true; // Consistent with MatrixDimensionValidator
+    }
+
+    return dto.getIndividualSetIndices().length == expectedCount &&
+            dto.getIndividualCapacities().length == expectedCount &&
+            dto.getIndividualRequirements().length == expectedCount &&
+            dto.getIndividualWeights().length == expectedCount &&
+            dto.getIndividualProperties().length == expectedCount;
   }
 }
