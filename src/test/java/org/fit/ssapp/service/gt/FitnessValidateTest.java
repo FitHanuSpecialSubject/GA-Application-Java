@@ -26,10 +26,10 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
- * Integration test cho việc kiểm tra lỗi validation của FitnessFunction trong GameTheory.
- * 
- * Test này tập trung vào việc kiểm tra các lỗi validation với input không hợp lệ
- * và đảm bảo rằng hệ thống trả về thông báo lỗi phù hợp.
+ * Integration test for validatimg FitnessFunction in GameTheory.
+ *
+ * This test focuses on checking for validation errors with invalid input
+* and ensuring that the system returns the appropriate error message.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
