@@ -5,7 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.fit.ssapp.dto.request.StableMatchingProblemDto;
 import org.fit.ssapp.ss.smt.MatchingData;
 import org.fit.ssapp.ss.smt.evaluator.impl.TwoSetFitnessEvaluator;
+import org.fit.ssapp.util.MatchingProblemType;
 import org.fit.ssapp.util.SampleDataGenerator;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,10 +22,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-public class SMTValidFitnessTest {
+public class SMTValidEvaluateTest {
   StableMatchingProblemDto sampleDTO;
   SampleDataGenerator sampleData;
   MatchingData matchingData;
@@ -72,36 +75,17 @@ public class SMTValidFitnessTest {
   @ParameterizedTest
   @ValueSource(strings = {
           "defaulttt",
-          "S3 + S4",
-          "(M1 + M2 - M3",
-          "M1 -/ M2",
-          "abc - abc",
-          "M1 / 0"
+          "R1 -* W2",
+          "W2 / 0,4",
+          "(M1 - @2",
+          "m1 + P2",
+          "P5 + Wi5",
+          "ceil(R5) + (15 / 2) * W3",
+          "Floor(R2) + 15^2",
   })
   void invalidSyntax(String function) throws Exception {
     StableMatchingProblemDto dto = setUp();
-    dto.setFitnessFunction(function);
-
-    _mock.perform(post("/api/stable-matching-solver")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(dto)))
-            .andDo(print())
-            .andExpect(status().isBadRequest())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON));
-  }
-
-  @ParameterizedTest
-  @ValueSource(strings = {
-          "SIGMA{S1} + INVALID",
-          "SIGMA{S1} * / SIGMA{S2}",
-          "SIGMA{S1} + INVALID_VARIABLE",
-          "SIGMA{S10} + M1",
-          "SIGMA{S1+} + SIGMA{1}",
-          "SIGMA{S1} / 0 ",
-  })
-  void invalidSigma(String function) throws Exception {
-    StableMatchingProblemDto dto = setUp();
-    dto.setFitnessFunction(function);
+    dto.setEvaluateFunctions(new String[]{function, function});
 
     _mock.perform(post("/api/stable-matching-solver")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -114,49 +98,14 @@ public class SMTValidFitnessTest {
   @ParameterizedTest
   @ValueSource(strings = {
           "default",
-          "S1 + S2",
-          "( M1 + M2 )- M3 ",
-          "M1 - M2",
-          "M1 / 2"
+          "abs(R1 - R2) + 1",
+          "12^2 + log(R1) * P1 + log2(W2) + P3",
+          "ceil(R2) + (15 / 2) * W3",
+          "((P1 * W1) + R2 * W2) / (W1 + R1)",
   })
   void validSyntax(String function) throws Exception {
     StableMatchingProblemDto dto = setUp();
-    dto.setFitnessFunction(function);
-
-    MvcResult result = this._mock
-            .perform(post("/api/stable-matching-solver")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(dto)))
-            .andExpect(request().asyncStarted())
-            .andReturn();
-
-    final String response = this._mock.perform(asyncDispatch(result))
-            .andDo(print())
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andReturn()
-            .getResponse()
-            .getContentAsString();
-
-    // Verify response structure
-    final JsonNode jsonNode = objectMapper.readTree(response);
-    assertTrue(jsonNode.has("data"));
-    final JsonNode data = jsonNode.get("data");
-    assertTrue(data.has("matches"));
-    assertTrue(data.has("fitnessValue"));
-    assertTrue(data.has("setSatisfactions"));
-  }
-
-
-  @ParameterizedTest
-  @ValueSource(strings = {
-          "SIGMA{S1} + SIGMA{S2}",
-          "SIGMA{S1} + 3",
-          "( SIGMA{S2} + M1 )",
-  })
-  void validSigma(String function) throws Exception {
-    StableMatchingProblemDto dto = setUp();
-    dto.setFitnessFunction(function);
+    dto.setEvaluateFunctions(new String[]{function, function});
 
     MvcResult result = this._mock
             .perform(post("/api/stable-matching-solver")
@@ -187,4 +136,6 @@ public class SMTValidFitnessTest {
 
   @Autowired
   private MockMvc _mock;
+
+
 }
