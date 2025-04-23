@@ -223,16 +223,16 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
    * Extracts satisfaction values for a specific set
    */
   private double[] getSatisfactoryOfASetByDefault(double[] satisfactions, int set) {
-    // Sử dụng Math.min(matchingData.getSize(), satisfactions.length) để tránh out of bounds.
-    int length = Math.min(matchingData.getSize(), satisfactions.length);
     List<Double> result = new ArrayList<>();
+    int[] sets = matchingData.getSets();
 
-    for (int i = 0; i < length; i++) {
-      result.add(satisfactions[i]);
+    for (int i = 0; i < satisfactions.length; i++) {
+      if (sets[i] == set) {
+        result.add(satisfactions[i]);
+      }
     }
 
     double[] temp = new double[result.size()];
-
     for (int i = 0; i < result.size(); i++) {
       temp[i] = result.get(i);
     }
