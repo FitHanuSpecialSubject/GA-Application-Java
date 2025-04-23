@@ -224,19 +224,22 @@ public class TwoSetFitnessEvaluator implements FitnessEvaluator {
    */
   private double[] getSatisfactoryOfASetByDefault(double[] satisfactions, int set) {
     List<Double> result = new ArrayList<>();
+    int[] sets = matchingData.getSets();
 
-    for (int i = 0; i < matchingData.getSize(); i++) {
-      result.add(satisfactions[i]);
+    for (int i = 0; i < satisfactions.length; i++) {
+      if (sets[i] == set) {
+        result.add(satisfactions[i]);
+      }
     }
 
     double[] temp = new double[result.size()];
-
     for (int i = 0; i < result.size(); i++) {
       temp[i] = result.get(i);
     }
 
     return temp;
   }
+
 
   /**
    * Converts double to String without scientific notation
