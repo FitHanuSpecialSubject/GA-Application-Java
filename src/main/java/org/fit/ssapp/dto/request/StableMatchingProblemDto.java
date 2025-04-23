@@ -28,6 +28,7 @@ import org.fit.ssapp.dto.validator.*;
 @ValidEvaluateFunction
 @ValidFitnessFunctionSMT
 @Builder
+
 public class StableMatchingProblemDto implements ProblemRequestDto {
 
   @Size(max = 255, message = ErrMessage.PROBLEM_NAME)
