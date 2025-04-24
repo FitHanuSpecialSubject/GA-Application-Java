@@ -61,13 +61,13 @@ public class FitnessValidateTest {
     @ParameterizedTest
     @MethodSource("validFitnessFunctionProvider")
     void testValidFitnessFunctions(GameTheoryProblemDto dto) throws Exception {
-        MvcResult result = this.mockMvc
+       MvcResult result = this.mockMvc
                 .perform(post("/api/game-theory-solver")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(request().asyncStarted())
                 .andReturn();
-
+    
         final String response = this.mockMvc.perform(asyncDispatch(result))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -77,10 +77,9 @@ public class FitnessValidateTest {
                 .getContentAsString();
 
         final JsonNode jsonNode = objectMapper.readTree(response);
-        assertTrue(jsonNode.has("data"), "Response should contain 'data' field");
+        assertTrue(jsonNode.has("data"));
         final JsonNode data = jsonNode.get("data");
-        assertTrue(data.has("equilibria"), "Response data should contain 'equilibria'");
-        assertTrue(data.has("payoffs"), "Response data should contain 'payoffs'");
+        assertTrue(data.has("fitnessValue"));        
     }
 
     private static Stream<Arguments> invalidFitnessFunctionProvider() {
