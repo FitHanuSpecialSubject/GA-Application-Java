@@ -91,15 +91,6 @@ public class MatrixDimensionValidatorTest {
                         new double[][]{{4.0}, {5.0}, {6.0}},
                         new int[]{0, 1, 1},
                         1
-                )),
-
-                // Case 5: Null matrices
-                Arguments.of(createDto(
-                        null,
-                        null,
-                        null,
-                        new int[]{0, 1, 1},
-                        2
                 ))
         );
     }

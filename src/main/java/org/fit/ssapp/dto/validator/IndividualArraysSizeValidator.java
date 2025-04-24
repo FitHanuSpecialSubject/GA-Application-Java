@@ -30,15 +30,6 @@ public class IndividualArraysSizeValidator implements
   public boolean isValid(StableMatchingProblemDto dto, ConstraintValidatorContext context) {
     int expectedCount = dto.getNumberOfIndividuals();
 
-    // Handle null arrays
-    if (dto.getIndividualSetIndices() == null ||
-            dto.getIndividualCapacities() == null ||
-            dto.getIndividualRequirements() == null ||
-            dto.getIndividualWeights() == null ||
-            dto.getIndividualProperties() == null) {
-      return true; // Consistent with MatrixDimensionValidator
-    }
-
     return dto.getIndividualSetIndices().length == expectedCount &&
             dto.getIndividualCapacities().length == expectedCount &&
             dto.getIndividualRequirements().length == expectedCount &&
