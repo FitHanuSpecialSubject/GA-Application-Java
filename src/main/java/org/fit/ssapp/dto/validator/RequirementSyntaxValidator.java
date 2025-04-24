@@ -5,8 +5,8 @@ import jakarta.validation.ConstraintValidatorContext;
 import java.util.regex.Pattern;
 
 /**
- * **RequirementSyntaxValidator** - Validator for checking requirement syntax.
- * This class ensures that all **requirement expressions** follow the correct format.
+ * RequirementSyntaxValidator - Validator for checking requirement syntax.
+ * This class ensures that all requirement expressions follow the correct format.
  */
 public class RequirementSyntaxValidator implements
         ConstraintValidator<ValidRequirementSyntax, String[][]> {
@@ -14,7 +14,6 @@ public class RequirementSyntaxValidator implements
   private String message;
 
   private static final Pattern NUMBER_PATTERN = Pattern.compile("^\\d+(\\.\\d+)?$");
-  private static final Pattern RANGE_PATTERN = Pattern.compile("^\\d+(\\.\\d+)?:\\d+(\\.\\d+)?$");
   private static final Pattern SUFFIX_PATTERN = Pattern.compile(".*(\\+\\+|--)$");
   private static final Pattern FULL_PATTERN = Pattern.compile("^(\\d+(\\.\\d+)?)(?::(\\d+(\\.\\d+)?))?(\\+\\+|--)?$");
 
@@ -29,16 +28,15 @@ public class RequirementSyntaxValidator implements
   }
 
   /**
-   * Validates a **2D array of requirement expressions**.
+   * Validates a 2D array of requirement expressions.
    * - Iterates through each row and requirement expression.
-   * - Applies **regex matching** to check syntax validity.
-   * - If an invalid expression is found, a **constraint violation message** is generated.
+   * - Applies regex matching to check syntax validity.
+   * - If an invalid expression is found, a constraint violation message is generated.
    *
    * @param value   The `String[][]` array containing requirement expressions.
    * @param context The validation context for reporting violations.
    * @return `true` if all expressions match the expected format, otherwise `false`.
    */
-
   @Override
   public boolean isValid(String[][] value, ConstraintValidatorContext context) {
     if (value == null) return true;
@@ -48,63 +46,64 @@ public class RequirementSyntaxValidator implements
 
     for (int i = 0; i < value.length; i++) {
       String[] row = value[i];
+      if (row == null) {
+        buildViolation(context, "Requirement row cannot be null", i, -1, "null");
+        isValid = false;
+        continue;
+      }
       for (int j = 0; j < row.length; j++) {
         String requirement = row[j];
+        boolean hasSpecificError = false;
 
         if (requirement == null || requirement.trim().isEmpty()) {
           buildViolation(context, "Requirement cannot be empty", i, j, requirement);
           isValid = false;
+          hasSpecificError = true;
           continue;
         }
 
-        // Full pattern check (valid case)
-        if (FULL_PATTERN.matcher(requirement).matches()) {
-          continue;
-        }
-
-        // Invalid: Check components and give detailed feedback
-        if (requirement.contains(":")) {
-          String withoutSuffix = requirement.replaceAll("(\\+\\+|--)$", "");
-          if (RANGE_PATTERN.matcher(withoutSuffix).matches()) {
-            String[] parts = withoutSuffix.split(":");
-            try {
-              double left = Double.parseDouble(parts[0]);
-              double right = Double.parseDouble(parts[1]);
-
-              if (left > right) {
-                buildViolation(context, "Invalid range logic: left bound is greater than right bound", i, j, requirement);
-                isValid = false;
-                continue;
-              }
-
-            } catch (NumberFormatException e) {
-              buildViolation(context, "Range values must be numeric", i, j, requirement);
-              isValid = false;
-              continue;
-            }
-          } else {
-            buildViolation(context, "Invalid range format", i, j, requirement);
+        // Check if the requirement matches the full valid pattern
+        if (!FULL_PATTERN.matcher(requirement).matches()) {
+          // Check for non-numeric start
+          String[] parts = requirement.split("[:\\+\\-]");
+          if (parts.length == 0 || parts[0].isEmpty() || !NUMBER_PATTERN.matcher(parts[0]).matches()) {
+            buildViolation(context, "Requirement must start with a valid number", i, j, requirement);
             isValid = false;
-            continue;
+            hasSpecificError = true;
+          }
+
+          // Check for invalid suffix
+          if (SUFFIX_PATTERN.matcher(requirement).matches() && !requirement.endsWith("++") && !requirement.endsWith("--")) {
+            buildViolation(context, "Invalid suffix format. Only '++' or '--' allowed", i, j, requirement);
+            isValid = false;
+            hasSpecificError = true;
+          }
+
+          // Fallback error if no specific error was found
+          if (!hasSpecificError) {
+            buildViolation(context, message + " - Invalid syntax", i, j, requirement);
+            isValid = false;
+          }
+          continue;
+        }
+
+        // Additional range validation for left > right
+        if (requirement.contains(":")) {
+          String[] parts = requirement.split(":");
+          try {
+            double left = Double.parseDouble(parts[0].replaceAll("(\\+\\+|--)$", ""));
+            double right = Double.parseDouble(parts[1].replaceAll("(\\+\\+|--)$", ""));
+            if (left > right) {
+              buildViolation(context, "Invalid range logic: left bound is greater than right bound", i, j, requirement);
+              isValid = false;
+              hasSpecificError = true;
+            }
+          } catch (NumberFormatException e) {
+            buildViolation(context, "Range values must be numeric", i, j, requirement);
+            isValid = false;
+            hasSpecificError = true;
           }
         }
-
-
-        if (!NUMBER_PATTERN.matcher(requirement.split("[:\\+\\-]")[0]).matches()) {
-          buildViolation(context, "Requirement must start with a valid number", i, j, requirement);
-          isValid = false;
-          continue;
-        }
-
-        if (SUFFIX_PATTERN.matcher(requirement).find() && !requirement.endsWith("++") && !requirement.endsWith("--")) {
-          buildViolation(context, "Invalid suffix format. Only '++' or '--' allowed", i, j, requirement);
-          isValid = false;
-          continue;
-        }
-
-        // Fallback error
-        buildViolation(context, message + " - Invalid syntax", i, j, requirement);
-        isValid = false;
       }
     }
 
