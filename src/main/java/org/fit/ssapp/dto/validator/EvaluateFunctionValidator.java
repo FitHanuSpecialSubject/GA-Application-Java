@@ -100,7 +100,7 @@ public class EvaluateFunctionValidator implements
             addViolation(
                     context,
                     "evaluateFunctions",
-                    "Invalid P index: " + index + ", at position " + wrongIndex + ". Must be between 1 and " + dto.getNumberOfProperty()
+                    "Invalid P token: " + index + ", at position " + wrongIndex + ". Must be between 1 and " + dto.getNumberOfProperty()
             );
             isValid = false;
           }
@@ -117,7 +117,7 @@ public class EvaluateFunctionValidator implements
             addViolation(
                     context,
                     "evaluateFunctions",
-                    "Invalid W index: " + index + ", at position " + wrongIndex + ". Must be between 1 and " + dto.getNumberOfProperty()
+                    "Invalid W token: " + index + ", at position " + wrongIndex + ". Must be between 1 and " + dto.getNumberOfProperty()
             );
             isValid = false;
           }
@@ -134,7 +134,7 @@ public class EvaluateFunctionValidator implements
             addViolation(
                     context,
                     "evaluateFunctions",
-                    "Invalid R index: " + index + ", at position " + wrongIndex + ". Must be between 1 and " + dto.getNumberOfProperty()
+                    "Invalid R token: " + index + ", at position " + wrongIndex + ". Must be between 1 and " + dto.getNumberOfProperty()
             );
             isValid = false;
           }
