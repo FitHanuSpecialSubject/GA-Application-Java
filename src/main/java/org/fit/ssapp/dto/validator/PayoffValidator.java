@@ -30,7 +30,7 @@ public class PayoffValidator implements ConstraintValidator<ValidPayoffFunction,
       .collect(Collectors.joining("|"));
 
   private static final Pattern VALID_PATTERN = Pattern.compile(
-      "^[\\s]*([pP]\\d+|P\\d+p\\d+|[\\d.]+|[+\\-*/()\\s]|" + FUNCTION_NAMES_REGEX + "|SUM|AVERAGE|MIN|MAX|PRODUCT|MEDIAN|RANGE)+[\\s]*$",
+      "^[\\s]*([pP]\\d+|P\\d+p\\d+|[\\d.]+|[+\\-*/()\\s^,]|" + FUNCTION_NAMES_REGEX + "|SUM|AVERAGE|MIN|MAX|PRODUCT|MEDIAN|RANGE)+[\\s]*$",
       Pattern.CASE_INSENSITIVE
   );
 
@@ -98,6 +98,7 @@ public class PayoffValidator implements ConstraintValidator<ValidPayoffFunction,
     if (dto.getNormalPlayers() != null && !dto.getNormalPlayers().isEmpty()) {
       playerCount = dto.getNormalPlayers().size();
       
+      // Get max property count from first player's first strategy
       var firstPlayer = dto.getNormalPlayers().get(0);
       if (firstPlayer.getStrategies() != null && !firstPlayer.getStrategies().isEmpty()) {
         var firstStrategy = firstPlayer.getStrategies().get(0);
@@ -105,8 +106,25 @@ public class PayoffValidator implements ConstraintValidator<ValidPayoffFunction,
           maxPropertyCount = firstStrategy.getProperties().size();
         }
       }
+
+      // Also validate individual player payoff functions
+      for (int i = 0; i < playerCount; i++) {
+        var player = dto.getNormalPlayers().get(i);
+        String playerPayoffFunc = player.getPayoffFunction();
+        if (playerPayoffFunc != null && !playerPayoffFunc.isBlank() && !playerPayoffFunc.equals("DEFAULT")) {
+          if (!isValidString(playerPayoffFunc, context, maxPropertyCount, playerCount)) {
+            return false;
+          }
+        }
+      }
     }
-    return isValidString(payoffFunction, context, maxPropertyCount, playerCount);
+    
+    // Validate default payoff function
+    if (payoffFunction != null && !payoffFunction.isBlank() && !payoffFunction.equals("DEFAULT")) {
+      return isValidString(payoffFunction, context, maxPropertyCount, playerCount);
+    }
+    
+    return true;
   }
 
   /**
@@ -195,12 +213,7 @@ public class PayoffValidator implements ConstraintValidator<ValidPayoffFunction,
     if (!invalidIndices.isEmpty()) {
       context.disableDefaultConstraintViolation();
       context.buildConstraintViolationWithTemplate(
-              "Invalid payoff function: Property " +
-                  (invalidIndices.size() == 1 ?
-                      "p" + invalidIndices.iterator().next() :
-                      "variables " + formatInvalidIndices(invalidIndices)) +
-                  " exceeds available properties. Maximum property count is " + propertyCount +
-                  " (valid variables are p1 to p" + propertyCount + ").")
+              "Invalid property reference: Property index out of range")
           .addPropertyNode("defaultPayoffFunction")
           .addConstraintViolation();
       return false;
@@ -274,6 +287,14 @@ public class PayoffValidator implements ConstraintValidator<ValidPayoffFunction,
 
       // Create evaluable expression with dummy values for validation
       ExpressionBuilder builder = new ExpressionBuilder(cleanFunc);
+      
+      // Add pow function explicitly for 2 arguments
+      builder.function(new net.objecthunter.exp4j.function.Function("pow", 2) {
+          @Override
+          public double apply(double... args) {
+              return Math.pow(args[0], args[1]);
+          }
+      });
 
       // Add all variables with dummy values
       for (String var : variables) {
@@ -286,6 +307,24 @@ public class PayoffValidator implements ConstraintValidator<ValidPayoffFunction,
       for (String var : variables) {
         expression.setVariable(var, 1.0);
       }
+      
+      // Test evaluation with dummy values to catch division by zero
+      try {
+          double result = expression.evaluate();
+          if (Double.isNaN(result) || Double.isInfinite(result)) {
+              context.disableDefaultConstraintViolation();
+              context.buildConstraintViolationWithTemplate("Invalid expression: Division by zero")
+                  .addPropertyNode("defaultPayoffFunction")
+                  .addConstraintViolation();
+              return false;
+          }
+      } catch (ArithmeticException e) {
+          context.disableDefaultConstraintViolation();
+          context.buildConstraintViolationWithTemplate("Invalid expression: Division by zero")
+              .addPropertyNode("defaultPayoffFunction")
+              .addConstraintViolation();
+          return false;
+      }
 
       // Validate expression
       ValidationResult validationResult = expression.validate();
@@ -297,9 +336,6 @@ public class PayoffValidator implements ConstraintValidator<ValidPayoffFunction,
             .addConstraintViolation();
         return false;
       }
-
-      // Mathematical errors (like division by zero, log of negative numbers) 
-      // will be caught at runtime instead of pre-validation
 
     } catch (Exception e) {
       context.disableDefaultConstraintViolation();
@@ -484,66 +520,47 @@ public class PayoffValidator implements ConstraintValidator<ValidPayoffFunction,
   
   // Validate parentheses using tokens
   private ValidationError validateParentheses(List<Token> tokens, String expression) {
-    Stack<Integer> parenStack = new Stack<>();
+    Stack<Integer> stack = new Stack<>();
     
-    for (Token token : tokens) {
+    for (int i = 0; i < tokens.size(); i++) {
+      Token token = tokens.get(i);
+      
       if (token.type == TokenType.OPEN_PAREN) {
-        parenStack.push(token.position);
+        stack.push(i);
       } else if (token.type == TokenType.CLOSE_PAREN) {
-        if (parenStack.isEmpty()) {
-          return new ValidationError("Invalid syntax: Extra closing parenthesis at position " + token.position + " in '" + expression + "'", expression);
+        if (stack.isEmpty()) {
+          return new ValidationError("Invalid expression: Unmatched parentheses", expression);
         }
-        parenStack.pop();
+        stack.pop();
       }
     }
     
-    if (!parenStack.isEmpty()) {
-      int position = parenStack.peek();
-      return new ValidationError("Invalid syntax: Unclosed opening parenthesis at position " + position + " in '" + expression + "'", expression);
+    if (!stack.isEmpty()) {
+      return new ValidationError("Invalid expression: Unmatched parentheses", expression);
     }
-
+    
     return null;
   }
 
   // Validate operator usage
   private ValidationError validateOperators(List<Token> tokens, String expression) {
-    for (int i = 0; i < tokens.size(); i++) {
-      Token token = tokens.get(i);
+    for (int i = 0; i < tokens.size() - 1; i++) {
+      Token current = tokens.get(i);
+      Token next = tokens.get(i + 1);
       
-      // Check for variables next to each other without operators
-      if (token.type == TokenType.VARIABLE && i > 0) {
-        Token prevToken = tokens.get(i - 1);
-        if (prevToken.type == TokenType.VARIABLE) {
-          return new ValidationError(
-              "Invalid syntax: Missing operator between variables at position " + token.position +
-              " in '" + expression + "'. Variables must be separated by operators.",
-              expression);
-        }
-        
-        // Check for variables followed by open parentheses without an operator
-        if (prevToken.type == TokenType.VARIABLE && token.type == TokenType.OPEN_PAREN) {
-          return new ValidationError(
-              "Invalid syntax: Missing operator between variable and '(' at position " + token.position +
-              " in '" + expression + "'. Implicit multiplication is not supported.",
-              expression);
-        }
+      if (current.type == TokenType.OPERATOR && next.type == TokenType.OPERATOR) {
+        return new ValidationError("Invalid expression: Consecutive operators", expression);
       }
       
-      // Two operators in a row is invalid (exception: unary minus can follow another operator)
-      if (token.type == TokenType.OPERATOR && i > 0) {
-        Token prevToken = tokens.get(i - 1);
-        List<String> allowedBeforeMinus = new ArrayList<>();
-        Collections.addAll(allowedBeforeMinus, "+", "-", "*", "/", "^");
-        
-        if (prevToken.type == TokenType.OPERATOR && 
-            !(token.value.equals("-") && allowedBeforeMinus.contains(prevToken.value))) {
-          return new ValidationError(
-              "Invalid syntax: Two operators in a row at position " + token.position +
-              " in '" + expression + "'.",
-              expression);
-        }
+      if (i == 0 && current.type == TokenType.OPERATOR) {
+        return new ValidationError("Invalid expression: Expression cannot start with an operator", expression);
       }
     }
+    
+    if (tokens.size() > 0 && tokens.get(tokens.size() - 1).type == TokenType.OPERATOR) {
+      return new ValidationError("Invalid expression: Expression cannot end with an operator", expression);
+    }
+    
     return null;
   }
 
@@ -591,16 +608,13 @@ public class PayoffValidator implements ConstraintValidator<ValidPayoffFunction,
         
         // Check empty arguments
         if (args.isEmpty() || (args.size() == 1 && args.get(0).trim().isEmpty())) {
-          return new ValidationError("Invalid function syntax: Missing argument for " + funcName + " function in '" + funcName + "()'", expression);
+          return new ValidationError("Invalid function call: Missing arguments", expression);
         }
         
         // Check argument count
         int expectedArgCount = FUNCTION_ARGS_COUNT.get(funcName);
         if (args.size() != expectedArgCount) {
-          return new ValidationError(
-              "Invalid function syntax: " + funcName + " requires " + expectedArgCount +
-              " argument(s), but found " + args.size() + " in '" + funcName + "(" + String.join(",", args) + ")'", 
-              expression);
+          return new ValidationError("Invalid function call: Wrong number of arguments", expression);
         }
       }
     }

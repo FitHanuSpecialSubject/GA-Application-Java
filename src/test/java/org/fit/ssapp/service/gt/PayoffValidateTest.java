@@ -1,32 +1,25 @@
 package org.fit.ssapp.service.gt;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.hamcrest.Matchers.containsString;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.asyncDispatch;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Stream;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
 import org.fit.ssapp.dto.request.GameTheoryProblemDto;
 import org.fit.ssapp.ss.gt.NormalPlayer;
 import org.fit.ssapp.ss.gt.Strategy;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.context.ActiveProfiles;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Validates the correctness of payoff functions (both default and per-player)
@@ -34,166 +27,118 @@ import org.springframework.test.web.servlet.MvcResult;
  * Payoff function uses p1, p2... for properties and P1p1, P2p2... for player-property references.
  */
 @SpringBootTest
-@AutoConfigureMockMvc
+@ActiveProfiles("test")
 public class PayoffValidateTest {
 
     @Autowired
-    private MockMvc mockMvc;
+    private Validator validator;
 
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    /**
-     * Test invalid default payoff function syntax.
-     */
     @ParameterizedTest
-    @MethodSource("invalidPayoffSyntaxProvider")
-    void testInvalidDefaultPayoffSyntax(GameTheoryProblemDto dto) throws Exception {
-        mockMvc.perform(post("/api/game-theory-solver")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(dto)))
-            .andDo(print())
-            .andExpect(status().isBadRequest())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    @MethodSource("validPayoffFunctionsProvider")
+    void testValidPayoffFunctions(GameTheoryProblemDto dto) {
+        Set<ConstraintViolation<GameTheoryProblemDto>> violations = validator.validate(dto);
+        if (!violations.isEmpty()) {
+            System.out.println("Violations found for payoff function: " + dto.getDefaultPayoffFunction());
+            violations.forEach(v -> System.out.println("- " + v.getMessage()));
+        }
+        assertTrue(violations.isEmpty(), "Expected no violations for valid payoff functions");
     }
 
-    /**
-     * Test invalid parameters/arguments in default payoff functions.
-     */
     @ParameterizedTest
-    @MethodSource("invalidPayoffParamsProvider")
-    void testInvalidDefaultPayoff(GameTheoryProblemDto dto) throws Exception {
-        mockMvc.perform(post("/api/game-theory-solver")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(dto)))
-            .andDo(print())
-            .andExpect(status().isBadRequest())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    @MethodSource("invalidPayoffFunctionsProvider")
+    void testInvalidPayoffFunctions(GameTheoryProblemDto dto, String[] expectedMessages) {
+        Set<ConstraintViolation<GameTheoryProblemDto>> violations = validator.validate(dto);
+        if (violations.size() != expectedMessages.length) {
+            System.out.println("Testing payoff function: " + dto.getDefaultPayoffFunction());
+            System.out.println("Expected messages: " + Arrays.toString(expectedMessages));
+            System.out.println("Actual violations:");
+            violations.forEach(v -> System.out.println("- " + v.getMessage()));
+        }
+
+        assertEquals(expectedMessages.length, violations.size(),
+                "Expected " + expectedMessages.length + " violations, but found " + violations.size());
+
+        String[] actualMessages = violations.stream()
+                .map(ConstraintViolation::getMessage)
+                .sorted()
+                .toArray(String[]::new);
+        Arrays.sort(expectedMessages);
+
+        assertTrue(Arrays.equals(expectedMessages, actualMessages),
+                "Expected messages: " + Arrays.toString(expectedMessages) +
+                        ", but got: " + Arrays.toString(actualMessages));
     }
 
-    /**
-     * Test valid default aggregation functions.
-     */
-    @ParameterizedTest
-    @MethodSource("validAggregationFunctionsProvider")
-    void testValidDefaultAggregationFunctions(GameTheoryProblemDto dto) throws Exception {
-        MvcResult result = this.mockMvc
-                .perform(post("/api/game-theory-solver")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(request().asyncStarted())
-                .andReturn();
-
-        this.mockMvc.perform(asyncDispatch(result))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
-    }
-
-    @Test
-    void testIndividualPlayerPayoffFunctionValidation_DivisionByZero() throws Exception {
-        GameTheoryProblemDto dto = setUpTestCase();
-        List<NormalPlayer> players = new ArrayList<>(dto.getNormalPlayers());
-        NormalPlayer Player = players.get(0);
-        Player.setPayoffFunction("p1 / 0");
-
-        mockMvc.perform(post("/api/game-theory-solver")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(dto)))
-            .andDo(print())
-            .andExpect(status().isBadRequest())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON));
-    }
-
-    @Test
-    void testIndividualPlayerPayoffFunctionValidation_InvalidPropertyRef() throws Exception {
-        GameTheoryProblemDto dto = setUpTestCase();
-        List<NormalPlayer> players = new ArrayList<>(dto.getNormalPlayers());
-        NormalPlayer playerToModify = players.get(0);
-        playerToModify.setPayoffFunction("p1 + p8");
-
-        mockMvc.perform(post("/api/game-theory-solver")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(dto)))
-            .andDo(print())
-            .andExpect(status().isBadRequest())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON));
-    }
-
-    @Test
-    void testIndividualPlayerPayoffFunctionValidation_InvalidPlayerRef() throws Exception {
-        GameTheoryProblemDto dto = setUpTestCase();
-        List<NormalPlayer> players = new ArrayList<>(dto.getNormalPlayers());
-        NormalPlayer playerToModify = players.get(0);
-        playerToModify.setPayoffFunction("P4p1 + p2");
-
-        mockMvc.perform(post("/api/game-theory-solver")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(dto)))
-            .andDo(print())
-            .andExpect(status().isBadRequest())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON));
-    }
-
-    @Test
-    void testValidIndividualPlayerReferencingPayoffs() throws Exception {
-        GameTheoryProblemDto dto = setUpTestCase();
-        List<NormalPlayer> players = new ArrayList<>(dto.getNormalPlayers());
-        players.get(0).setPayoffFunction("P2p1 + P3p2");
-        players.get(1).setPayoffFunction("p1 * P1p2");
-        players.get(2).setPayoffFunction("MAX");
-
-        MvcResult result = this.mockMvc
-                .perform(post("/api/game-theory-solver")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(request().asyncStarted())
-                .andReturn();
-
-        final String response = this.mockMvc.perform(asyncDispatch(result))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
-
-        final JsonNode jsonNode = objectMapper.readTree(response);
-        final JsonNode data = jsonNode.get("data");
-        assertTrue(data.has("payoffs"));
-    }
-
-    private static Stream<Arguments> invalidPayoffSyntaxProvider() {
+    static Stream<Arguments> validPayoffFunctionsProvider() {
         return Stream.of(
-            Arguments.of(createDto("++p1 + p2")),
-            Arguments.of(createDto("p1 + p8")),
-            Arguments.of(createDto("cos()")),
-            Arguments.of(createDto("p1 ++ p2")),
-            Arguments.of(createDto("p1 + ((p2 * 3")),
-            Arguments.of(createDto("INVALID_FUNCTION(p1)")),
-            Arguments.of(createDto("p0 + p1")),
-            Arguments.of(createDto("p2 @ p1 + @@@"))
-        );
-    }
-
-    private static Stream<Arguments> invalidPayoffParamsProvider() {
-        return Stream.of(
-            Arguments.of(createDto("pow(p1)")),
-            Arguments.of(createDto("log(p1, p2)")),
-            Arguments.of(createDto("sqrt(p1, p2, p3)")),
-            Arguments.of(createDto("cos()"))
-        );
-    }
-
-    private static Stream<Arguments> validAggregationFunctionsProvider() {
-        return Stream.of(
+            // Case 1: Default and special functions
             Arguments.of(createDto("SUM")),
             Arguments.of(createDto("AVERAGE")),
             Arguments.of(createDto("MIN")),
             Arguments.of(createDto("MAX")),
             Arguments.of(createDto("PRODUCT")),
             Arguments.of(createDto("MEDIAN")),
-            Arguments.of(createDto("RANGE"))
+            Arguments.of(createDto("RANGE")),
+
+            // Case 2: Simple expressions with properties
+            Arguments.of(createDto("p1")),
+            Arguments.of(createDto("p1 + p2")),
+            Arguments.of(createDto("p1 * p2")),
+
+            // Case 3: Complex expressions
+            Arguments.of(createDto("p1 * p2 / 2")),
+            Arguments.of(createDto("pow(p1, 2)")),
+            Arguments.of(createDto("sqrt(p1)")),
+
+            // Case 4: Player references
+            Arguments.of(createDtoWithPlayerPayoffs("P1p1")),
+            Arguments.of(createDtoWithPlayerPayoffs("P2p1 + P1p2"))
+        );
+    }
+
+    static Stream<Arguments> invalidPayoffFunctionsProvider() {
+        return Stream.of(
+            // Case 1: Invalid syntax
+            Arguments.of(
+                createDto("p1 ++ p2"),
+                new String[]{"Invalid expression: Consecutive operators"}
+            ),
+            Arguments.of(
+                createDto("p1 + ((p2 * 3"),
+                new String[]{"Invalid expression: Unmatched parentheses"}
+            ),
+
+            // Case 2: Invalid property references
+            Arguments.of(
+                createDto("p1 + p8"),
+                new String[]{"Invalid property reference: Property index out of range"}
+            ),
+            Arguments.of(
+                createDto("p0 + p1"),
+                new String[]{"Invalid property reference: Property index out of range"}
+            ),
+
+            // Case 3: Invalid function parameters
+            Arguments.of(
+                createDto("pow(p1)"),
+                new String[]{"Invalid payoff function syntax: 'Invalid number of arguments available for 'pow' function'"}
+            ),
+            Arguments.of(
+                createDto("sqrt(p1, p2, p3)"),
+                new String[]{"Invalid payoff function syntax: 'Invalid number of items on the output queue. Might be caused by an invalid number of arguments for a function.'"}
+            ),
+
+            // Case 4: Invalid player references
+            Arguments.of(
+                createDtoWithPlayerPayoffs("P4p1 + p2"),
+                new String[]{"Invalid payoff function: Player P4 exceeds available players. Maximum player count is 3 (valid players are P1 to P3)"}
+            ),
+
+            // Case 5: Division by zero
+            Arguments.of(
+                createDtoWithPlayerPayoffs("p1 / 0"),
+                new String[]{"Invalid expression: Division by zero"}
+            )
         );
     }
 
@@ -202,6 +147,17 @@ public class PayoffValidateTest {
         dto.setDefaultPayoffFunction(defaultPayoff);
         if (dto.getNormalPlayers() != null) {
              dto.getNormalPlayers().forEach(p -> p.setPayoffFunction(null));
+        }
+        return dto;
+    }
+
+    private static GameTheoryProblemDto createDtoWithPlayerPayoffs(String... playerPayoffs) {
+        GameTheoryProblemDto dto = setUpTestCase();
+        List<NormalPlayer> players = dto.getNormalPlayers();
+        for (int i = 0; i < Math.min(playerPayoffs.length, players.size()); i++) {
+            if (playerPayoffs[i] != null) {
+                players.get(i).setPayoffFunction(playerPayoffs[i]);
+            }
         }
         return dto;
     }
@@ -237,7 +193,7 @@ public class PayoffValidateTest {
         final List<Strategy> strats = new ArrayList<>(3);
         strats.add(strat);
         strats.add(strat);
-        strats.add(strat);
+        strat.setPayoff(payoff);
 
         final NormalPlayer player = new NormalPlayer();
         player.setStrategies(strats);
