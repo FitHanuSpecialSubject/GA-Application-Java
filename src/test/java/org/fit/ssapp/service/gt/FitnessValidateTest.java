@@ -114,14 +114,21 @@ public class FitnessValidateTest {
             // Case 3: Invalid function parameters
             Arguments.of(
                 createDto("unknownFunc(u1)", 1),
-                new String[]{"Invalid fitness function syntax: 'Unknown function or variable 'unknownFunc' at pos 0 in expression 'unknownFunc(u1)''"}
+                new String[]{"Invalid function: Function 'unknownFunc' at position 0 does not exist in 'unknownFunc(u1)'"}
             ),
             Arguments.of(
                 createDto("log()", 1),
                 new String[]{"Invalid function syntax: Missing argument for log function at position 0 in 'log()'"}
             ),
+
+            Arguments.of(
+                createDto("u1 ++ u21 - ((u2 + u4 ", 2),
+                new String[]{"Invalid syntax: Two operators in a row at position 4 in 'u1 ++ u21 - ((u2 + u4 '.",
+                    "Invalid fitness function: Variables u4 and u21 refer to non-existent players. The request contains only 2 players.",
+                    "Invalid syntax: Unclosed opening parenthesis at position 5 in 'u1 ++ u21 - ((u2 + u4 '"}
+            ),
             
-            // Case 4: Invalid expressions
+            // Case A: Invalid expressions
             Arguments.of(
                 createDto("u1 + u2 + @@@", 2),
                 new String[]{"Invalid character: Unrecognized character '@' at position 10 in 'u1 + u2 + @@@'"}
