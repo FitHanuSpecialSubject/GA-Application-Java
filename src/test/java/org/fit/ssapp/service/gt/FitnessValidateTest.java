@@ -22,34 +22,33 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Validates the correctness of payoff functions (both default and per-player)
- * and related parameters in game theory problems.
- * Payoff function uses p1, p2... for properties and P1p1, P2p2... for player-property references.
+ * Validates the correctness of fitness functions in game theory problems.
+ * Fitness function uses u1, u2, u3... for utility values of different players.
  */
 @SpringBootTest
 @ActiveProfiles("test")
-public class PayoffValidateTest {
+public class FitnessValidateTest {
 
     @Autowired
     private Validator validator;
 
     @ParameterizedTest
-    @MethodSource("validPayoffFunctionsProvider")
-    void testValidPayoffFunctions(GameTheoryProblemDto dto) {
+    @MethodSource("validFitnessFunctionProvider")
+    void testValidFitnessFunctions(GameTheoryProblemDto dto) {
         Set<ConstraintViolation<GameTheoryProblemDto>> violations = validator.validate(dto);
         if (!violations.isEmpty()) {
-            System.out.println("Violations found for payoff function: " + dto.getDefaultPayoffFunction());
+            System.out.println("Violations found for fitness function: " + dto.getFitnessFunction());
             violations.forEach(v -> System.out.println("- " + v.getMessage()));
         }
-        assertTrue(violations.isEmpty(), "Expected no violations for valid payoff functions");
+        assertTrue(violations.isEmpty(), "Expected no violations for valid fitness functions");
     }
 
     @ParameterizedTest
-    @MethodSource("invalidPayoffFunctionsProvider")
-    void testInvalidPayoffFunctions(GameTheoryProblemDto dto, String[] expectedMessages) {
+    @MethodSource("invalidFitnessFunctionProvider")
+    void testInvalidFitnessFunctions(GameTheoryProblemDto dto, String[] expectedMessages) {
         Set<ConstraintViolation<GameTheoryProblemDto>> violations = validator.validate(dto);
         if (violations.size() != expectedMessages.length) {
-            System.out.println("Testing payoff function: " + dto.getDefaultPayoffFunction());
+            System.out.println("Testing fitness function: " + dto.getFitnessFunction());
             System.out.println("Expected messages: " + Arrays.toString(expectedMessages));
             System.out.println("Actual violations:");
             violations.forEach(v -> System.out.println("- " + v.getMessage()));
@@ -69,101 +68,101 @@ public class PayoffValidateTest {
                         ", but got: " + Arrays.toString(actualMessages));
     }
 
-    static Stream<Arguments> validPayoffFunctionsProvider() {
+    static Stream<Arguments> validFitnessFunctionProvider() {
         return Stream.of(
             // Case 1: Default and special functions
-            Arguments.of(createDto("SUM")),
-            Arguments.of(createDto("AVERAGE")),
-            Arguments.of(createDto("MIN")),
-            Arguments.of(createDto("MAX")),
             Arguments.of(createDto("PRODUCT")),
+            Arguments.of(createDto("MAX")),
+            Arguments.of(createDto("MIN")),
+            Arguments.of(createDto("AVERAGE")),
             Arguments.of(createDto("MEDIAN")),
             Arguments.of(createDto("RANGE")),
-
-            // Case 2: Simple expressions with properties
-            Arguments.of(createDto("p1")),
-            Arguments.of(createDto("p2^2")),
-            Arguments.of(createDto("p1 + p2")),
-            Arguments.of(createDto("p1 * p2")),
-
+            
+            // Case 2: Simple expressions with utilities
+            Arguments.of(createDto("u1", 1)),
+            Arguments.of(createDto("u1 + u2", 2)),
+            Arguments.of(createDto("u1 * u2", 2)),
+            
             // Case 3: Complex expressions
-            Arguments.of(createDto("p1 * p2 / 2")),
-            Arguments.of(createDto("sqrt(p1)")),
-
-            // Case 4: Player references
-            Arguments.of(createDto("P1p1")),
-            Arguments.of(createDto("P2p1 + P1p2"))
+            Arguments.of(createDto("u1 * u2 / 2", 2)),
+            Arguments.of(createDto("pow(u1, 2)", 1)),
+            Arguments.of(createDto("sqrt(u1)", 1)),
+            Arguments.of(createDto("u1 * 2 + u3 / 4", 3)),
+            Arguments.of(createDto("log(u1) + sqrt(u2)", 2)),
+            Arguments.of(createDto("abs(u1 - u2)", 2))
         );
     }
 
-    static Stream<Arguments> invalidPayoffFunctionsProvider() {
+    static Stream<Arguments> invalidFitnessFunctionProvider() {
         return Stream.of(
             // Case 1: Invalid syntax
             Arguments.of(
-                createDto("p1 ++ p2"),
-                new String[]{"Invalid syntax: Two operators in a row at position 4 in 'p1 ++ p2'."}
+                createDto("u1 + (u2 * 3", 2),
+                new String[]{"Invalid syntax: Unclosed opening parenthesis at position 5 in 'u1 + (u2 * 3'"}
             ),
+            // Test for multiple opening parentheses 
             Arguments.of(
-                createDto("p1 + ((p2 * 3"),
-                new String[]{"Invalid syntax: Unclosed opening parenthesis at position 6 in 'p1 + ((p2 * 3'",
-                            "Invalid syntax: Unclosed opening parenthesis at position 7 in 'p1 + ((p2 * 3'."}
-            ),
-
-            // Case 2: Invalid property references
-            Arguments.of(
-                createDto("p1 + p8"),
-                new String[]{"Invalid payoff function: Property p8 at position 5 exceeds available properties. Maximum property count is 4 (valid variables are p1 to p4)."}
-            ),
-            Arguments.of(
-                createDto("p0 + p1"),
-                new String[]{"Invalid payoff function: Property p0 at position 0 exceeds available properties. Maximum property count is 4 (valid variables are p1 to p4)."}
-            ),
-            Arguments.of(
-                createDto("sqrt(p1, p2, p3)"),
-                new String[]{"Invalid payoff function syntax: Function sqrt at position 0 requires 1 argument(s), but found 3 in 'sqrt(p1, p2, p3)'"}
+                createDto("u1 + ((u2 * 3", 2),
+                new String[]{"Invalid syntax: Unclosed opening parenthesis at position 5 in 'u1 + ((u2 * 3'",
+                            "Invalid syntax: Unclosed opening parenthesis at position 6 in 'u1 + ((u2 * 3'"}
             ),
 
-            // Case 3: Multiple violations in one expression
+            // Case 2: Invalid utility references
             Arguments.of(
-                createDto("p0 ++ p8 + P5p1 + (p2 / 0"),
-                new String[]{"Invalid expression: Division by zero detected at position 22 in 'p0 ++ p8 + P5p1 + (p2 / 0'",
-                    "Invalid syntax: Unclosed opening parenthesis at position 18 in 'p0 ++ p8 + P5p1 + (p2 / 0'",
-                    "Invalid payoff function: Player P5 at position 11 exceeds available players. Maximum player count is 3 (valid players are P1 to P3)",
-                    "Invalid payoff function: Property variables p0 and p8 exceeds available properties. Maximum property count is 4 (valid variables are p1 to p4)."
-                }
+                createDto("u1 + u10", 2),
+                new String[]{"Invalid fitness function: Variable u10 at position 5 refers to non-existent player. The request contains only 2 players."}
+            ),
+            Arguments.of(
+                createDto("u12 + u2", 2),
+                new String[]{"Invalid fitness function: Variable u12 at position 0 refers to non-existent player. The request contains only 2 players."}
             ),
             
-            // Case 4: Invalid player references
+            // Case 3: Invalid function parameters
             Arguments.of(
-                createDto("P4p1 + p2"),
-                new String[]{"Invalid payoff function: Player P4 at position 0 exceeds available players. Maximum player count is 3 (valid players are P1 to P3)"}
+                createDto("unknownFunc(u1)", 1),
+                new String[]{"Invalid function: Function 'unknownFunc' at position 0 does not exist in 'unknownFunc(u1)'"}
+            ),
+            Arguments.of(
+                createDto("log()", 1),
+                new String[]{"Invalid function syntax: Missing argument for log function at position 0 in 'log()'"}
             ),
 
+            Arguments.of(
+                createDto("u1 ++ u21 - ((u2 + u4 ", 2),
+                new String[]{"Invalid syntax: Two operators in a row at position 4 in 'u1 ++ u21 - ((u2 + u4 '.",
+                    "Invalid fitness function: Variables u4 and u21 refer to non-existent players. The request contains only 2 players.",
+                    "Invalid syntax: Unclosed opening parenthesis at position 5 in 'u1 ++ u21 - ((u2 + u4 '"}
+            ),
+            
+            // Case A: Invalid expressions
+            Arguments.of(
+                createDto("u1 + u2 + @@@", 2),
+                new String[]{"Invalid character: Unrecognized character '@' at position 10 in 'u1 + u2 + @@@'"}
+            ),
+            
             // Case 5: Division by zero
             Arguments.of(
-                createDto("p1 / 0"),
-                new String[]{"Invalid expression: Division by zero detected at position 3 in 'p1 / 0'"}
+                createDto("u1 / 0", 1),
+                new String[]{"Invalid syntax: Division by zero detected at position 3 in 'u1 / 0'"}
             )
         );
     }
 
-    private static GameTheoryProblemDto createDto(String defaultPayoff) {
+    private static GameTheoryProblemDto createDto(String fitnessFunction) {
         GameTheoryProblemDto dto = setUpTestCase();
-        dto.setDefaultPayoffFunction(defaultPayoff);
-        if (dto.getNormalPlayers() != null) {
-             dto.getNormalPlayers().forEach(p -> p.setPayoffFunction(null));
-        }
+        dto.setFitnessFunction(fitnessFunction);
         return dto;
     }
 
-    private static GameTheoryProblemDto createDto(String... playerPayoffs) {
+    private static GameTheoryProblemDto createDto(String fitnessFunction, int numberOfPlayers) {
         GameTheoryProblemDto dto = setUpTestCase();
-        List<NormalPlayer> players = dto.getNormalPlayers();
-        for (int i = 0; i < Math.min(playerPayoffs.length, players.size()); i++) {
-            if (playerPayoffs[i] != null) {
-                players.get(i).setPayoffFunction(playerPayoffs[i]);
-            }
+        dto.setFitnessFunction(fitnessFunction);
+        List<NormalPlayer> players = new ArrayList<>();
+        NormalPlayer basePlayer = getNormalPlayers().isEmpty() ? new NormalPlayer() : getNormalPlayers().get(0);
+        for (int i = 0; i < numberOfPlayers; i++) {
+            players.add(basePlayer);
         }
+        dto.setNormalPlayers(players);
         return dto;
     }
 
@@ -198,11 +197,11 @@ public class PayoffValidateTest {
         final List<Strategy> strats = new ArrayList<>(3);
         strats.add(strat);
         strats.add(strat);
-        strat.setPayoff(payoff);
+        strats.add(strat);
 
         final NormalPlayer player = new NormalPlayer();
         player.setStrategies(strats);
-        player.setPayoffFunction(null);
+        player.setPayoffFunction("SUM");
 
         final List<NormalPlayer> players = new ArrayList<>(3);
         players.add(player);
@@ -211,4 +210,3 @@ public class PayoffValidateTest {
         return players;
     }
 }
-    
