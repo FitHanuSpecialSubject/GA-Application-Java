@@ -131,7 +131,8 @@ public class FitnessValidateTest {
                 createDto("u1 ++ u21 - ((u2 + u4 ", 2),
                 new String[]{"Invalid syntax: Two operators in a row at position 4 in 'u1 ++ u21 - ((u2 + u4 '.",
                     "Invalid fitness function: Variables u4 and u21 refer to non-existent players. The request contains only 2 players.",
-                    "Invalid syntax: Unclosed opening parenthesis at position 5 in 'u1 ++ u21 - ((u2 + u4 '"}
+                    "Invalid syntax: Unclosed opening parenthesis at position 9 in 'u1 ++ u21 - ((u2 + u4 '",
+                    "Invalid syntax: Unclosed opening parenthesis at position 10 in 'u1 ++ u21 - ((u2 + u4 '"}
             ),
             
             // Case A: Invalid expressions
