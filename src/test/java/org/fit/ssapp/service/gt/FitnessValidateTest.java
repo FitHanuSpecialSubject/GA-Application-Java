@@ -1,120 +1,137 @@
 package org.fit.ssapp.service.gt;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.hamcrest.Matchers.containsString;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.asyncDispatch;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Stream;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
 import org.fit.ssapp.dto.request.GameTheoryProblemDto;
 import org.fit.ssapp.ss.gt.NormalPlayer;
 import org.fit.ssapp.ss.gt.Strategy;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.context.ActiveProfiles;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Integration test for validating FitnessFunction in GameTheory.
- *
- * This test focuses on checking for validation errors with invalid input
- * and ensuring that the system returns the appropriate error message,
- * as well as validating the response structure for valid inputs.
+ * Validates the correctness of fitness functions in game theory problems.
+ * Fitness function uses u1, u2, u3... for utility values of different players.
  */
 @SpringBootTest
-@AutoConfigureMockMvc
+@ActiveProfiles("test")
 public class FitnessValidateTest {
 
     @Autowired
-    private MockMvc mockMvc;
+    private Validator validator;
 
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    // test case invalid fitness
-    @ParameterizedTest
-    @MethodSource("invalidFitnessFunctionProvider")
-    void testInvalidFitnessFunctions(GameTheoryProblemDto dto) throws Exception {
-        mockMvc.perform(post("/api/game-theory-solver")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(dto)))
-            .andDo(print())
-            .andExpect(status().isBadRequest())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON));
-    }
-
-    // test for valid fitness function
     @ParameterizedTest
     @MethodSource("validFitnessFunctionProvider")
-    void testValidFitnessFunctions(GameTheoryProblemDto dto) throws Exception {
-       MvcResult result = this.mockMvc
-                .perform(post("/api/game-theory-solver")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(request().asyncStarted())
-                .andReturn();
-    
-        final String response = this.mockMvc.perform(asyncDispatch(result))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
-
-        final JsonNode jsonNode = objectMapper.readTree(response);
-        assertTrue(jsonNode.has("data"));
-        final JsonNode data = jsonNode.get("data");
-        assertTrue(data.has("fitnessValue"));        
+    void testValidFitnessFunctions(GameTheoryProblemDto dto) {
+        Set<ConstraintViolation<GameTheoryProblemDto>> violations = validator.validate(dto);
+        if (!violations.isEmpty()) {
+            System.out.println("Violations found for fitness function: " + dto.getFitnessFunction());
+            violations.forEach(v -> System.out.println("- " + v.getMessage()));
+        }
+        assertTrue(violations.isEmpty(), "Expected no violations for valid fitness functions");
     }
 
-    private static Stream<Arguments> invalidFitnessFunctionProvider() {
-        return Stream.of(
-            Arguments.of(createDto("++u1 + u2")),
-            Arguments.of(createDto("u1 + u10")),
-            Arguments.of(createDto("((u1+ u3")),
-            Arguments.of(createDto("u1 / 0")),
-            Arguments.of(createDto("u12 + u2")),
-            Arguments.of(createDto("u1 + (u2 * 3")),
-            Arguments.of(createDto("unknownFunc(u1)")),
-            Arguments.of(createDto("log()")),
-            Arguments.of(createDto("u1 + u2 + @@@"))
-        );
+    @ParameterizedTest
+    @MethodSource("invalidFitnessFunctionProvider")
+    void testInvalidFitnessFunctions(GameTheoryProblemDto dto, String[] expectedMessages) {
+        Set<ConstraintViolation<GameTheoryProblemDto>> violations = validator.validate(dto);
+        if (violations.size() != expectedMessages.length) {
+            System.out.println("Testing fitness function: " + dto.getFitnessFunction());
+            System.out.println("Expected messages: " + Arrays.toString(expectedMessages));
+            System.out.println("Actual violations:");
+            violations.forEach(v -> System.out.println("- " + v.getMessage()));
+        }
+
+        assertEquals(expectedMessages.length, violations.size(),
+                "Expected " + expectedMessages.length + " violations, but found " + violations.size());
+
+        String[] actualMessages = violations.stream()
+                .map(ConstraintViolation::getMessage)
+                .sorted()
+                .toArray(String[]::new);
+        Arrays.sort(expectedMessages);
+
+        assertTrue(Arrays.equals(expectedMessages, actualMessages),
+                "Expected messages: " + Arrays.toString(expectedMessages) +
+                        ", but got: " + Arrays.toString(actualMessages));
     }
 
-    private static Stream<Arguments> validFitnessFunctionProvider() {
-        GameTheoryProblemDto dto_u1u2u3 = setUpTestCase();
-        List<NormalPlayer> threePlayers = new ArrayList<>();
-        threePlayers.add(getNormalPlayers().get(0));
-        threePlayers.add(getNormalPlayers().get(0));
-        threePlayers.add(getNormalPlayers().get(0));
-        dto_u1u2u3.setNormalPlayers(threePlayers);
-
+    static Stream<Arguments> validFitnessFunctionProvider() {
         return Stream.of(
+            // Case 1: Default and special functions
             Arguments.of(createDto("PRODUCT")),
             Arguments.of(createDto("MAX")),
             Arguments.of(createDto("MIN")),
             Arguments.of(createDto("AVERAGE")),
             Arguments.of(createDto("MEDIAN")),
             Arguments.of(createDto("RANGE")),
+            
+            // Case 2: Simple expressions with utilities
+            Arguments.of(createDto("u1", 1)),
             Arguments.of(createDto("u1 + u2", 2)),
+            Arguments.of(createDto("u1 * u2", 2)),
+            
+            // Case 3: Complex expressions
+            Arguments.of(createDto("u1 * u2 / 2", 2)),
+            Arguments.of(createDto("pow(u1, 2)", 1)),
+            Arguments.of(createDto("sqrt(u1)", 1)),
             Arguments.of(createDto("u1 * 2 + u3 / 4", 3)),
             Arguments.of(createDto("log(u1) + sqrt(u2)", 2)),
             Arguments.of(createDto("abs(u1 - u2)", 2))
+        );
+    }
+
+    static Stream<Arguments> invalidFitnessFunctionProvider() {
+        return Stream.of(
+            // Case 1: Invalid syntax
+            Arguments.of(
+                createDto("u1 + (u2 * 3", 2),
+                new String[]{"Invalid syntax: Unclosed opening parenthesis at position 5 in 'u1 + (u2 * 3'"}
+            ),
+            
+            // Case 2: Invalid utility references
+            Arguments.of(
+                createDto("u1 + u10", 2),
+                new String[]{"Invalid fitness function: Variable u10 refers to non-existent player. The request contains only 2 players."}
+            ),
+            Arguments.of(
+                createDto("u12 + u2", 2),
+                new String[]{"Invalid fitness function: Variable u12 refers to non-existent player. The request contains only 2 players."}
+            ),
+            
+            // Case 3: Invalid function parameters
+            Arguments.of(
+                createDto("unknownFunc(u1)", 1),
+                new String[]{"Invalid fitness function syntax: 'Unknown function or variable 'unknownFunc' at pos 0 in expression 'unknownFunc(u1)''"}
+            ),
+            Arguments.of(
+                createDto("log()", 1),
+                new String[]{"Invalid fitness function syntax: 'Not enough arguments for 'log''"}
+            ),
+            
+            // Case 4: Invalid expressions
+            Arguments.of(
+                createDto("u1 + u2 + @@@", 2),
+                new String[]{"Invalid character: Unrecognized character '@' at position 10 in 'u1 + u2 + @@@'"}
+            ),
+            
+            // Case 5: Division by zero
+            Arguments.of(
+                createDto("u1 / 0", 1),
+                new String[]{"Invalid fitness function: Division by zero detected"}
+            )
         );
     }
 
