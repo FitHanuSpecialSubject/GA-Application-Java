@@ -100,7 +100,13 @@ public class FitnessValidateTest {
                 createDto("u1 + (u2 * 3", 2),
                 new String[]{"Invalid syntax: Unclosed opening parenthesis at position 5 in 'u1 + (u2 * 3'"}
             ),
-            
+            // Test for multiple opening parentheses 
+            Arguments.of(
+                createDto("u1 + ((u2 * 3", 2),
+                new String[]{"Invalid syntax: Unclosed opening parenthesis at position 5 in 'u1 + ((u2 * 3'",
+                            "Invalid syntax: Unclosed opening parenthesis at position 6 in 'u1 + ((u2 * 3'"}
+            ),
+
             // Case 2: Invalid utility references
             Arguments.of(
                 createDto("u1 + u10", 2),
