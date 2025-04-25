@@ -184,19 +184,21 @@ public class PayoffValidator implements ConstraintValidator<ValidPayoffFunction,
    * @return true if the expression is valid, false otherwise
    */
   private boolean isValidString(String value, ConstraintValidatorContext context, int propertyCount, int playerCount) {
+    boolean isValid = true;
+    context.disableDefaultConstraintViolation();
+    
     if (value == null || value.trim().isEmpty()) {
-      context.disableDefaultConstraintViolation();
       context.buildConstraintViolationWithTemplate("Invalid expression: Empty expression")
           .addPropertyNode("defaultPayoffFunction")
           .addConstraintViolation();
       return false;
     }
-
+    
     if (isDefaultFunction(value)) {
       return true;
     }
+    
 
-    // Pre-check for direct division by zero pattern
     if (value.matches(".*\\/\\s*0[^\\d].*") || value.matches(".*\\/\\s*0$")) {
       int divZeroPos = value.indexOf("/0");
       if (divZeroPos == -1) {
@@ -206,40 +208,35 @@ public class PayoffValidator implements ConstraintValidator<ValidPayoffFunction,
         }
       }
       
-      context.disableDefaultConstraintViolation();
       context.buildConstraintViolationWithTemplate("Invalid expression: Division by zero detected at position " + divZeroPos + " in '" + value + "'")
           .addPropertyNode("defaultPayoffFunction")
           .addConstraintViolation();
-      return false;
+      isValid = false;
     }
-
-    // Check property index limit based on actual property count
+    
+    // Check for invalid property indices
     Set<Integer> invalidIndices = checkPropertyIndices(value, propertyCount);
-
-    // If any invalid indices are found, report the error
     if (!invalidIndices.isEmpty()) {
-      int propPos = 0;
       Integer firstInvalidIdx = invalidIndices.iterator().next();
+      int propPos = 0;
       String pattern = "p" + firstInvalidIdx;
       propPos = value.indexOf(pattern);
       if (propPos == -1) {
         propPos = 0;
       }
       
-      context.disableDefaultConstraintViolation();
-      context.buildConstraintViolationWithTemplate(
-              "Invalid payoff function: Property " +
-                  (invalidIndices.size() == 1 ?
-                      "p" + invalidIndices.iterator().next() + " at position " + propPos :
-                      "variables " + formatInvalidIndices(invalidIndices)) +
-                  " exceeds available properties. Maximum property count is " + propertyCount +
-                  " (valid variables are p1 to p" + propertyCount + ").")
+      context.buildConstraintViolationWithTemplate("Invalid payoff function: Property " +
+          (invalidIndices.size() == 1 ?
+              "p" + invalidIndices.iterator().next() + " at position " + propPos :
+              "variables " + formatInvalidIndices(invalidIndices)) +
+          " exceeds available properties. Maximum property count is " + propertyCount +
+          " (valid variables are p1 to p" + propertyCount + ").")
           .addPropertyNode("defaultPayoffFunction")
           .addConstraintViolation();
-      return false;
+      isValid = false;
     }
+    
 
-    // check if there is any player index in the expression
     if (playerCount > 0) {
       Set<Integer> invalidPlayerIndices = new HashSet<>();
       Map<Integer, Integer> playerPositions = new HashMap<>(); 
@@ -259,7 +256,6 @@ public class PayoffValidator implements ConstraintValidator<ValidPayoffFunction,
         }
       }
       if (!invalidPlayerIndices.isEmpty()) {
-        context.disableDefaultConstraintViolation();
         StringBuilder errorMsg = new StringBuilder("Invalid payoff function: Player ");
         
         if (invalidPlayerIndices.size() == 1) {
@@ -283,93 +279,128 @@ public class PayoffValidator implements ConstraintValidator<ValidPayoffFunction,
         context.buildConstraintViolationWithTemplate(errorMsg.toString())
             .addPropertyNode("defaultPayoffFunction")
             .addConstraintViolation();
-        return false;
+        isValid = false;
       }
     }
-
-    // First, perform detailed validation
+    
+    // Check for syntax errors
     List<ValidationError> errors = validateDetailed(value);
     if (!errors.isEmpty()) {
-      // Report the first error
-      context.disableDefaultConstraintViolation();
-      context.buildConstraintViolationWithTemplate(errors.get(0).getMessage())
-          .addPropertyNode("defaultPayoffFunction")
-          .addConstraintViolation();
-      return false;
-    }
-
-    String cleanFunc = value.replaceAll("\\s+", "");
-    try {
-      Set<String> variables = extractVariables(cleanFunc);
-
-      // Create evaluable expression with dummy values for validation
-      ExpressionBuilder builder = new ExpressionBuilder(cleanFunc);
-
-      // Add all variables with dummy values
-      for (String var : variables) {
-        builder.variable(var);
-      }
-
-      Expression expression = builder.build();
-
-      // Set dummy values to validate expression
-      for (String var : variables) {
-        expression.setVariable(var, 1.0);
-      }
-
-      // Validate expression with exp4j
-      ValidationResult validationResult = expression.validate();
-      if (!validationResult.isValid()) {
-        context.disableDefaultConstraintViolation();
-        String errorMsg = validationResult.getErrors().get(0);
-        if (errorMsg.equals("Too many operands")) {
-          Pattern pattern = Pattern.compile("(\\w+)\\s*\\(([^()]*)\\)");
-          Matcher matcher = pattern.matcher(value);
-          
-          while (matcher.find()) {
-            String funcName = matcher.group(1).toLowerCase();
-            String args = matcher.group(2);
-            int argCount = args.isEmpty() ? 0 : args.split(",").length;
-            
-            if (FUNCTION_ARGS_COUNT.containsKey(funcName)) {
-              int expectedCount = FUNCTION_ARGS_COUNT.get(funcName);
-              if (argCount > expectedCount) {
-                context.buildConstraintViolationWithTemplate(
-                    "Invalid payoff function syntax: Function " + funcName + " at position " + matcher.start() +
-                    " requires " + expectedCount + " argument(s), but found " + argCount +
-                    " in '" + funcName + "(" + args + ")'")
-                .addPropertyNode("defaultPayoffFunction")
-                .addConstraintViolation();
-                return false;
-              }
-            }
-          }
-        }
-        
-        context.buildConstraintViolationWithTemplate(
-                "Invalid payoff function syntax: '" + errorMsg + "'")
+      for (ValidationError error : errors) {
+        context.buildConstraintViolationWithTemplate(error.getMessage())
             .addPropertyNode("defaultPayoffFunction")
             .addConstraintViolation();
-        return false;
       }
-
-      // Mathematical errors (like division by zero, log of negative numbers) 
-      // will be caught at runtime instead of pre-validation
-    } catch (Exception e) {
-      context.disableDefaultConstraintViolation();
-      context.buildConstraintViolationWithTemplate(
-              "Invalid payoff function syntax: '" + e.getMessage() + "'")
-          .addPropertyNode("defaultPayoffFunction")
-          .addConstraintViolation();
-      return false;
+      isValid = false;
     }
-
-    return true;
+    
+    // Validate with exp4j if there are no syntax errors
+    if (isValid) {
+      String cleanFunc = value.replaceAll("\\s+", "");
+      try {
+        Set<String> variables = extractVariables(cleanFunc);
+        
+        // Create evaluable expression with dummy values for validation
+        ExpressionBuilder builder = new ExpressionBuilder(cleanFunc);
+        
+        // Add all variables with dummy values
+        for (String var : variables) {
+          builder.variable(var);
+        }
+        
+        Expression expression = builder.build();
+        
+        // Set dummy values to validate expression
+        for (String var : variables) {
+          expression.setVariable(var, 1.0);
+        }
+        
+        // Validate expression with exp4j
+        ValidationResult validationResult = expression.validate();
+        if (!validationResult.isValid()) {
+          String errorMsg = validationResult.getErrors().get(0);
+          if (errorMsg.equals("Too many operands")) {
+            Pattern pattern = Pattern.compile("(\\w+)\\s*\\(([^()]*)\\)");
+            Matcher matcher = pattern.matcher(value);
+            
+            boolean foundFunctionError = false;
+            while (matcher.find()) {
+              String funcName = matcher.group(1).toLowerCase();
+              String args = matcher.group(2);
+              int argCount = args.isEmpty() ? 0 : args.split(",").length;
+              
+              if (FUNCTION_ARGS_COUNT.containsKey(funcName)) {
+                int expectedCount = FUNCTION_ARGS_COUNT.get(funcName);
+                if (argCount > expectedCount) {
+                  context.buildConstraintViolationWithTemplate("Invalid payoff function syntax: Function " + funcName + " at position " + matcher.start() +
+                      " requires " + expectedCount + " argument(s), but found " + argCount +
+                      " in '" + funcName + "(" + args + ")'")
+                      .addPropertyNode("defaultPayoffFunction")
+                      .addConstraintViolation();
+                  foundFunctionError = true;
+                  isValid = false;
+                }
+              }
+            }
+            
+            if (!foundFunctionError) {
+              context.buildConstraintViolationWithTemplate("Invalid payoff function syntax: '" + errorMsg + "'")
+                  .addPropertyNode("defaultPayoffFunction")
+                  .addConstraintViolation();
+              isValid = false;
+            }
+          } else {
+            context.buildConstraintViolationWithTemplate("Invalid payoff function syntax: '" + errorMsg + "'")
+                .addPropertyNode("defaultPayoffFunction") 
+                .addConstraintViolation();
+            isValid = false;
+          }
+        }
+      } catch (Exception e) {
+        context.buildConstraintViolationWithTemplate("Invalid payoff function syntax: '" + e.getMessage() + "'")
+            .addPropertyNode("defaultPayoffFunction")
+            .addConstraintViolation();
+        isValid = false;
+      }
+    }
+    
+    return isValid;
   }
-
-  private List<ValidationError> validateDetailed(String func) {
+  
+  /**
+   * Get context string around an error position
+   * @param expression The full expression
+   * @param position The error position
+   * @return A substring showing the context of the error
+   */
+  private String getErrorContext(String expression, int position) {
+    // Default to the full expression if it's short
+    if (expression.length() <= 30) {
+      return expression;
+    }
+    
+    // Get a window around the error
+    int start = Math.max(0, position - 15);
+    int end = Math.min(expression.length(), position + 15);
+    
+    // Adjust to not cut in the middle of words/tokens
+    while (start > 0 && Character.isLetterOrDigit(expression.charAt(start - 1))) {
+      start--;
+    }
+    
+    while (end < expression.length() - 1 && Character.isLetterOrDigit(expression.charAt(end))) {
+      end++;
+    }
+    
+    return expression.substring(start, end);
+  }
+  
+  /**
+   * Collect all detailed errors from syntax checks
+   */
+  private List<ValidationError> getAllDetailedErrors(String func) {
     List<ValidationError> errors = new ArrayList<>();
-
+    
     // Check for empty function
     if (func.trim().isEmpty()) {
       errors.add(new ValidationError("Invalid expression: Empty expression", func));
@@ -381,10 +412,9 @@ public class PayoffValidator implements ConstraintValidator<ValidPayoffFunction,
       char c = func.charAt(i);
       if (!VALID_CHAR_PATTERN.matcher(String.valueOf(c)).matches()) {
         errors.add(new ValidationError("Invalid character: Unrecognized character '" + c + "' at position " + i + " in '" + func + "'", func));
-        break;
       }
     }
-
+    
     // Tokenize the expression
     List<Token> tokens = tokenize(func);
     
@@ -392,7 +422,6 @@ public class PayoffValidator implements ConstraintValidator<ValidPayoffFunction,
     ValidationError parenError = validateParentheses(tokens, func);
     if (parenError != null) {
       errors.add(parenError);
-      return errors;
     }
     
     // Validate operator usage
@@ -406,7 +435,21 @@ public class PayoffValidator implements ConstraintValidator<ValidPayoffFunction,
     if (functionError != null) {
       errors.add(functionError);
     }
-
+    
+    return errors;
+  }
+  
+  // Maintain the validateDetailed method for backward compatibility
+  private List<ValidationError> validateDetailed(String func) {
+    List<ValidationError> errors = getAllDetailedErrors(func);
+    
+    // If we want to keep the old behavior of only returning the first error
+    if (!errors.isEmpty() && errors.size() > 1) {
+      List<ValidationError> firstError = new ArrayList<>();
+      firstError.add(errors.get(0));
+      return firstError;
+    }
+    
     return errors;
   }
 
@@ -659,6 +702,7 @@ public class PayoffValidator implements ConstraintValidator<ValidPayoffFunction,
               expression);
         }
       }
+
     }
     
     return null;
