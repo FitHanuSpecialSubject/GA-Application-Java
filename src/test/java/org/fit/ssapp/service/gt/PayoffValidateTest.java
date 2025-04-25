@@ -105,7 +105,8 @@ public class PayoffValidateTest {
             ),
             Arguments.of(
                 createDto("p1 + ((p2 * 3"),
-                new String[]{"Invalid syntax: Unclosed opening parenthesis at position 6 in 'p1 + ((p2 * 3'"}
+                new String[]{"Invalid syntax: Unclosed opening parenthesis at position 6 in 'p1 + ((p2 * 3'",
+                            "Invalid syntax: Unclosed opening parenthesis at position 7 in 'p1 + ((p2 * 3'."}
             ),
 
             // Case 2: Invalid property references
