@@ -111,27 +111,27 @@ public class PayoffValidateTest {
             // Case 2: Invalid property references
             Arguments.of(
                 createDto("p1 + p8"),
-                new String[]{"Invalid payoff function: Property p8 exceeds available properties. Maximum property count is 4 (valid variables are p1 to p4)."}
+                new String[]{"Invalid payoff function: Property p8 at position 5 exceeds available properties. Maximum property count is 4 (valid variables are p1 to p4)."}
             ),
             Arguments.of(
                 createDto("p0 + p1"),
-                new String[]{"Invalid payoff function: Property p0 exceeds available properties. Maximum property count is 4 (valid variables are p1 to p4)."}
+                new String[]{"Invalid payoff function: Property p0 at position 0 exceeds available properties. Maximum property count is 4 (valid variables are p1 to p4)."}
             ),
             Arguments.of(
                 createDto("sqrt(p1, p2, p3)"),
-                new String[]{"Invalid payoff function syntax: 'Too many operands'"}
+                new String[]{"Invalid payoff function syntax: Function sqrt at position 0 requires 1 argument(s), but found 3 in 'sqrt(p1, p2, p3)'"}
             ),
 
             // Case 4: Invalid player references
             Arguments.of(
                 createDtoWithPlayerPayoffs("P4p1 + p2"),
-                new String[]{"Invalid payoff function: Player P4 exceeds available players. Maximum player count is 3 (valid players are P1 to P3)"}
+                new String[]{"Invalid payoff function: Player P4 at position 0 exceeds available players. Maximum player count is 3 (valid players are P1 to P3)"}
             ),
 
             // Case 5: Division by zero
             Arguments.of(
                 createDtoWithPlayerPayoffs("p1 / 0"),
-                new String[]{"Invalid expression: Division by zero detected"}
+                new String[]{"Invalid expression: Division by zero detected at position 4 in 'p1 / 0'"}
             )
         );
     }

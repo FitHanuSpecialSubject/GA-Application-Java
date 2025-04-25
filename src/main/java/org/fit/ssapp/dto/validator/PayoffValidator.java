@@ -519,15 +519,6 @@ public class PayoffValidator implements ConstraintValidator<ValidPayoffFunction,
     for (int i = 0; i < tokens.size(); i++) {
       Token token = tokens.get(i);
       
-      // Check for division by zero
-      if (token.type == TokenType.OPERATOR && token.value.equals("/") && i + 1 < tokens.size()) {
-        Token nextToken = tokens.get(i + 1);
-        if (nextToken.type == TokenType.NUMBER && nextToken.value.equals("0")) {
-          return new ValidationError(
-              "Invalid expression: Division by zero detected",
-              expression);
-        }
-      }
       
       // Check for variables next to each other without operators
       if (token.type == TokenType.VARIABLE && i > 0) {
