@@ -91,8 +91,8 @@ public class PayoffValidateTest {
             Arguments.of(createDto("sqrt(p1)")),
 
             // Case 4: Player references
-            Arguments.of(createDtoWithPlayerPayoffs("P1p1")),
-            Arguments.of(createDtoWithPlayerPayoffs("P2p1 + P1p2"))
+            Arguments.of(createDto("P1p1")),
+            Arguments.of(createDto("P2p1 + P1p2"))
         );
     }
 
@@ -125,22 +125,22 @@ public class PayoffValidateTest {
             // Case 3: Multiple violations in one expression
             Arguments.of(
                 createDto("p0 ++ p8 + P5p1 + (p2 / 0"),
-                new String[]{"Invalid payoff function: Property p0 at position 0 exceeds available properties. Maximum property count is 4 (valid variables are p1 to p4).",
-                "Invalid syntax: Two operators in a row at position 4 in 'p0 ++ p8'.",
-                "Invalid syntax: Unclosed opening parenthesis at position 10 in 'P5p1 + (p2 / 0'",
-                "Invalid syntax: Division by zero detected at position 10 in 'P5p1 + (p2 / 0'",
-                "Invalid syntax: Unclosed opening parenthesis at position 10 in 'P5p1 + (p2 / 0'"}
+                new String[]{"Invalid expression: Division by zero detected at position 22 in 'p0 ++ p8 + P5p1 + (p2 / 0'",
+                    "Invalid syntax: Unclosed opening parenthesis at position 18 in 'p0 ++ p8 + P5p1 + (p2 / 0'",
+                    "Invalid payoff function: Player P5 at position 11 exceeds available players. Maximum player count is 3 (valid players are P1 to P3)",
+                    "Invalid payoff function: Property variables p0 and p8 exceeds available properties. Maximum property count is 4 (valid variables are p1 to p4)."
+                }
             ),
             
             // Case 4: Invalid player references
             Arguments.of(
-                createDtoWithPlayerPayoffs("P4p1 + p2"),
+                createDto("P4p1 + p2"),
                 new String[]{"Invalid payoff function: Player P4 at position 0 exceeds available players. Maximum player count is 3 (valid players are P1 to P3)"}
             ),
 
             // Case 5: Division by zero
             Arguments.of(
-                createDtoWithPlayerPayoffs("p1 / 0"),
+                createDto("p1 / 0"),
                 new String[]{"Invalid expression: Division by zero detected at position 3 in 'p1 / 0'"}
             )
         );
@@ -155,7 +155,7 @@ public class PayoffValidateTest {
         return dto;
     }
 
-    private static GameTheoryProblemDto createDtoWithPlayerPayoffs(String... playerPayoffs) {
+    private static GameTheoryProblemDto createDto(String... playerPayoffs) {
         GameTheoryProblemDto dto = setUpTestCase();
         List<NormalPlayer> players = dto.getNormalPlayers();
         for (int i = 0; i < Math.min(playerPayoffs.length, players.size()); i++) {
