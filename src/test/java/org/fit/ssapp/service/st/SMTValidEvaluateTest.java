@@ -1,17 +1,14 @@
 package org.fit.ssapp.service.st;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import org.fit.ssapp.dto.request.StableMatchingProblemDto;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.web.servlet.MockMvc;
 
 
 import java.util.Arrays;
@@ -133,11 +130,5 @@ public class SMTValidEvaluateTest {
             .distributedCores("all")
             .build();
   }
-
-  @Autowired
-  private ObjectMapper objectMapper;
-
-  @Autowired
-  private MockMvc _mock;
 
 }

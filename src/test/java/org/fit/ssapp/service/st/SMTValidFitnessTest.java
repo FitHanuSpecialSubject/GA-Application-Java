@@ -1,7 +1,5 @@
 package org.fit.ssapp.service.st;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import org.fit.ssapp.dto.request.StableMatchingProblemDto;
@@ -12,7 +10,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Arrays;
 import java.util.Set;
@@ -168,21 +165,6 @@ public class SMTValidFitnessTest {
     );
   }
 
-
-
-  private static Stream<Arguments> validInvalidFunctions() {
-    return Stream.of(
-            Arguments.of(createDto("defaulttt")),
-            Arguments.of(createDto("R1 -* W2")),
-            Arguments.of(createDto("W2 / 0,4")),
-            Arguments.of(createDto("(M1 - @2")),
-            Arguments.of(createDto("m1 + P2")),
-            Arguments.of(createDto("P5 + Wi5")),
-            Arguments.of(createDto("ceil(R5) + (15 / 2) * W3")),
-            Arguments.of(createDto("Floor(R2) + 15^2"))
-    );
-  }
-
   private static StableMatchingProblemDto createDto(String fitnessFunction) {
     return StableMatchingProblemDto.builder()
             .problemName("Test Base Case")
@@ -204,10 +186,4 @@ public class SMTValidFitnessTest {
             .distributedCores("all")
             .build();
   }
-
-  @Autowired
-  private ObjectMapper objectMapper;
-
-  @Autowired
-  private MockMvc _mock;
 }
