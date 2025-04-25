@@ -122,6 +122,16 @@ public class PayoffValidateTest {
                 new String[]{"Invalid payoff function syntax: Function sqrt at position 0 requires 1 argument(s), but found 3 in 'sqrt(p1, p2, p3)'"}
             ),
 
+            // Case 3: Multiple violations in one expression
+            Arguments.of(
+                createDto("p0 ++ p8 + P5p1 + (p2 / 0"),
+                new String[]{"Invalid payoff function: Property p0 at position 0 exceeds available properties. Maximum property count is 4 (valid variables are p1 to p4).",
+                "Invalid syntax: Two operators in a row at position 4 in 'p0 ++ p8'.",
+                "Invalid syntax: Unclosed opening parenthesis at position 10 in 'P5p1 + (p2 / 0'",
+                "Invalid syntax: Division by zero detected at position 10 in 'P5p1 + (p2 / 0'",
+                "Invalid syntax: Unclosed opening parenthesis at position 10 in 'P5p1 + (p2 / 0'"}
+            ),
+            
             // Case 4: Invalid player references
             Arguments.of(
                 createDtoWithPlayerPayoffs("P4p1 + p2"),
@@ -131,7 +141,7 @@ public class PayoffValidateTest {
             // Case 5: Division by zero
             Arguments.of(
                 createDtoWithPlayerPayoffs("p1 / 0"),
-                new String[]{"Invalid expression: Division by zero detected at position 4 in 'p1 / 0'"}
+                new String[]{"Invalid expression: Division by zero detected at position 3 in 'p1 / 0'"}
             )
         );
     }
