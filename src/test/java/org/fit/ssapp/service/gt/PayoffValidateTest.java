@@ -82,12 +82,12 @@ public class PayoffValidateTest {
 
             // Case 2: Simple expressions with properties
             Arguments.of(createDto("p1")),
+            Arguments.of(createDto("p2^2")),
             Arguments.of(createDto("p1 + p2")),
             Arguments.of(createDto("p1 * p2")),
 
             // Case 3: Complex expressions
             Arguments.of(createDto("p1 * p2 / 2")),
-            Arguments.of(createDto("pow(p1, 2)")),
             Arguments.of(createDto("sqrt(p1)")),
 
             // Case 4: Player references
@@ -101,31 +101,25 @@ public class PayoffValidateTest {
             // Case 1: Invalid syntax
             Arguments.of(
                 createDto("p1 ++ p2"),
-                new String[]{"Invalid expression: Consecutive operators"}
+                new String[]{"Invalid syntax: Two operators in a row at position 4 in 'p1 ++ p2'."}
             ),
             Arguments.of(
                 createDto("p1 + ((p2 * 3"),
-                new String[]{"Invalid expression: Unmatched parentheses"}
+                new String[]{"Invalid syntax: Unclosed opening parenthesis at position 6 in 'p1 + ((p2 * 3'"}
             ),
 
             // Case 2: Invalid property references
             Arguments.of(
                 createDto("p1 + p8"),
-                new String[]{"Invalid property reference: Property index out of range"}
+                new String[]{"Invalid payoff function: Property p8 exceeds available properties. Maximum property count is 4 (valid variables are p1 to p4)."}
             ),
             Arguments.of(
                 createDto("p0 + p1"),
-                new String[]{"Invalid property reference: Property index out of range"}
-            ),
-
-            // Case 3: Invalid function parameters
-            Arguments.of(
-                createDto("pow(p1)"),
-                new String[]{"Invalid payoff function syntax: 'Invalid number of arguments available for 'pow' function'"}
+                new String[]{"Invalid payoff function: Property p0 exceeds available properties. Maximum property count is 4 (valid variables are p1 to p4)."}
             ),
             Arguments.of(
                 createDto("sqrt(p1, p2, p3)"),
-                new String[]{"Invalid payoff function syntax: 'Invalid number of items on the output queue. Might be caused by an invalid number of arguments for a function.'"}
+                new String[]{"Invalid payoff function syntax: 'Too many operands'"}
             ),
 
             // Case 4: Invalid player references
@@ -137,7 +131,7 @@ public class PayoffValidateTest {
             // Case 5: Division by zero
             Arguments.of(
                 createDtoWithPlayerPayoffs("p1 / 0"),
-                new String[]{"Invalid expression: Division by zero"}
+                new String[]{"Invalid expression: Division by zero detected"}
             )
         );
     }

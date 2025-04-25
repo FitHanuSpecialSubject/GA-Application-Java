@@ -29,13 +29,13 @@ import org.fit.ssapp.dto.request.GameTheoryProblemDto;
 public class FitnessValidateGT implements ConstraintValidator<ValidFitnessFunctionGT, Object> {
 
   // Pattern to match standard mathematical functions
-  private static final Pattern FUNCTION_PATTERN = Pattern.compile("(abs|sqrt|log|exp|ceil|floor|sin|cos|tan|pow)\\(");
+  private static final Pattern FUNCTION_PATTERN = Pattern.compile("(abs|sqrt|log|exp|ceil|floor|sin|cos|tan)\\(");
   
   // Pattern to match player 
   private static final Pattern VARIABLE_PATTERN = Pattern.compile("(u([0-9]+))");
   
   // Pattern to match function with arguments
-  private static final Pattern FUNCTION_ARGS_PATTERN = Pattern.compile("(abs|sqrt|log|exp|ceil|floor|sin|cos|tan|pow)\\(([^()]*)\\)");
+  private static final Pattern FUNCTION_ARGS_PATTERN = Pattern.compile("(abs|sqrt|log|exp|ceil|floor|sin|cos|tan)\\(([^()]*)\\)");
 
   // [a-zA-Z0-9] - match all alphanumeric characters plus math operators and punctuation
   private static final Pattern VALID_CHAR_PATTERN = Pattern.compile("[a-zA-Z0-9+\\-*/()^%,. ]");
@@ -53,7 +53,6 @@ public class FitnessValidateGT implements ConstraintValidator<ValidFitnessFuncti
     FUNCTION_ARGS_COUNT.put("sin", 1);
     FUNCTION_ARGS_COUNT.put("cos", 1);
     FUNCTION_ARGS_COUNT.put("tan", 1);
-    FUNCTION_ARGS_COUNT.put("pow", 2);
   }
 
   // Class to store validation errors
