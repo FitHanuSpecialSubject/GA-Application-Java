@@ -104,11 +104,11 @@ public class FitnessValidateTest {
             // Case 2: Invalid utility references
             Arguments.of(
                 createDto("u1 + u10", 2),
-                new String[]{"Invalid fitness function: Variable u10 refers to non-existent player. The request contains only 2 players."}
+                new String[]{"Invalid fitness function: Variable u10 at position 5 refers to non-existent player. The request contains only 2 players."}
             ),
             Arguments.of(
                 createDto("u12 + u2", 2),
-                new String[]{"Invalid fitness function: Variable u12 refers to non-existent player. The request contains only 2 players."}
+                new String[]{"Invalid fitness function: Variable u12 at position 0 refers to non-existent player. The request contains only 2 players."}
             ),
             
             // Case 3: Invalid function parameters
@@ -118,7 +118,7 @@ public class FitnessValidateTest {
             ),
             Arguments.of(
                 createDto("log()", 1),
-                new String[]{"Invalid fitness function syntax: 'Not enough arguments for 'log''"}
+                new String[]{"Invalid function syntax: Missing argument for log function at position 0 in 'log()'"}
             ),
             
             // Case 4: Invalid expressions
@@ -130,7 +130,7 @@ public class FitnessValidateTest {
             // Case 5: Division by zero
             Arguments.of(
                 createDto("u1 / 0", 1),
-                new String[]{"Invalid fitness function: Division by zero detected"}
+                new String[]{"Invalid syntax: Division by zero detected at position 3 in 'u1 / 0'"}
             )
         );
     }
