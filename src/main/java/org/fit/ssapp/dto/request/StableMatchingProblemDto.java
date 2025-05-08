@@ -52,7 +52,7 @@ public class StableMatchingProblemDto implements ProblemRequestDto {
   private double[][] individualProperties;
 
   @NotNull(message = ErrMessage.NOT_BLANK)
-  @ValidEvaluateFunction
+//  @ValidEvaluateFunction
   private String[] evaluateFunctions;
 
   @NotEmpty(message = ErrMessage.NOT_BLANK)
