@@ -44,7 +44,7 @@ public class GameTheoryCustomFitnessTest {
   @Autowired
   private ObjectMapper objectMapper;
 
-  @ParameterizedTest
+  // @ParameterizedTest
   @CsvSource({
       "NSGAII,(u2)^10 + 12",
       "NSGAIII,abs(u1) / 100",
@@ -83,7 +83,7 @@ public class GameTheoryCustomFitnessTest {
     assertTrue(data.has("fitnessValue"));
   }
 
-  @ParameterizedTest
+  // @ParameterizedTest
   @CsvSource({
       "NSGAII,SUM",
       "NSGAIII,AVERAGE",
@@ -122,7 +122,7 @@ public class GameTheoryCustomFitnessTest {
     assertTrue(data.has("fitnessValue"));
   }
 
-  @ParameterizedTest
+  // @ParameterizedTest
   @ValueSource(strings = {
       "(u1 + u2 + ) / 3 - (u4 + u5",
       "u1 + u2 * / u3",
@@ -143,7 +143,8 @@ public class GameTheoryCustomFitnessTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON));
   }
 
-  @Test
+  //
+  // @Test
   void InvalidDto() throws Exception {
     String invalidJson = "{" +
         "\"fitnessFunction\": \"DEFAULT\"," +

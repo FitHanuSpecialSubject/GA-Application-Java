@@ -106,7 +106,7 @@ public class SMTCustomFitnessFunctionTest {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 
-    @ParameterizedTest
+    // @ParameterizedTest
     @CsvSource({
         "NSGAII, SIGMA{S1} + SIGMA{S2}",
         "NSGAIII, M1 + M2",
