@@ -146,7 +146,7 @@ public class FitnessFunctionValidator implements ConstraintValidator<ValidFitnes
             addViolation(
                     context,
                     "fitnessFunction",
-                    "Invalid M index: " + index + ", at position " + wrongIndex + ". Must be between 1 and " + maxM
+                    "Invalid M token: " + index + ", at position " + wrongIndex + ". Must be between 1 and " + maxM
             );
             isValid = false;
           }
@@ -163,7 +163,7 @@ public class FitnessFunctionValidator implements ConstraintValidator<ValidFitnes
             addViolation(
                     context,
                     "fitnessFunction",
-                    "Invalid S index: " + index + ", at position " + wrongIndex + ". Must be between 1 and " + dto.getNumberOfSets()
+                    "Invalid S token: " + index + ", at position " + wrongIndex + ". Must be between 1 and " + dto.getNumberOfSets()
             );
             isValid = false;
           }
@@ -265,6 +265,19 @@ public class FitnessFunctionValidator implements ConstraintValidator<ValidFitnes
   private boolean isValidSingleCharacter(char c) {
     return SINGLE_OPERATOR_PATTERN.matcher(String.valueOf(c)).matches()
             || BRACKET_PATTERN.matcher(String.valueOf(c)).matches();
+  }
+
+  private boolean isOperator(char c) {
+    return SINGLE_OPERATOR_PATTERN.matcher(String.valueOf(c)).matches();
+  }
+
+  private boolean isBracket(char c) {
+    return BRACKET_PATTERN.matcher(String.valueOf(c)).matches();
+  }
+
+  private boolean isValidLetter(char c) {
+    // Chỉ cho phép các chữ cái M, S và SIGMA
+    return c == 'M' || c == 'S' || "SIGMA".indexOf(c) >= 0;
   }
 
   private void validateToken(ConstraintValidatorContext context, String token, int position) {
