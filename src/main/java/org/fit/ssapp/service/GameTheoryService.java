@@ -183,6 +183,7 @@ public class GameTheoryService {
     GameSolution gameSolution = new GameSolution();
 
     double fitnessValue = solution.getObjective(0);
+    fitnessValue = NumberUtils.formatDouble(fitnessValue, 4);
     gameSolution.setFitnessValue(fitnessValue);
 
     List<NormalPlayer> players = problem.getNormalPlayers();
@@ -282,6 +283,7 @@ public class GameTheoryService {
         double runtime = (double) (end - start) / 1000;
         double fitnessValue;
         fitnessValue = getFitnessValue(results);
+        fitnessValue = NumberUtils.formatDouble(fitnessValue, 4);
 
         // send the progress to the client
         String message =
