@@ -29,13 +29,13 @@ import org.fit.ssapp.dto.request.GameTheoryProblemDto;
 public class FitnessValidateGT implements ConstraintValidator<ValidFitnessFunctionGT, Object> {
 
   // Pattern to match standard mathematical functions
-  private static final Pattern FUNCTION_PATTERN = Pattern.compile("(abs|sqrt|log|exp|ceil|floor|sin|cos|tan|pow)\\(");
+  private static final Pattern FUNCTION_PATTERN = Pattern.compile("(abs|sqrt|log|exp|ceil|floor|sin|cos|tan)\\(");
   
   // Pattern to match player 
   private static final Pattern VARIABLE_PATTERN = Pattern.compile("(u([0-9]+))");
   
   // Pattern to match function with arguments
-  private static final Pattern FUNCTION_ARGS_PATTERN = Pattern.compile("(abs|sqrt|log|exp|ceil|floor|sin|cos|tan|pow)\\(([^()]*)\\)");
+  private static final Pattern FUNCTION_ARGS_PATTERN = Pattern.compile("(abs|sqrt|log|exp|ceil|floor|sin|cos|tan)\\(([^()]*)\\)");
 
   // [a-zA-Z0-9] - match all alphanumeric characters plus math operators and punctuation
   private static final Pattern VALID_CHAR_PATTERN = Pattern.compile("[a-zA-Z0-9+\\-*/()^%,. ]");
@@ -53,7 +53,6 @@ public class FitnessValidateGT implements ConstraintValidator<ValidFitnessFuncti
     FUNCTION_ARGS_COUNT.put("sin", 1);
     FUNCTION_ARGS_COUNT.put("cos", 1);
     FUNCTION_ARGS_COUNT.put("tan", 1);
-    FUNCTION_ARGS_COUNT.put("pow", 2);
   }
 
   // Class to store validation errors
@@ -214,7 +213,14 @@ public class FitnessValidateGT implements ConstraintValidator<ValidFitnessFuncti
     // Pre-check for direct division by zero pattern
     if (value.matches(".*\\/\\s*0[^\\d].*") || value.matches(".*\\/\\s*0$")) {
       context.disableDefaultConstraintViolation();
-      context.buildConstraintViolationWithTemplate("Invalid fitness function: Division by zero detected")
+      int divZeroPos = value.indexOf("/0");
+      if (divZeroPos == -1) {
+        divZeroPos = value.indexOf("/ 0");
+        if (divZeroPos == -1) {
+          divZeroPos = 0;
+        }
+      }
+      context.buildConstraintViolationWithTemplate("Invalid syntax: Division by zero detected at position " + divZeroPos + " in '" + value + "'")
           .addPropertyNode("fitnessFunction")
           .addConstraintViolation();
       return false;
@@ -225,12 +231,23 @@ public class FitnessValidateGT implements ConstraintValidator<ValidFitnessFuncti
 
     if (!invalidIndices.isEmpty()) {
       context.disableDefaultConstraintViolation();
-      context.buildConstraintViolationWithTemplate(
-              "Invalid fitness function: Variable " +
-                  (invalidIndices.size() == 1 ?
-                      "u" + invalidIndices.iterator().next() :
-                      "variables " + formatInvalidIndices(invalidIndices)) +
-                  " refers to non-existent player. The request contains only " + playerCount + " players.")
+      
+      StringBuilder errorMsg = new StringBuilder();
+      
+      if (invalidIndices.size() == 1) {
+        Integer invalidIdx = invalidIndices.iterator().next();
+        String varPattern = "u" + invalidIdx;
+        int varPos = value.indexOf(varPattern);
+        errorMsg.append("Invalid fitness function: Variable ").append(varPattern)
+               .append(" at position ").append(varPos)
+               .append(" refers to non-existent player. The request contains only ").append(playerCount).append(" players.");
+      } else {
+        errorMsg.append("Invalid fitness function: Variable variables ")
+               .append(formatInvalidIndices(invalidIndices))
+               .append(" refers to non-existent player. The request contains only ").append(playerCount).append(" players.");
+      }
+      
+      context.buildConstraintViolationWithTemplate(errorMsg.toString())
           .addPropertyNode("fitnessFunction")
           .addConstraintViolation();
       return false;
@@ -273,10 +290,44 @@ public class FitnessValidateGT implements ConstraintValidator<ValidFitnessFuncti
       ValidationResult validationResult = expression.validate();
       if (!validationResult.isValid()) {
         context.disableDefaultConstraintViolation();
-        context.buildConstraintViolationWithTemplate(
-                "Invalid fitness function syntax: '" + validationResult.getErrors().get(0) + "'")
-            .addPropertyNode("fitnessFunction")
-            .addConstraintViolation();
+        
+        String errorMessage = validationResult.getErrors().get(0);
+        if (errorMessage.startsWith("Not enough arguments for")) {
+          String funcName = errorMessage.substring("Not enough arguments for '".length(), errorMessage.length() - 1);
+          int position = value.indexOf(funcName + "()");
+          if (position == -1) {
+            position = value.indexOf(funcName + "( )");
+            if (position == -1) {
+              position = value.indexOf(funcName + "(");
+            }
+          }
+          
+          context.buildConstraintViolationWithTemplate(
+                  "Invalid function syntax: Missing argument for " + funcName + " function at position " + position + " in '" + funcName + "()'")
+              .addPropertyNode("fitnessFunction")
+              .addConstraintViolation();
+        } else if (errorMessage.startsWith("Unknown function or variable")) {
+          Matcher funcMatcher = Pattern.compile("Unknown function or variable '([^']+)' at pos (\\d+)").matcher(errorMessage);
+          if (funcMatcher.find()) {
+            String funcName = funcMatcher.group(1);
+            int position = Integer.parseInt(funcMatcher.group(2));
+            
+            context.buildConstraintViolationWithTemplate(
+                    "Invalid function: Function '" + funcName + "' at position " + position + " does not exist in '" + value + "'")
+                .addPropertyNode("fitnessFunction")
+                .addConstraintViolation();
+          } else {
+            context.buildConstraintViolationWithTemplate(
+                    "Invalid fitness function syntax: '" + errorMessage + "'")
+                .addPropertyNode("fitnessFunction")
+                .addConstraintViolation();
+          }
+        } else {
+          context.buildConstraintViolationWithTemplate(
+                  "Invalid fitness function syntax: '" + errorMessage + "'")
+              .addPropertyNode("fitnessFunction")
+              .addConstraintViolation();
+        }
         return false;
       }
 
@@ -592,19 +643,19 @@ public class FitnessValidateGT implements ConstraintValidator<ValidFitnessFuncti
         }
         // Check if function exists
         if (!FUNCTION_ARGS_COUNT.containsKey(funcName)) {
-          return new ValidationError("Invalid function: Function '" + funcName + "' does not exist in '" + expression + "'", expression);
+          return new ValidationError("Invalid function: Function '" + funcName + "' at position " + token.position + " does not exist in '" + expression + "'", expression);
         }
         
         // Check empty arguments
         if (args.isEmpty() || (args.size() == 1 && args.get(0).trim().isEmpty())) {
-          return new ValidationError("Invalid function syntax: Missing argument for " + funcName + " function in '" + funcName + "()'", expression);
+          return new ValidationError("Invalid function syntax: Missing argument for " + funcName + " function at position " + token.position + " in '" + funcName + "()'", expression);
         }
         
         // Check argument count
         int expectedArgCount = FUNCTION_ARGS_COUNT.get(funcName);
         if (args.size() != expectedArgCount) {
           return new ValidationError(
-              "Invalid function syntax: " + funcName + " requires " + expectedArgCount +
+              "Invalid payoff function syntax: Function " + funcName + " at position " + token.position + " requires " + expectedArgCount +
               " argument(s), but found " + args.size() + " in '" + funcName + "(" + String.join(",", args) + ")'", 
               expression);
         }
