@@ -18,6 +18,7 @@ import org.fit.ssapp.ss.smt.implement.MTMProblem;
 import org.fit.ssapp.ss.smt.result.MatchingSolution;
 import org.fit.ssapp.ss.smt.result.MatchingSolutionInsights;
 import org.fit.ssapp.util.ComputerSpecsUtil;
+import org.fit.ssapp.util.NumberUtils;
 import org.moeaframework.Executor;
 import org.moeaframework.core.NondominatedPopulation;
 import org.moeaframework.core.Problem;
@@ -165,6 +166,7 @@ public class StableMatchingService implements ProblemService {
     Solution solution = result.get(0);
     MatchingSolution matchingSolution = new MatchingSolution();
     double fitnessValue = solution.getObjective(0);
+    fitnessValue = NumberUtils.formatDouble(fitnessValue, 4);
     Matches matches = (Matches) solution.getAttribute("matches");
 
     matchingSolution.setFitnessValue(-fitnessValue);
@@ -284,6 +286,7 @@ public class StableMatchingService implements ProblemService {
         assert results != null;
         double runtime = (double) (end - start) / 1000;
         double fitnessValue = getFitnessValue(results);
+        fitnessValue = NumberUtils.formatDouble(fitnessValue, 4);
 
         // send the progress to the client
         String message =

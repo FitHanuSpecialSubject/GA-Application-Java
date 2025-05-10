@@ -62,6 +62,15 @@ public class NumberUtils {
     return Double.parseDouble(formattedValue);
   }
 
+  public static Double formatDouble(double val, int decimalPlaces) {
+    if (decimalPlaces < 0) {
+      throw new IllegalArgumentException("Decimal places must be non-negative.");
+    }
+    double scale = Math.pow(10, decimalPlaces);
+    return Math.round(val * scale) / scale;
+  }
+
+
   /**
    * Converts a RealVariable object to an integer by taking the floor of its value.
    *
