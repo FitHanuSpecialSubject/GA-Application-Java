@@ -32,15 +32,49 @@ public class IndividualArrayPropertyCountValidator implements
    */
   @Override
   public boolean isValid(StableMatchingProblemDto dto, ConstraintValidatorContext context) {
+    boolean isValid = true;
     int expectedPropertyCount = dto.getNumberOfProperty();
+    context.disableDefaultConstraintViolation();
 
-    return Arrays.stream(dto.getIndividualRequirements())
-            .allMatch(row -> row.length == expectedPropertyCount)
-            &&
-            Arrays.stream(dto.getIndividualWeights())
-                    .allMatch(row -> row.length == expectedPropertyCount)
-            &&
-            Arrays.stream(dto.getIndividualProperties())
-                    .allMatch(row -> row.length == expectedPropertyCount);
+    // Validate individualRequirements
+    if (dto.getIndividualRequirements() != null) {
+      for (int i = 0; i < dto.getIndividualRequirements().length; i++) {
+        if (dto.getIndividualRequirements()[i] != null && dto.getIndividualRequirements()[i].length != expectedPropertyCount) {
+          context.buildConstraintViolationWithTemplate(
+                          String.format("individualRequirements[%d].length must be %d", i, expectedPropertyCount))
+                  .addPropertyNode("individualRequirements")
+                  .addConstraintViolation();
+          isValid = false;
+        }
+      }
+    }
+
+    // Validate individualWeights
+    if (dto.getIndividualWeights() != null) {
+      for (int i = 0; i < dto.getIndividualWeights().length; i++) {
+        if (dto.getIndividualWeights()[i] != null && dto.getIndividualWeights()[i].length != expectedPropertyCount) {
+          context.buildConstraintViolationWithTemplate(
+                          String.format("individualWeights[%d].length must be %d", i, expectedPropertyCount))
+                  .addPropertyNode("individualWeights")
+                  .addConstraintViolation();
+          isValid = false;
+        }
+      }
+    }
+
+    // Validate individualProperties
+    if (dto.getIndividualProperties() != null) {
+      for (int i = 0; i < dto.getIndividualProperties().length; i++) {
+        if (dto.getIndividualProperties()[i] != null && dto.getIndividualProperties()[i].length != expectedPropertyCount) {
+          context.buildConstraintViolationWithTemplate(
+                          String.format("individualProperties[%d].length must be %d", i, expectedPropertyCount))
+                  .addPropertyNode("individualProperties")
+                  .addConstraintViolation();
+          isValid = false;
+        }
+      }
+    }
+
+    return isValid;
   }
 }

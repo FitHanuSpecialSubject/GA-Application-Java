@@ -29,15 +29,11 @@ public class IndividualArraysSizeValidator implements
   @Override
   public boolean isValid(StableMatchingProblemDto dto, ConstraintValidatorContext context) {
     int expectedCount = dto.getNumberOfIndividuals();
-    return
-            dto.getIndividualSetIndices().length == expectedCount
-                    &&
-                    dto.getIndividualCapacities().length == expectedCount
-                    &&
-                    dto.getIndividualRequirements().length == expectedCount
-                    &&
-                    dto.getIndividualWeights().length == expectedCount
-                    &&
-                    dto.getIndividualProperties().length == expectedCount;
+
+    return dto.getIndividualSetIndices().length == expectedCount &&
+            dto.getIndividualCapacities().length == expectedCount &&
+            dto.getIndividualRequirements().length == expectedCount &&
+            dto.getIndividualWeights().length == expectedCount &&
+            dto.getIndividualProperties().length == expectedCount;
   }
 }
