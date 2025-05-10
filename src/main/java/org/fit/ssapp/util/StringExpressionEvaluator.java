@@ -302,7 +302,7 @@ public class StringExpressionEvaluator {
   private static Expression getExpression(String formattedExpression) {
     ExpressionBuilder builder = new ExpressionBuilder(formattedExpression);
 
-    Function logFunction = new Function("log", 2) {
+    Function logFunction = new Function("logb", 2) {
       @Override
       public double apply(double... args) {
         if (args[0] <= 0 || args[1] <= 0) {
