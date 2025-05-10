@@ -27,11 +27,11 @@ public class StrategyStructureValidator implements ConstraintValidator<ValidStra
             // Validate strategy count
             if (!isStrategyCountValid(strategies, expectedStrategyCount, i, context)) {
                 isValid = false;
-            } else {
-                // Validate property count per strategy
-                if (!arePropertiesValid(strategies, expectedPropertyCount, i, context)) {
-                    isValid = false;
-                }
+            }
+
+            // Validate property count per strategy
+            if (strategies != null && !arePropertiesValid(strategies, expectedPropertyCount, i, context)) {
+                isValid = false;
             }
         }
 
@@ -45,7 +45,7 @@ public class StrategyStructureValidator implements ConstraintValidator<ValidStra
 
     private int getExpectedPropertyCount(List<NormalPlayer> players) {
         List<Strategy> strategies = players.get(0).getStrategies();
-        if (strategies != null && !strategies.isEmpty()) {
+        if (strategies != null && !strategies.isEmpty() && strategies.get(0) != null) {
             List<Double> properties = strategies.get(0).getProperties();
             return properties != null ? properties.size() : 0;
         }
@@ -67,6 +67,13 @@ public class StrategyStructureValidator implements ConstraintValidator<ValidStra
         boolean valid = true;
         for (int j = 0; j < strategies.size(); j++) {
             Strategy strategy = strategies.get(j);
+            if (strategy == null) {
+                addViolation(context,
+                        "normalPlayers",
+                        String.format("At player index %d, strategy index %d is null", playerIndex, j));
+                valid = false;
+                continue;
+            }
             List<Double> properties = strategy.getProperties();
             int actualCount = properties != null ? properties.size() : 0;
 
@@ -87,7 +94,6 @@ public class StrategyStructureValidator implements ConstraintValidator<ValidStra
                 .addPropertyNode(field)
                 .addConstraintViolation();
     }
-
 }
 
 

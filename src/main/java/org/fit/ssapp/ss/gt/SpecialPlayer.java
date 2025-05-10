@@ -26,6 +26,14 @@ public class SpecialPlayer implements Serializable {
   @Getter
   private double payoff;
 
+  public SpecialPlayer(int numberOfProperties, List<Double> properties, List<Double> weights, double payoff) {
+    this.numberOfProperties = numberOfProperties;
+    this.properties.addAll(properties);
+    this.weights.addAll(weights);
+    this.payoff = payoff;
+  }
+
+
   /**
    * Returns a formatted string representation of the Special Player.
    *
