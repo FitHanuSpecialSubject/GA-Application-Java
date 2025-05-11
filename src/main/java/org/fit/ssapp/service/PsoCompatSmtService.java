@@ -197,7 +197,7 @@ public class PsoCompatSmtService {
    */
   public ResponseEntity<Response> getInsights(StableMatchingProblemDto request,
       String sessionCode) {
-    String[] algorithms = StableMatchingConst.ALLOWED_INSIGHT_ALGORITHMS;
+    String[] algorithms = StableMatchingConst.PSO_ALLOWED_INSIGHT_ALGORITHMS;
     simpMessagingTemplate.convertAndSendToUser(sessionCode,
         "/progress",
         createProgressMessage("Initializing the problem..."));
