@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.fit.ssapp.constants.AppConst;
 import org.fit.ssapp.constants.StableMatchingConst;
 import org.fit.ssapp.dto.mapper.StableMatchingProblemMapper;
 import org.fit.ssapp.dto.request.StableMatchingProblemDto;
@@ -72,16 +73,11 @@ public class PsoCompatSmtService {
                 .data(null)
                 .build());
       }
-      //            Testing tester = new Testing((Matches) results.get(0).getAttribute("matches"),
-      //            problem.getMatchingData().getSize(), problem.getMatchingData().getCapacities());
-      //            System.out.println("[Testing] Solution has duplicate: " + tester.hasDuplicate())
       long endTime = System.currentTimeMillis();
 
       double runtime = ((double) (endTime - startTime) / 1000);
       runtime = (runtime * 1000.0);
       log.info("Runtime: {} Millisecond(s).", runtime);
-      //problem.printIndividuals();
-      //System.out.println(problem.printPreferenceLists());
       String algorithm = request.getAlgorithm();
 
       MatchingSolution matchingSolution = formatSolution(algorithm, results, runtime);
@@ -201,7 +197,7 @@ public class PsoCompatSmtService {
     simpMessagingTemplate.convertAndSendToUser(sessionCode,
         "/progress",
         createProgressMessage("Initializing the problem..."));
-    MTMProblem problem = StableMatchingProblemMapper.toMTM(request);
+    MatchingProblem problem = StableMatchingProblemMapper.toMTM(request);
 
     log.info("Start benchmarking {} session code {}", problem.getName(), sessionCode);
 
@@ -216,9 +212,30 @@ public class PsoCompatSmtService {
         "/progress",
         createProgressMessage("Start benchmarking the algorithms..."));
 
+    // Flag if problem is PSO Compatible instance
+    boolean isConvertedToPso = false;
+
     for (String algorithm : algorithms) {
       for (int i = 0; i < RUN_COUNT_PER_ALGORITHM; i++) {
-        System.out.println("Iteration: " + i);
+
+        if (AppConst.PSO_BASED_ALGOS.contains(algorithm)) {
+          log.info("Converting to PSO compatible instance, problem name {}", problem.getName());
+          // Convert if meet algorithm condition
+          if (!isConvertedToPso) {
+            problem = StableMatchingProblemMapper.toPsoCompat(request);
+            isConvertedToPso = true;
+          }
+        } else {
+          log.info("Converting back to MTM problem from PSO compatible instance, problem name {}",
+              problem.getName());
+          // Convert back to MTM if not PSO based algorithm
+          if (isConvertedToPso) {
+            problem = StableMatchingProblemMapper.toMTM(request);
+            isConvertedToPso = false;
+          }
+        }
+
+        log.info("Iteration: {}", i);
         long start = System.currentTimeMillis();
 
         NondominatedPopulation results = solveProblem(problem,
@@ -238,7 +255,7 @@ public class PsoCompatSmtService {
             "Algorithm " + algorithm + " finished iteration: #" + (i + 1) + "/"
                 + RUN_COUNT_PER_ALGORITHM;
         Progress progress = createProgress(message, runtime, runCount, maxRunCount);
-        System.out.println(progress);
+        log.info("Progress {}", progress);
         simpMessagingTemplate.convertAndSendToUser(sessionCode, "/progress", progress);
         runCount++;
 
