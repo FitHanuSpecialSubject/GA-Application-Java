@@ -48,18 +48,18 @@ public class SolutionUtils {
     it.add(index);
   }
 
-  public static void main(String[] args) {
-    Solution solution = new Solution(10, 1);
-    for (int i = 0; i < 10; i++) {
-      Variable var = new RealVariable(-1, 1);
-      var.randomize();
-      solution.setVariable(i, var);
-    }
-    for (int i = 0; i < 10; i++) {
-      System.out.printf("/ %-3d%.4f", i, EncodingUtils.getReal(solution.getVariable(i)));
-    }
-    Queue<Integer> q = getSortedIds(solution, true);
-    System.out.println(q);
-  }
+//  public static void main(String[] args) {
+//    Solution solution = new Solution(10, 1);
+//    for (int i = 0; i < 10; i++) {
+//      Variable var = new RealVariable(-1, 1);
+//      var.randomize();
+//      solution.setVariable(i, var);
+//    }
+//    for (int i = 0; i < 10; i++) {
+//      System.out.printf("/ %-3d%.4f", i, EncodingUtils.getReal(solution.getVariable(i)));
+//    }
+//    Queue<Integer> q = getSortedIds(solution, true);
+//    System.out.println(q);
+//  }
 
 }

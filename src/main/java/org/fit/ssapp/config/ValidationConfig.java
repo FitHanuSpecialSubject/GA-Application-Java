@@ -7,15 +7,22 @@ import org.springframework.context.annotation.Configuration;
 import lombok.Data;
 
 @Configuration
-@ConfigurationProperties(prefix = "validation")
+@ConfigurationProperties(prefix = "validation.stable-matching")
 @Data
 public class ValidationConfig {
-  @Value("${validation.population.max}")
+  @Value("${validation.stable-matching.population.max}")
   private int maxPopulation;
 
-  @Value("${validation.generation.max}")
+  @Value("${validation.stable-matching.generation.max}")
   private int maxGeneration;
 
-  @Value("${validation.individuals.min}")
-  private int minIndividuals;
+  @Value("${validation.stable-matching.individuals.min}")
+  private int minIndividualCount;
+
+  @Value("${validation.stable-matching.run-count-per-algorithm.min}")
+  private int minRunCountPerAlgorithm;
+
+  @Value("${validation.stable-matching.run-count-per-algorithm.max}")
+  private int maxRunCountPerAlgorithm;
+
 }

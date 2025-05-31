@@ -55,6 +55,23 @@ public class MessageConst {
      * validate evaluate function.
      */
     String EVAL_FN_NUM = "The number of evaluateFunctions should be at least 2";
+    /**
+     * MIN_RUN_COUNT
+     */
+    String MIN_RUN_COUNT = "{} must be more than {}";
+    /**
+     * MAX_RUN_COUNT
+     */
+    String MAX_RUN_COUNT = "{} must be less than {}";
+    /**
+     * FIELD_IS_REQUIRED
+     */
+    String FIELD_IS_REQUIRED = "{} is required";
+    /**
+     * STRING_MUST_NOT_EMPTY
+     */
+    String STRING_MUST_NOT_EMPTY = "{} must not be empty";
+
   }
 
   /**

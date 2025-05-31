@@ -68,7 +68,7 @@ public class PreferenceProviderUtils {
           }
           break;
         default:
-          System.err.println("Warning: Unexpected character: " + ch + "encountered function.");
+          // DO NOTHING
       }
     }
     return variables;
