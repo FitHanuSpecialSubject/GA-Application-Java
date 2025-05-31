@@ -73,7 +73,6 @@ public class PsoCompatibleGameTheoryProblem implements GameTheoryProblem, Serial
     System.out.println("Runtime: " + runtime);
 
     GameSolution solution = GameTheoryService.formatSolution(problem, result);
-    System.out.println(solution);
   }
 
   @SuppressWarnings("unused")

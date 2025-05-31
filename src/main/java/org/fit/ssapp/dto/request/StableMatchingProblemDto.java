@@ -56,7 +56,7 @@ public class StableMatchingProblemDto implements ProblemRequestDto {
   private String[] evaluateFunctions;
 
   @NotEmpty(message = ErrMessage.NOT_BLANK)
-//  @ValidFitnessFunction
+  @ValidFitnessFunction
   private String fitnessFunction;
 
   private int[][] excludedPairs;
@@ -73,6 +73,8 @@ public class StableMatchingProblemDto implements ProblemRequestDto {
 
   @ValidDistributedCores
   private String distributedCores;
+
+  private int runCountPerAlgorithm;
 
   @Override
   public String toString() {

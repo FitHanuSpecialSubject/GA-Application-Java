@@ -50,4 +50,22 @@ public class StringUtils {
     }
   }
 
+  /**
+   * build message from formated message
+   * ------------------------------------------
+   * ex: source =  "{} must be greater than {}"
+   * getMsg(source, "run count", 5);
+   * output: "run count must be greater than 5"
+   *
+   * @param template template message
+   * @param params toString() able ... params
+   * @return message
+   */
+  public static String getMsg(String template, Object... params) {
+    for (Object param : params) {
+      template = template.replaceFirst("\\{\\}", param.toString());
+    }
+    return template;
+  }
+
 }

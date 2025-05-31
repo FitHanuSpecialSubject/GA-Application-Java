@@ -1,12 +1,21 @@
-stablematching:
-  runconfig: 10
-gametheory:
-  runconfig: 10
-
 validation:
-  population:
-    max: 3000
-  generation:
-    max: 1000
-  individuals:
-    min: 3
+  stable-matching:
+    population:
+      max: 3000
+    generation:
+      max: 1000
+    individuals:
+      min: 3
+    run-count-per-algorithm:
+      min: 5
+      max: 25
+  game-theory:
+    population:
+      max: 3000
+    generation:
+      max: 1000
+    individuals:
+      min: 3
+    run-count-per-algorithm:
+      min: 5
+      max: 25
