@@ -3,6 +3,8 @@ package org.fit.ssapp.ss.smt.preference;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+
+import lombok.Getter;
 import org.fit.ssapp.constants.StableMatchingConst;
 import org.fit.ssapp.ss.smt.Matches;
 import org.fit.ssapp.ss.smt.MatchingData;
@@ -10,6 +12,7 @@ import org.fit.ssapp.ss.smt.MatchingData;
 /**
  * Wrapper class provides methods to interact with big list of preference list.
  */
+@Getter
 public class PreferenceListWrapper {
 
   /**
@@ -40,10 +43,10 @@ public class PreferenceListWrapper {
    */
 
   public int getLeastScoreNode(int set,
-                               int preferNode,
-                               int proposeNode,
-                               Set<Integer> setOfPreferNode,
-                               int preferNodeCapacity) {
+      int preferNode,
+      int proposeNode,
+      Set<Integer> setOfPreferNode,
+      int preferNodeCapacity) {
     if (setOfPreferNode.isEmpty()) {
       return -1;
     }
@@ -83,8 +86,8 @@ public class PreferenceListWrapper {
   public boolean isPreferredOver(int proposeNode, int preferNodeCurrentNode, int preferNode) {
     PreferenceList preferenceOfSelectorNode = lists.get(preferNode);
     return preferenceOfSelectorNode.isScoreGreater(StableMatchingConst.UNUSED_VALUE,
-            proposeNode,
-            preferNodeCurrentNode);
+        proposeNode,
+        preferNodeCurrentNode);
   }
 
   /**
@@ -111,9 +114,15 @@ public class PreferenceListWrapper {
   }
 
   /**
-   * get the list of preference lists
-   * */
-  public List<PreferenceList> getLists() {
-    return lists;
+   * get last option of target.
+   *
+   * @param set    int
+   * @param target position of individual
+   * @return last option
+   */
+  public int getLastChoiceOf(int set, int target) {
+    PreferenceList pref = lists.get(target);
+    return pref.getPositionByRank(set, pref.size(set) - 1);
   }
+
 }

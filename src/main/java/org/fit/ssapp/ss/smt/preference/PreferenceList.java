@@ -27,6 +27,16 @@ public interface PreferenceList {
   int size(int set);
 
   /**
+   * get number of other sets in this preference list -- example: + One To One problem: 2 sets then,
+   * each preference list contains only one list of other set's individuals
+   * -> return 1 + Matching 3.
+   * Set problem: 3 sets then each preference list contains two list -> return 2
+   *
+   * @return number of other sets
+   */
+  int getNumberOfOtherSets();
+
+  /**
    * get the least score node out of (currentNodes and newNode).
    *
    * @param set          set no
@@ -47,6 +57,23 @@ public interface PreferenceList {
   int getLeastNode(int set, int newNode, int oldNode);
 
   /**
+   * index of given rank in this preference list.
+   *
+   * @param set  set no
+   * @param rank rank
+   * @return individual index
+   */
+  int getPositionByRank(int set, int rank);
+
+  /**
+   * get position with the lowest rank in a specific set of this preference list.
+   *
+   * @param set set no
+   * @return postion
+   */
+  int getLastOption(int set);
+
+  /**
    * is proposeNode score greater than preferNodeCurrentNode.
    *
    * @param set                   set no
@@ -64,9 +91,4 @@ public interface PreferenceList {
    */
   double getScore(int position);
 
-  /**
-   * Validate score of all preference list
-   * @return isUniform
-   */
-  boolean isUniformPreference();
 }

@@ -232,7 +232,7 @@ public class StableMatchingService implements ProblemService {
 
     // check for IBEA, if true do test run with minimal configuration
     if (algorithm.equals("IBEA")) {
-      validateUniformPreferences(problem.getMatchingData(), request);
+//      validateUniformPreferences(problem.getMatchingData(), request);
       try {
         new Executor()
                 .withProblem(problem)
@@ -398,25 +398,25 @@ public class StableMatchingService implements ProblemService {
   }
 
 
-  public static void validateUniformPreferences(MatchingData data, StableMatchingProblemDto request) {
-    PreferenceBuilder builder = new TwoSetPreferenceProvider(data, request.getEvaluateFunctions());
-    PreferenceListWrapper preferenceLists = builder.toListWrapper();
-    List<PreferenceList> lists = preferenceLists.getLists();
-    List<Integer> invalidAgents = new ArrayList<>();
-
-    for (int i = 0; i < lists.size(); i++) {
-      PreferenceList list = lists.get(i);
-      if ((list instanceof TwoSetPreferenceList twoSet && twoSet.isUniformPreference()) ||
-              (list instanceof TripletPreferenceList triplet && triplet.isUniformPreference())) {
-        invalidAgents.add(i);
-      }
-    }
-
-    // Step 3: If uniform preferences found, throw error
-    if (!invalidAgents.isEmpty()) {
-      throw new AlgorithmsUniformException("uniform preferences found");
-
-    }
-  }
+//  public static void validateUniformPreferences(MatchingData data, StableMatchingProblemDto request) {
+//    PreferenceBuilder builder = new TwoSetPreferenceProvider(data, request.getEvaluateFunctions());
+//    PreferenceListWrapper preferenceLists = builder.toListWrapper();
+//    List<PreferenceList> lists = preferenceLists.getLists();
+//    List<Integer> invalidAgents = new ArrayList<>();
+//
+//    for (int i = 0; i < lists.size(); i++) {
+//      PreferenceList list = lists.get(i);
+//      if ((list instanceof TwoSetPreferenceList twoSet && twoSet.isUniformPreference()) ||
+//              (list instanceof TripletPreferenceList triplet && triplet.isUniformPreference())) {
+//        invalidAgents.add(i);
+//      }
+//    }
+//
+//    // Step 3: If uniform preferences found, throw error
+//    if (!invalidAgents.isEmpty()) {
+//      throw new AlgorithmsUniformException("uniform preferences found");
+//
+//    }
+//  }
 
 }

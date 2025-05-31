@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.NotImplementedException;
 import org.fit.ssapp.ss.smt.preference.PreferenceList;
 /**
  * TripletPreferenceList - Manages preference rankings for triplet-based stable matching.
@@ -40,6 +41,11 @@ public class TripletPreferenceList implements PreferenceList {
     return positions.length;
   }
 
+  @Override
+  public int getNumberOfOtherSets() {
+    throw new NotImplementedException();
+  }
+
 
   @Override
   public int getLeastNode(int set, int newNode, Set<Integer> currentNodes) {
@@ -68,6 +74,11 @@ public class TripletPreferenceList implements PreferenceList {
       log.error("Position {} not found:", rank, e);
       return -1;
     }
+  }
+
+  @Override
+  public int getLastOption(int set) {
+    throw new NotImplementedException();
   }
 
   /**
@@ -105,7 +116,6 @@ public class TripletPreferenceList implements PreferenceList {
    *
    * @return true if all scores are equal, false otherwise.
    */
-  @Override
   public boolean isUniformPreference() {
     if (scores.length == 0) return true; // Empty is considered uniform
 
