@@ -1,13 +1,18 @@
 package org.fit.ssapp.controller;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+
+import org.fit.ssapp.util.ValidationUtils;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -43,11 +48,12 @@ public class GlobalExceptionHandler {
   public ResponseEntity<Map<String, Object>> handleMethodArgumentNotValidException(
           MethodArgumentNotValidException ex) {
     logger.warning("Invalid request body!");
-    Map<String, Object> errorMap = new HashMap<>();
-    errorMap.put("errors", ex.getBindingResult().getAllErrors()
-            .stream().map(DefaultMessageSourceResolvable::getDefaultMessage)
-            .collect(Collectors.toList()));
-    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMap);
+    Map<String, List<String>> errorsMap =  ValidationUtils
+        .getAllErrorDetails(ex.getBindingResult());
+    Map<String, Object> responseBody = new HashMap<>();
+    responseBody.put("errors", errorsMap);
+
+    return new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
   }
 
 }

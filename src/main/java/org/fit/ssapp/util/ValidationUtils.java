@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
+
 import org.springframework.context.MessageSource;
 import org.springframework.context.NoSuchMessageException;
 import org.springframework.util.CollectionUtils;
@@ -61,8 +63,12 @@ public class ValidationUtils {
     HashMap<String, List<String>> errMap = new HashMap<>();
     for (ObjectError objectError : listObjectError) {
       String fieldErrKey = ((FieldError) objectError).getField();
-      String defaultMsg = objectError.getDefaultMessage();
-      errMap.computeIfAbsent(fieldErrKey, k -> new ArrayList<>()).add(defaultMsg);
+      String defaultMsg  = objectError.getDefaultMessage();
+      String value       = Objects.requireNonNull(((FieldError) objectError)
+                                  .getRejectedValue()).toString();
+      assert defaultMsg != null;
+      String fMessage    = defaultMsg.trim() + ", rejected value: " + value;
+      errMap.computeIfAbsent(fieldErrKey, k -> new ArrayList<>()).add(fMessage);
     }
     return errMap;
   }

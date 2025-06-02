@@ -101,7 +101,7 @@ public class HomeController {
   @Async("taskExecutor")
   @PostMapping("/solve-triplet-matching")
   public CompletableFuture<ResponseEntity<Response>> solveTripletMatching(
-      @RequestBody StableMatchingProblemDto object) {
+      @RequestBody @Valid StableMatchingProblemDto object) {
     return CompletableFuture.completedFuture(tripletMatchingSolver.solve(object));
   }
 
@@ -115,7 +115,7 @@ public class HomeController {
   @Async("taskExecutor")
   @PostMapping("/game-theory-solver")
   public CompletableFuture<ResponseEntity<Response>> solveGameTheory(
-      @RequestBody GameTheoryProblemDto gameTheoryProblem) {
+      @RequestBody @Valid GameTheoryProblemDto gameTheoryProblem) {
     return CompletableFuture.completedFuture(gameTheoryService.solveGameTheory(gameTheoryProblem));
   }
 
@@ -131,7 +131,7 @@ public class HomeController {
   @Async("taskExecutor")
   @PostMapping("/problem-result-insights/{sessionCode}")
   public CompletableFuture<ResponseEntity<Response>> getProblemResultInsights(
-      @RequestBody GameTheoryProblemDto gameTheoryProblem,
+      @RequestBody @Valid GameTheoryProblemDto gameTheoryProblem,
       @PathVariable String sessionCode) {
     return CompletableFuture.completedFuture(gameTheoryService.getProblemResultInsights(
         gameTheoryProblem,
@@ -185,7 +185,7 @@ public class HomeController {
   @Async("taskExecutor")
   @PostMapping("/rbo-triplet-problem-result-insights/{sessionCode}")
   public CompletableFuture<ResponseEntity<Response>> getTripletMatchingResultInsights(
-          @RequestBody StableMatchingProblemDto object,
+          @RequestBody @Valid StableMatchingProblemDto object,
           @PathVariable String sessionCode) {
     return CompletableFuture.completedFuture(tripletMatchingSolver.getInsights(
             object,
@@ -221,7 +221,7 @@ public class HomeController {
   @Async("taskExecutor")
   @PostMapping("/smt-pso-compat-insight/{sessionCode}")
   public CompletableFuture<ResponseEntity<Response>> getPsoCompatSmtResultInsight(
-      @RequestBody StableMatchingProblemDto object,
+      @RequestBody @Valid StableMatchingProblemDto object,
       @PathVariable String sessionCode) {
     return CompletableFuture.completedFuture(psoCompatSmtService.getInsights(
         object,
