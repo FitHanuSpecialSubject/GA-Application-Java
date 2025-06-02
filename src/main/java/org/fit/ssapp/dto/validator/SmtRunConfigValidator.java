@@ -4,6 +4,7 @@ import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import org.fit.ssapp.config.ValidationConfig;
 import org.fit.ssapp.constants.MessageConst.ErrMessage;
+import org.fit.ssapp.constants.StableMatchingConst;
 import org.fit.ssapp.dto.request.StableMatchingProblemDto;
 import org.fit.ssapp.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,6 +74,10 @@ public class SmtRunConfigValidator
     // Validate Run Count per Algorithm (for insight run)
 
     int runCount = dto.getRunCountPerAlgorithm();
+    if (runCount == 0) {
+      dto.setRunCountPerAlgorithm(StableMatchingConst.DEFAULT_RUN_COUNT_PER_ALGO);
+      runCount = StableMatchingConst.DEFAULT_RUN_COUNT_PER_ALGO;
+    }
     int minRunCount = validationConfig.getMinRunCountPerAlgorithm();
     int maxRunCount = validationConfig.getMaxRunCountPerAlgorithm();
     if (runCount < minRunCount) {

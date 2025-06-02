@@ -116,7 +116,7 @@ public class MTMProblem implements MatchingProblem {
     double fitnessScore;
     if (this.hasFitnessFunc()) {
       fitnessScore = fitnessEvaluator
-              .withFitnessFunctionEvaluation(satisfactions, this.fitnessFunction);
+          .withFitnessFunctionEvaluation(satisfactions, this.fitnessFunction);
     } else {
       fitnessScore = fitnessEvaluator.defaultFitnessEvaluation(satisfactions);
     }

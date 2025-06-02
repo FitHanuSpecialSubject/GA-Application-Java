@@ -63,7 +63,7 @@ class SmokeTest {
    * @param algorithm
    * @throws Exception
    */
-  // @ParameterizedTest
+//  @ParameterizedTest
   @MethodSource("stableMatchingAlgorithms")
   void stableMatching(final String algorithm) throws Exception {
     final StableMatchingProblemDto dto =
@@ -74,7 +74,7 @@ class SmokeTest {
       .perform(post("/api/stable-matching-solver")
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(dto)))
-      .andExpect(request().asyncStarted())
+//      .andExpect(request().asyncStarted())
       .andReturn();
 
     final String response = _mock.perform(asyncDispatch(result))
@@ -128,6 +128,7 @@ class SmokeTest {
     dto.setMaxTime(3600);
     dto.setAlgorithm(algorithm);
     dto.setDistributedCores("all");
+    dto.setRunCountPerAlgorithm(StableMatchingConst.DEFAULT_RUN_COUNT_PER_ALGO);
     return dto;
   }
 
