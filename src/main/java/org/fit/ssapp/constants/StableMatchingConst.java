@@ -18,13 +18,14 @@ public class StableMatchingConst {
   /**
    * ALLOWED_INSIGHT_ALGORITHMS.
    */
-  public static final String[] ALLOWED_INSIGHT_ALGORITHMS =
-      {"NSGAII", "NSGAIII", "eMOEA", "PESA2", "VEGA"};
+  public static final String[] ALLOWED_INSIGHT_ALGORITHMS
+      = {"NSGAII", "NSGAIII", "eMOEA", "PESA2", "VEGA"};
 
   /**
    * PSO_ALLOWED_INSIGHT_ALGORITHMS
    */
-  public static final String[] PSO_ALLOWED_INSIGHT_ALGORITHMS = {"NSGAII", "NSGAIII", "PESA2", "VEGA", "OMOPSO", "SMPSO"};
+  public static final String[] PSO_ALLOWED_INSIGHT_ALGORITHMS
+      = {"NSGAII", "NSGAIII", "PESA2", "VEGA", "OMOPSO", "SMPSO"};
 
   /**
    * DEFAULT_EVALUATE_FUNC.

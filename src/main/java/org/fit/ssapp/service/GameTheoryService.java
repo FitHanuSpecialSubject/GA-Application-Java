@@ -42,8 +42,6 @@ public class GameTheoryService {
 
   private final SimpMessagingTemplate simpMessagingTemplate;
 
-  private static final int RUN_COUNT_PER_ALGORITHM = 10;
-
   /**
    * Solves a game theory problem using the specified algorithm and returns the solution.
    *
@@ -245,8 +243,10 @@ public class GameTheoryService {
     log.info("Mapping request to problem ...");
     GameTheoryProblem problem = GameTheoryProblemMapper.toProblem(request);
     GameSolutionInsights gameSolutionInsights = initGameSolutionInsights(algorithms);
-    int runCount = 1;
-    int maxRunCount = algorithms.length * RUN_COUNT_PER_ALGORITHM;
+
+    int currentRunCount      = 1;
+    int runCountPerAlgorithm = request.getRunCountPerAlgorithm();
+    int maxRunCount          = algorithms.length * runCountPerAlgorithm;
 
     log.info("Start benchmarking the algorithms...");
     simpMessagingTemplate.convertAndSendToUser(sessionCode,
@@ -255,7 +255,7 @@ public class GameTheoryService {
 
     for (String algorithm : algorithms) {
       log.info("Running algorithm: {}...", algorithm);
-      for (int i = 0; i < RUN_COUNT_PER_ALGORITHM; i++) {
+      for (int i = 0; i < runCountPerAlgorithm; i++) {
         System.out.println("Iteration: " + i);
         long start = System.currentTimeMillis();
 
@@ -288,12 +288,11 @@ public class GameTheoryService {
         // send the progress to the client
         String message =
             "Algorithm " + algorithm + " finished iteration: #" + (i + 1) + "/"
-                +
-                RUN_COUNT_PER_ALGORITHM;
-        Progress progress = createProgress(message, runtime, runCount, maxRunCount);
+                + runCountPerAlgorithm;
+        Progress progress = createProgress(message, runtime, currentRunCount, maxRunCount);
         System.out.println(progress);
         simpMessagingTemplate.convertAndSendToUser(sessionCode, "/progress", progress);
-        runCount++;
+        currentRunCount++;
 
         // add the fitness value and runtime to the insights
         gameSolutionInsights.getFitnessValues().get(algorithm).add(fitnessValue);

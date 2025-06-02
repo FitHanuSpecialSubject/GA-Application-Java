@@ -198,7 +198,7 @@ public class PsoCompatSmtService implements ProblemService {
     simpMessagingTemplate.convertAndSendToUser(sessionCode,
         "/progress",
         SmtCommonService.createProgressMessage("Initializing the problem..."));
-    MTMProblem problem = StableMatchingProblemMapper.toMTM(request);
+    MatchingProblem problem = StableMatchingProblemMapper.toMTM(request);
 
     log.info("Start benchmarking {} session code {}", problem.getName(), sessionCode);
 

@@ -28,5 +28,9 @@ public class GameTheoryConst {
    * FITNESS_VARIABLE_PREFIXES
    */
   public static final Set<String> FITNESS_VARIABLE_PREFIXES = Set.of("u");
+  /**
+   * DEFAULT_RUN_COUNT_PER_ALGO
+   */
+  public static final int DEFAULT_RUN_COUNT_PER_ALGO = 10;
 
 }
