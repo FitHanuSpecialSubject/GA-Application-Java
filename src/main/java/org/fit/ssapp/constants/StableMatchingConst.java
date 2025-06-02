@@ -32,7 +32,10 @@ public class StableMatchingConst {
    * EVAL_VARIABLE_PREFIXES.
    */
   public static final Set<Character> EVAL_VARIABLE_PREFIXES = Set.of('p', 'w', 'r');
-
+  /**
+   * DEFAULT_RUN_COUNT_PER_ALGO
+   */
+  public static final int DEFAULT_RUN_COUNT_PER_ALGO = 10;
   /**
    * Ordinal requirement types.
    */

@@ -3,8 +3,6 @@ package org.fit.ssapp.ss.smt.implement;
 import java.util.LinkedList;
 import java.util.Objects;
 import java.util.Queue;
-import java.util.Set;
-
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -17,7 +15,6 @@ import org.fit.ssapp.ss.smt.MatchingProblem;
 import org.fit.ssapp.ss.smt.evaluator.FitnessEvaluator;
 import org.fit.ssapp.ss.smt.preference.PreferenceList;
 import org.fit.ssapp.ss.smt.preference.PreferenceListWrapper;
-import org.fit.ssapp.ss.smt.preference.impl.list.TwoSetPreferenceList;
 import org.fit.ssapp.util.StringUtils;
 import org.moeaframework.core.Solution;
 import org.moeaframework.core.Variable;
@@ -119,7 +116,7 @@ public class MTMProblem implements MatchingProblem {
     double fitnessScore;
     if (this.hasFitnessFunc()) {
       fitnessScore = fitnessEvaluator
-              .withFitnessFunctionEvaluation(satisfactions, this.fitnessFunction);
+          .withFitnessFunctionEvaluation(satisfactions, this.fitnessFunction);
     } else {
       fitnessScore = fitnessEvaluator.defaultFitnessEvaluation(satisfactions);
     }
@@ -211,6 +208,7 @@ public class MTMProblem implements MatchingProblem {
 
     return matches;
   }
+
   @Override
   public String getMatchingTypeName() {
     return "Many to Many";
