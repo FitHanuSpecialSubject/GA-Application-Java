@@ -8,7 +8,7 @@ import java.lang.annotation.*;
 @Constraint(validatedBy = SmtRunConfigValidator.class)
 @Target({ ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ValidStableMatching {
+public @interface ValidStableMatchingConfig {
     String message() default "Invalid StableMatchingProblemDto values.";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};

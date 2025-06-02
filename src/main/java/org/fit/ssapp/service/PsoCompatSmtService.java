@@ -33,7 +33,7 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class PsoCompatSmtService {
+public class PsoCompatSmtService implements ProblemService {
 
   private static final int RUN_COUNT_PER_ALGORITHM = 10;
   private final SimpMessagingTemplate simpMessagingTemplate;
@@ -157,7 +157,8 @@ public class PsoCompatSmtService {
     TypedProperties properties = new TypedProperties();
     properties.setInt("populationSize", populationSize);
     properties.setInt("maxTime", maxTime);
-    TerminationCondition maxEval = new MaxFunctionEvaluations(generation * populationSize);
+    TerminationCondition maxEval =
+        new MaxFunctionEvaluations(generation * populationSize);
 
     try {
       if (distributedCores.equals("all")) {
@@ -200,12 +201,13 @@ public class PsoCompatSmtService {
     String[] algorithms = StableMatchingConst.ALLOWED_INSIGHT_ALGORITHMS;
     simpMessagingTemplate.convertAndSendToUser(sessionCode,
         "/progress",
-        createProgressMessage("Initializing the problem..."));
+        SmtCommonService.createProgressMessage("Initializing the problem..."));
     MTMProblem problem = StableMatchingProblemMapper.toMTM(request);
 
     log.info("Start benchmarking {} session code {}", problem.getName(), sessionCode);
 
-    MatchingSolutionInsights matchingSolutionInsights = initMatchingSolutionInsights(algorithms);
+    MatchingSolutionInsights matchingSolutionInsights = SmtCommonService
+        .initMatchingSolutionInsights(algorithms);
 
     int runCount = 1;
     int maxRunCount = algorithms.length * RUN_COUNT_PER_ALGORITHM;
@@ -214,7 +216,7 @@ public class PsoCompatSmtService {
     //        log.info("Start benchmarking the algorithms...");
     simpMessagingTemplate.convertAndSendToUser(sessionCode,
         "/progress",
-        createProgressMessage("Start benchmarking the algorithms..."));
+        SmtCommonService.createProgressMessage("Start benchmarking the algorithms..."));
 
     for (String algorithm : algorithms) {
       for (int i = 0; i < RUN_COUNT_PER_ALGORITHM; i++) {
@@ -231,13 +233,14 @@ public class PsoCompatSmtService {
         long end = System.currentTimeMillis();
         assert results != null;
         double runtime = (double) (end - start) / 1000;
-        double fitnessValue = getFitnessValue(results);
+        double fitnessValue = SmtCommonService.getFitnessValue(results);
 
         // send the progress to the client
         String message =
             "Algorithm " + algorithm + " finished iteration: #" + (i + 1) + "/"
                 + RUN_COUNT_PER_ALGORITHM;
-        Progress progress = createProgress(message, runtime, runCount, maxRunCount);
+        Progress progress = SmtCommonService
+            .createProgress(message, runtime, runCount, maxRunCount);
         System.out.println(progress);
         simpMessagingTemplate.convertAndSendToUser(sessionCode, "/progress", progress);
         runCount++;
@@ -251,7 +254,7 @@ public class PsoCompatSmtService {
     log.info("Benchmark finished! {} session code {}", problem.getName(), sessionCode);
     simpMessagingTemplate.convertAndSendToUser(sessionCode,
         "/progress",
-        createProgressMessage("Benchmarking finished!"));
+        SmtCommonService.createProgressMessage("Benchmarking finished!"));
 
     return ResponseEntity.ok(Response
         .builder()
@@ -259,54 +262,5 @@ public class PsoCompatSmtService {
         .message("Get problem result insights successfully!")
         .data(matchingSolutionInsights)
         .build());
-  }
-
-  private MatchingSolutionInsights initMatchingSolutionInsights(String[] algorithms) {
-    MatchingSolutionInsights matchingSolutionInsights = new MatchingSolutionInsights();
-    Map<String, List<Double>> fitnessValueMap = new HashMap<>();
-    Map<String, List<Double>> runtimeMap = new HashMap<>();
-
-    matchingSolutionInsights.setFitnessValues(fitnessValueMap);
-    matchingSolutionInsights.setRuntimes(runtimeMap);
-    matchingSolutionInsights.setComputerSpecs(ComputerSpecsUtil.getComputerSpecs());
-
-    for (String algorithm : algorithms) {
-      fitnessValueMap.put(algorithm, new ArrayList<>());
-      runtimeMap.put(algorithm, new ArrayList<>());
-    }
-
-    return matchingSolutionInsights;
-  }
-
-  private Progress createProgressMessage(String message) {
-    return Progress
-        .builder()
-        .inProgress(
-            false)
-        // this object is just to send a message to the client, not to show the progress
-        .message(message)
-        .build();
-  }
-
-  private Progress createProgress(String message,
-      Double runtime,
-      Integer runCount,
-      int maxRunCount) {
-    int percent = runCount * 100 / maxRunCount;
-    int minuteLeft = (int) Math.ceil(
-        ((maxRunCount - runCount) * runtime) / 60); // runtime is in seconds
-    return Progress
-        .builder()
-        .inProgress(true) // this object is just to send to the client to show the progress
-        .message(message)
-        .runtime(runtime)
-        .minuteLeft(minuteLeft)
-        .percentage(percent)
-        .build();
-  }
-
-  private double getFitnessValue(NondominatedPopulation result) {
-    Solution solution = result.get(0);
-    return solution.getObjective(0);
   }
 }

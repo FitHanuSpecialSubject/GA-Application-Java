@@ -88,11 +88,11 @@ public class SmtCommonService {
           .builder()
           .status(200)
           .message(
-              "[Service] Stable Matching: Solve stable matching problem successfully!")
+              "Stable Matching: Solve stable matching problem successfully!")
           .data(matchingSolution)
           .build());
     } catch (Exception e) {
-      log.error("[Service] Stable Matching: Error solving stable matching problem: {}",
+      log.error("Stable Matching: Error solving stable matching problem: {}",
           e.getMessage(),
           e);
 
@@ -102,26 +102,10 @@ public class SmtCommonService {
               .builder()
               .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
               .message(
-                  "[Service] Stable Matching: Error solving stable matching problem.")
+                  "Stable Matching: Error solving stable matching problem.")
               .data(null)
               .build());
     }
-  }
-
-  public static MatchingSolution formatSolution(String algorithm,
-      NondominatedPopulation result,
-      double Runtime) {
-    Solution solution = result.get(0);
-    MatchingSolution matchingSolution = new MatchingSolution();
-    double fitnessValue = solution.getObjective(0);
-    Matches matches = (Matches) solution.getAttribute("matches");
-
-    matchingSolution.setFitnessValue(-fitnessValue);
-    matchingSolution.setMatches(matches);
-    matchingSolution.setAlgorithm(algorithm);
-    matchingSolution.setRuntime(Runtime);
-
-    return matchingSolution;
   }
 
   /**
@@ -197,14 +181,17 @@ public class SmtCommonService {
         "/progress",
         createProgressMessage("Initializing the problem..."));
     String[] algorithms = StableMatchingConst.ALLOWED_INSIGHT_ALGORITHMS;
-    log.info("Start benchmarking {} session code {}", problem.getName(), sessionCode);
+    log.info("Start benchmarking stable matching type: {}, name: {}, session code: {}",
+        problem.getMatchingTypeName(),
+        problem.getName(),
+        sessionCode);
 
     MatchingSolutionInsights matchingSolutionInsights =
         initMatchingSolutionInsights(algorithms);
 
-    int runCount = 1;
+    int currentRunCount      = 1;
     int runCountPerAlgorithm = request.getRunCountPerAlgorithm();
-    int maxRunCount = algorithms.length * runCountPerAlgorithm;
+    int maxRunCount          = algorithms.length * runCountPerAlgorithm;
 
     simpMessagingTemplate.convertAndSendToUser(sessionCode,
         "/progress",
@@ -230,10 +217,10 @@ public class SmtCommonService {
         String message =
             "Algorithm " + algorithm + " finished iteration: #" + (i + 1) + "/"
                 + runCountPerAlgorithm;
-        Progress progress = createProgress(message, runtime, runCount, maxRunCount);
+        Progress progress = createProgress(message, runtime, currentRunCount, maxRunCount);
         System.out.println(progress);
         simpMessagingTemplate.convertAndSendToUser(sessionCode, "/progress", progress);
-        runCount++;
+        currentRunCount++;
 
         // add the fitness value and runtime to the insights
         matchingSolutionInsights.getFitnessValues().get(algorithm).add(-fitnessValue);
@@ -253,7 +240,31 @@ public class SmtCommonService {
         .build());
   }
 
-  private MatchingSolutionInsights initMatchingSolutionInsights(String[] algorithms) {
+  /**
+   * Get & format solution
+   *
+   * @param algorithm String
+   * @param result    NondominatedPopulation
+   * @param Runtime   double
+   * @return MatchingSolution
+   */
+  public static MatchingSolution formatSolution(String algorithm,
+      NondominatedPopulation result,
+      double Runtime) {
+    Solution solution = result.get(0);
+    MatchingSolution matchingSolution = new MatchingSolution();
+    double fitnessValue = solution.getObjective(0);
+    Matches matches = (Matches) solution.getAttribute(StableMatchingConst.MATCHES_KEY);
+
+    matchingSolution.setFitnessValue(-fitnessValue);
+    matchingSolution.setMatches(matches);
+    matchingSolution.setAlgorithm(algorithm);
+    matchingSolution.setRuntime(Runtime);
+
+    return matchingSolution;
+  }
+
+  public static MatchingSolutionInsights initMatchingSolutionInsights(String[] algorithms) {
     MatchingSolutionInsights matchingSolutionInsights = new MatchingSolutionInsights();
     Map<String, List<Double>> fitnessValueMap = new HashMap<>();
     Map<String, List<Double>> runtimeMap = new HashMap<>();
@@ -296,7 +307,7 @@ public class SmtCommonService {
         .build();
   }
 
-  private double getFitnessValue(NondominatedPopulation result) {
+  public static double getFitnessValue(NondominatedPopulation result) {
     Solution solution = result.get(0);
     return solution.getObjective(0);
   }

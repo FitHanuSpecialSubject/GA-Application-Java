@@ -18,6 +18,7 @@ import org.fit.ssapp.ss.smt.implement.MTMProblem;
 import org.fit.ssapp.ss.smt.implement.OTMProblem;
 import org.fit.ssapp.ss.smt.result.MatchingSolution;
 import org.fit.ssapp.ss.smt.result.MatchingSolutionInsights;
+import org.fit.ssapp.util.ResponseUtils;
 import org.moeaframework.Executor;
 import org.moeaframework.core.NondominatedPopulation;
 import org.moeaframework.core.Problem;
@@ -47,34 +48,48 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class StableMatchingOtmService {
+public class StableMatchingOtmService implements ProblemService {
 
   @Autowired
   private final SmtCommonService commonService;
 
   /**
-   * Solves a stable matching problem based on the given request.
+   * Solve SMT OTM problem type
+   * use SmtCommonService
    *
-   * @param request request The stable matching problem configuration.
+   * @param request StableMatchingProblemDto
    * @return ResponseEntity
    */
-
   public ResponseEntity<Response> solve(StableMatchingProblemDto request) {
-    log.info("Parsing OTM problem from request");
-    MatchingProblem problem = StableMatchingProblemMapper.toOTM(request);
+    MatchingProblem problem;
+    try {
+      problem = StableMatchingProblemMapper.toOTM(request);
+    } catch (Exception e) {
+      String errMessage = e.getMessage();
+      log.error("ERROR, error when trying to convert dto {}", errMessage, e);
+      return ResponseUtils.getInternalErrorResponse(errMessage);
+    }
     return this.commonService.solve(request, problem);
   }
 
   /**
-   * getInsights.
+   * Get insight session for problem type SMT OTM
+   * use SmtCommonService
    *
-   * @param request     StableMatchingProblemDto
+   * @param request StableMatchingProblemDto
    * @param sessionCode String
    * @return ResponseEntity
    */
   public ResponseEntity<Response> getInsights(StableMatchingProblemDto request,
-                                              String sessionCode) {
-    OTMProblem problem = StableMatchingProblemMapper.toOTM(request);
+      String sessionCode) {
+    MatchingProblem problem;
+    try {
+      problem = StableMatchingProblemMapper.toOTM(request);
+    } catch (Exception e) {
+      String errMessage = e.getMessage();
+      log.error("ERROR, error when trying to convert dto {}", errMessage, e);
+      return ResponseUtils.getInternalErrorResponse(errMessage);
+    }
     return this.commonService.getInsights(request, problem, sessionCode);
   }
 
