@@ -9,7 +9,6 @@ The primary goal of this manual is to provide a detailed, easy-to-understand gui
 # **2\. Table of Contents**
 
 1. [Introduction](#1-introduction)
-   - [Introduction](#introduction)
 2. [Table of Contents](#2-table-of-contents)
 3. [Module Specifications](#3-module-specifications)
    - [SMT (Stable Matching Theory)](#31-smt-stable-matching-theory)
@@ -315,7 +314,7 @@ These factors are presented in every property of an individual and are used by t
 
 ### Rules for properties
 
-- Weight belong to $[0;10]$
+- Value $>=$ 0
 - Value must be greater than 0
 - Requirement can either be a positive number (used in custom calculations) or a string (such as "1 bound", "2 bounds", or "scale target") (used in default calculations).
 
@@ -596,39 +595,18 @@ _The "Get Result Insight" feature will be available after a successful solve._
 - **SMT**: A table containing matched pairs and unmatched pairs (if any).
 - **GT**: A table containing the strategies used and the corresponding scores of the players.
 
-### **7.3 Common Issues**
-
-- **Missing results**: Check if the solving process was completed successfully.
-- **Incorrect data**: Verify the input data and cross-check with the documentation.
-- **Unexpected results**: Try a different algorithm configuration or adjust input parameters..
 
 # **8\. Deployment**
 
-### **8.1 Supported Environments**
 
-- **Local**: Single machine deployment for development or testing.
-- **Server**: Deploy to dedicated or virtualized servers.
-- **Cloud**: Deploy to platforms like AWS, Azure, or Google Cloud.
-
-### **8.2 Deployment Steps**
-
-1. Build the application using Maven:  
-   **`mvn clean package`**
-2. Deploy the `.jar` file to the desired environment.
-3. Configure environment-specific settings, such as database connections.
-
-### **8.3 Best Practices**
-
-- Secure sensitive information using environment variables or encrypted files.
-- Regularly monitor application logs for performance and errors.
 
 # **9\. Contributors**
 
 ### **List of Contributors**
-
-- **John Doe**: Backend Developer
-- **Jane Smith**: Frontend Developer
-- **Alex Nguyen**: Documentation Specialist
+**Team code SS2**
+- **Backend Developer**: Vũ Nhật Hoàng(Leader), Ngô Minh Đức, Vũ Văn Thắng, Đàm Thanh Thủy, Thạch Thọ Khánh Duy, Đinh Xuân Trường.
+- **Frontend Developer**: Dương Quân Bảo(Leader), Nguyễn Trọng Hiếu, Nguyễn Văn Lim, Phạm Ngọc Sơn Nguyên, Hoàng Lân.
+- **Business Analyst**: Lê Kim Ngân(Leader), Phan Thị Hằng, Nguyễn Thu An, Phạm Phương Anh, Nguyễn Quốc Việt.
 
 ### **Acknowledgments**
 
@@ -639,5 +617,5 @@ _The "Get Result Insight" feature will be available after a successful solve._
 
 ### **Final Notes and Disclaimers**
 
-- Ensure the application is used within its intended scope.
-- Future updates may change certain functionalities.
+If you run into any issues or have questions while using it, just reach out to the SS2 coding team for help!
+
