@@ -16,6 +16,13 @@
 sudo bash docker_setup.sh
 ```
 
+### Step 2: update server location & endpoint for frontend 
+```bash
+nano nginx/.env
+# Update VITE_BACKEND_PROTOCOL to the correct protocol
+# Update VITE_BACKEND_URL to the correct IP or URL
+```
+
 
 ### Step 2: Build and start docker
 ```bash
