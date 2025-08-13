@@ -32,7 +32,8 @@ The primary goal of this manual is to provide a detailed, easy-to-understand gui
 # **3\. Module Specifications**
 
 ### **3.1 SMT (Stable Matching Theory)**
-
+A stable matching is a fundamental concept in mathematics, economics, and computer science that describes a particular way of pairing elements from two distinct sets based on their individual preferences. In essence, it is a matching of participants where there is no incentive for any pair of individuals to break their assigned partnerships to form a new one.
+The core principle of a stable matching lies in the idea of avoiding "instability." An instability, often referred to as a blocking pair, occurs when two individuals who are not matched with each other would both prefer to be with each other than their current partners.
 #### **Types of Problems**
 
 - **MTM (Many-to-Many)**: Each individual (from two distinct sets) can have multiple matches.
@@ -48,7 +49,7 @@ The primary goal of this manual is to provide a detailed, easy-to-understand gui
 #### **Evaluate Function**
 
 The **Evaluate function** is specific to individuals within a set, used to compute the preference of one individual over others based on the components of the individual's properties.
-- Example: A student's `Evaluate` function might look at a professor's research field, teaching style, and available office hours. It then calculates a **score** to show how much the student **prefers** that professor over others.
+
 
 #### **Fitness Function**
 
@@ -68,8 +69,8 @@ The **Capacity** refers to the maximum number of matches an individual may have.
 - **Capacity**: Each individual can have a defined capacity, which restricts the number of matches they can participate in.
 - **PWR (Properties)**:
   - **Value**: Represents a numerical or qualitative measure of the individual’s importance or suitability in the matching process. For example, A job applicant's `Value` could be their GPA, or a company's `Value` could be its average salary offering.
-  - **Weight**: Represents the relative importance or priority of that individual in the matching decision.
-  - **Requirement**: The minimum necessary requirements that an individual must have to be considered for a match.
+  - **Weight**: Represents the relative importance or priority of that individual in the matching decision. For example, A company might have a higher `Weight` than a new startup, meaning the algorithm prioritizes matching applicants to that company.
+  - **Requirement**: The minimum necessary requirements that an individual must have to be considered for a match. For example, a job opening might have a `Requirement` for 3 years of experience.
 
 #### **Flow of Event**
 
@@ -83,11 +84,9 @@ flowchart TD
     D --> E[Preferences]
     E --> F{Exclude pairs exist?}
     F -->|Yes| G[Reduce Fitness]
-    F -->|No| H[   ]
+    F -->|No| H[Select Next Pair]
     G --> H
     H --> J[End]
-
-
 ```
 
 ### **Core Stable Matching**
@@ -95,38 +94,27 @@ flowchart TD
 As mentioned, the system expands on the original problem by introducing many-to-many matching. This requires some modification to the Gale-Shapley Algorithm.
 
 ```mermaid
+
 flowchart TD
-    A[Start] --> B[Queue]
-    B --> C[Dequeue]
-    C --> D[Individual A]
-    D --> E[Preference List]
-    E --> F[Individual B]
-    F --> G{Is B full?}
-    G -->|No| H{Is A full?}
-    H -->|No| I[Match A and B]
-    H -->|Yes| J{Does A prefer B over any current match?}
-    J -->|Yes| K[Unmatch less preferred]
-    K --> I
-    J -->|No| L[No action]
-    G -->|Yes| M{Does B prefer A over any current match?}
-    M -->|Yes| N{Is A full?}
-    N -->|No| I
-    N -->|Yes| O{Does A prefer B over any current match?}
-    O -->|Yes| K
-    O -->|No| L
-    M -->|No| L
-    E --> P{Has next preference?}
-    P -->|Yes| F
-    P -->|No| Q{Is the queue empty?}
-    Q -->|No| B
-    Q -->|Yes| R[Matches]
-    R --> S[End]
+    A[Start] --> B[Dequeue an individual A]
+    B --> C[A proposes to their most preferred unmatched B]
+    C --> D{Is B unengaged?}
+    D -->|Yes| E[Match A and B]
+    D -->|No| F{Does B prefer A over current partner?}
+    F -->|Yes| G[Unmatch current partner]
+    G --> E
+    F -->|No| H[A proposes to next preference]
+    H --> C
+    E --> I{Is queue empty?}
+    I -->|No| B
+    I -->|Yes| J[End]
 
 ```
 
 ### **3.2 GT (Game Theory)**
 
-The sole game representation is in **Normal form**, where all players make decisions simultaneously or don't have information about others' decisions.
+Game theory is a branch of mathematics that studies the interactions between rational decision-makers, often modeled as players in a game. The goal of game theory is to understand how people make decisions in strategic situations where the outcome of a decision depends on the actions of others. Here, the sole game representation is in **Normal form**, where all players make decisions simultaneously or don't have information about others' decisions.
+
 
 1. **Problem Information**
 
