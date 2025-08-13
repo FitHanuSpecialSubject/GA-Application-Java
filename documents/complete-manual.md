@@ -13,7 +13,7 @@ The primary goal of this manual is to provide a detailed, easy-to-understand gui
 3. [Module Specifications](#3-module-specifications)
    - [SMT (Stable Matching Theory)](#31-smt-stable-matching-theory)
    - [GT (Game Theory)](#32-gt-game-theory)
-4. [Local Installation](#4-local-installation)
+4. [Local Installation](#4-local-installation) ([Link Google Drive hướng dẫn](https://drive.google.com/drive/folders/16e0t3Vhkr4Bc85k0Bd_aFFTEpU6s_s9R?fbclid=IwY2xjawMJPQZleHRuA2FlbQIxMABicmlkETFsT1IwVkJaaHJBMUtmUTE4AR741Ywh1I-yCqv9AaGPo5un13PKUY8MdMW9LwNyUlv8iGt--cosdN3dKernLg_aem_0l6ykE2LyEzvn0goo-wD-Q))
 5. [Data Form Creation](#5-data-form-creation)
 6. [Solve](#6-solve)
    - [Step-by-step Execution](#61-step-by-step--excution)
@@ -36,12 +36,19 @@ The primary goal of this manual is to provide a detailed, easy-to-understand gui
 #### **Types of Problems**
 
 - **MTM (Many-to-Many)**: Each individual (from two distinct sets) can have multiple matches.
+    - **Example:** A group of freelancers and a group of companies. A freelancer can work for multiple companies, and a
+      company can hire multiple freelancers.
 - **OTM (One-to-Many)**: One individual from a set can have multiple matches, but each other individual in the opposite set can only be matched once.
+    - **Example:** A group of professors and a group of students. A professor can advise multiple students, but each
+      student can only have one advisor.
 - **OTO (One-to-One)**: This is the standard Gale-Shapley problem where each individual in both sets is matched with exactly one individual from the opposite set.
+    - **Example:** A group of people and a group of cars. Each person can buy one car, and each car can only be sold to
+      one person.
 
 #### **Evaluate Function**
 
 The **Evaluate function** is specific to individuals within a set, used to compute the preference of one individual over others based on the components of the individual's properties.
+- Example: A student's `Evaluate` function might look at a professor's research field, teaching style, and available office hours. It then calculates a **score** to show how much the student **prefers** that professor over others.
 
 #### **Fitness Function**
 
@@ -60,7 +67,7 @@ The **Capacity** refers to the maximum number of matches an individual may have.
 - **Set indices**
 - **Capacity**: Each individual can have a defined capacity, which restricts the number of matches they can participate in.
 - **PWR (Properties)**:
-  - **Value**: Represents a numerical or qualitative measure of the individual’s importance or suitability in the matching process.
+  - **Value**: Represents a numerical or qualitative measure of the individual’s importance or suitability in the matching process. For example, A job applicant's `Value` could be their GPA, or a company's `Value` could be its average salary offering.
   - **Weight**: Represents the relative importance or priority of that individual in the matching decision.
   - **Requirement**: The minimum necessary requirements that an individual must have to be considered for a match.
 
@@ -205,7 +212,7 @@ bash ./mvnw clean install
 - Windows
 
 ```bash
-mvnw.cmd clean install
+.mvnw.cmd clean install
 ```
 
 - Using system maven (require installation)
