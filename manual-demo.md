@@ -1,3 +1,0 @@
-﻿## Hướng dẫn sử dụng
-
-test
