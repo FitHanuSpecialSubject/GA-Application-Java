@@ -13,7 +13,7 @@ The primary goal of this manual is to provide a detailed, easy-to-understand gui
 3. [Module Specifications](#3-module-specifications)
    - [SMT (Stable Matching Theory)](#31-smt-stable-matching-theory)
    - [GT (Game Theory)](#32-gt-game-theory)
-4. [Local Installation](#4-local-installation) ([Link Google Drive hướng dẫn](https://drive.google.com/drive/folders/16e0t3Vhkr4Bc85k0Bd_aFFTEpU6s_s9R?fbclid=IwY2xjawMJPQZleHRuA2FlbQIxMABicmlkETFsT1IwVkJaaHJBMUtmUTE4AR741Ywh1I-yCqv9AaGPo5un13PKUY8MdMW9LwNyUlv8iGt--cosdN3dKernLg_aem_0l6ykE2LyEzvn0goo-wD-Q))
+4. [Local Installation](#4-local-installation)
 5. [Data Form Creation](#5-data-form-creation)
 6. [Solve](#6-solve)
    - [Step-by-step Execution](#61-step-by-step--excution)
@@ -32,43 +32,20 @@ The primary goal of this manual is to provide a detailed, easy-to-understand gui
 # **3\. Module Specifications**
 
 ### **3.1 SMT (Stable Matching Theory)**
-A stable matching is a fundamental concept in mathematics, economics, and computer science that describes a particular way of pairing elements from two distinct sets based on their individual preferences. In essence, it is a matching of participants where there is no incentive for any pair of individuals to break their assigned partnerships to form a new one.
-The core principle of a stable matching lies in the idea of avoiding "instability." An instability, often referred to as a blocking pair, occurs when two individuals who are not matched with each other would both prefer to be with each other than their current partners.
+
 #### **Types of Problems**
 
 - **MTM (Many-to-Many)**: Each individual (from two distinct sets) can have multiple matches.
-    - **Example:** A group of freelancers and a group of companies. A freelancer can work for multiple companies, and a
-      company can hire multiple freelancers.
 - **OTM (One-to-Many)**: One individual from a set can have multiple matches, but each other individual in the opposite set can only be matched once.
-    - **Example:** A group of professors and a group of students. A professor can advise multiple students, but each
-      student can only have one advisor.
 - **OTO (One-to-One)**: This is the standard Gale-Shapley problem where each individual in both sets is matched with exactly one individual from the opposite set.
-    - **Example:** A group of people and a group of cars. Each person can buy one car, and each car can only be sold to one person.
 
-![alt text](st-matching1.png)
-#### **Problem Name**
-Name of the problem. Should reflect the content of the game or analysis problem.
-#### **Number of set**
-The number of sets you will analyze. Must be a positive integer that is greater than 1. Ex: 2, 3...
-#### **Number of individuals**
-The total number of individuals in each set that you wish to analyze. Must be a positive integer. Ex: 10, 15, 20, ...
-#### **Number of characteristics:**:
-Represents a requirement or attribute that an individual has. Must be a positive integer., Ex: 3,5,..
+#### **Evaluate Function**
+
+The **Evaluate function** is specific to individuals within a set, used to compute the preference of one individual over others based on the components of the individual's properties.
+
 #### **Fitness Function**
 
 The **Fitness function** evaluates the final result of the matching process. It calculates how good or "fit" a matching is based on the preferences of the matched pairs. By default, this is the sum of the list.
-The current evaluation function can handle three types of variables:
-
-$R$: Requirements of each individual for a specific characteristic.
-
-$P$: Properties of each individual for a specific characteristic.
-
-$W$: Weight of an individual's characteristic (the degree of importance of the characteristic to the individual).
-
-Example: $P1*R1*W1+P2*R2*W2$ is a function that software can process. The software will not handle function notation unless the user provides it by default.
-#### **Evaluate Function**
-
-The **Evaluate function** is specific to individuals within a set, used to compute the preference of one individual over others based on the components of the individual's properties. 
 
 #### **Exclude Pair**
 
@@ -78,18 +55,15 @@ The **Exclude pair** functionality allows for the exclusion of specific pairs fr
 
 The **Capacity** refers to the maximum number of matches an individual may have.
 
-#### **Example of a Problem Information Sheet:**
-![alt text](st-matching1.png)
 #### **Properties of Each Individual**
 
 - **Set indices**
-- **Capacity**: Each individual can have a defined capacity, which restricts the number of matches they can participate in. 
+- **Capacity**: Each individual can have a defined capacity, which restricts the number of matches they can participate in.
 - **PWR (Properties)**:
-  - **Value**: Represents a numerical or qualitative measure of the individual’s importance or suitability in the matching process. For example, A job applicant's `Value` could be their GPA, or a company's `Value` could be its average salary offering.
-  - **Weight**: Represents the relative importance or priority of that individual in the matching decision. For example, A company might have a higher `Weight` than a new startup, meaning the algorithm prioritizes matching applicants to that company.
-  - **Requirement**: The minimum necessary requirements that an individual must have to be considered for a match. For example, a job opening might have a `Requirement` for 3 years of experience.
-  
-![alt text](st-matching2.png)
+  - **Value**: Represents a numerical or qualitative measure of the individual’s importance or suitability in the matching process.
+  - **Weight**: Represents the relative importance or priority of that individual in the matching decision.
+  - **Requirement**: The minimum necessary requirements that an individual must have to be considered for a match.
+
 #### **Flow of Event**
 
 With each iteration, a queue of individuals is used to generate stable matching, which is then used to calculate fitness. The order of the queue will be adjusted by the Genetic Algorithm.
@@ -102,9 +76,11 @@ flowchart TD
     D --> E[Preferences]
     E --> F{Exclude pairs exist?}
     F -->|Yes| G[Reduce Fitness]
-    F -->|No| H[Select Next Pair]
+    F -->|No| H[   ]
     G --> H
     H --> J[End]
+
+
 ```
 
 ### **Core Stable Matching**
@@ -112,47 +88,56 @@ flowchart TD
 As mentioned, the system expands on the original problem by introducing many-to-many matching. This requires some modification to the Gale-Shapley Algorithm.
 
 ```mermaid
-
 flowchart TD
-    A[Start] --> B[Dequeue an individual A]
-    B --> C[A proposes to their most preferred unmatched B]
-    C --> D{Is B unengaged?}
-    D -->|Yes| E[Match A and B]
-    D -->|No| F{Does B prefer A over current partner?}
-    F -->|Yes| G[Unmatch current partner]
-    G --> E
-    F -->|No| H[A proposes to next preference]
-    H --> C
-    E --> I{Is queue empty?}
-    I -->|No| B
-    I -->|Yes| J[End]
+    A[Start] --> B[Queue]
+    B --> C[Dequeue]
+    C --> D[Individual A]
+    D --> E[Preference List]
+    E --> F[Individual B]
+    F --> G{Is B full?}
+    G -->|No| H{Is A full?}
+    H -->|No| I[Match A and B]
+    H -->|Yes| J{Does A prefer B over any current match?}
+    J -->|Yes| K[Unmatch less preferred]
+    K --> I
+    J -->|No| L[No action]
+    G -->|Yes| M{Does B prefer A over any current match?}
+    M -->|Yes| N{Is A full?}
+    N -->|No| I
+    N -->|Yes| O{Does A prefer B over any current match?}
+    O -->|Yes| K
+    O -->|No| L
+    M -->|No| L
+    E --> P{Has next preference?}
+    P -->|Yes| F
+    P -->|No| Q{Is the queue empty?}
+    Q -->|No| B
+    Q -->|Yes| R[Matches]
+    R --> S[End]
 
 ```
 
 ### **3.2 GT (Game Theory)**
 
+The sole game representation is in **Normal form**, where all players make decisions simultaneously or don't have information about others' decisions.
 
-- Game theory is a branch of mathematics that studies the interactions between rational decision-makers, often modeled as players in a game. The goal of game theory is to understand how people make decisions in strategic situations where the outcome of a decision depends on the actions of others. Here, the sole game representation is in **Normal form**, where all players make decisions simultaneously or don't have information about others' decisions.
-
-  ![alt text](game-theory1.png)
 1. **Problem Information**
-- **Problem Name**: The name of the problem. The name should be concise and meaningful, reflecting the nature of the game being analyzed. For example, if the game is about two competing companies deciding whether to enter a new market, the name could be "Market Entry Game." 
-- **Special player**: A player who may have additional constraints or capabilities, differentiating them from other players. Default is 0 (no special player), set to 1 to specify a special player exists.
-- **Number of properties of special player**: Number of strategy attributes that special player is influenced by.
-- **Normal players**: Normal players are the participants in a game theory problem who do not have any special advantages or properties. The input field for the number of normal players should be a numeric field that only accepts positive integers between 2 and 1000. 
-- **Number of properties of normal players**: Number of strategy attributes that regular players are influenced by (>= 1) (the number of attributes for all strategies must be equal)
-- **Fitness function**: A function that evaluates how good or optimal a player's strategy is, typically by assessing the payoff values generated by the chosen strategies. 
-- **Payoff function**: This function calculates the payoff (or reward) that each player receives based on their chosen strategy and the strategies chosen by other players. Payoff calculations will depend on the interactions between these strategies. Define how to calculate payoff from a player strategy. It should be note that this function will be the default for any player without their own payoff function. Example: 
-$$ p1 + p2 + p3 - p4 $$
-- **Is maximizing problem**: If the player's proposed strategy is optimal (already has a high fitness score), set to TRUE, otherwise FALSE (to be determined on a case-by-case basis)
+
+- **Payoff function**: This function calculates the payoff (or reward) that each player receives based on their chosen strategy and the strategies chosen by other players. Payoff calculations will depend on the interactions between these strategies. Define how to calculate payoff from a player strategy. It should be note that
+  this function will be the default for any player without their own payoff function.
+- **Fitness function**: A function that evaluates how good or optimal a player's strategy is, typically by assessing the payoff values generated by the chosen strategies.
+- **Special player**: A player who may have additional constraints or capabilities, differentiating them from other players.
 - **Strategy and their property matrix**: A table representing all the strategies available to the players along with the properties or attributes of each strategy.
 - **Conflict**: A functionality that can prevent or discourage players from choosing specific strategies at any iteration of the game.
 
 After these data are provided to the system, the payoff of each player's strategies are calculated with the payoff function. Note that the same strategy can have different payoffs with different values.
 
-  ![alt text](game-theory2.png)
+|          | Strategy 1 | Strategy 2 |
+| :------: | :--------: | :--------: |
+| Player 1 |    100     |     45     |
+| Player 2 |     78     |    244     |
 
-In this table, the values represent the payoffs for Player 1 and Player 2 for each combination of strategies in the Prisoners Dilemma problem. For example, if both player chooses Strategy 1 (Keep silent), both player receives a payoff value of 1. If Player 1 chooses Strategy 1 (Keep silent) and player 2 chooses Strategy 2 (Betray), player 1 receives a payoff value of 3 and player 2 receives a payoff value of 0.
+In this table, the values represent the payoffs for Player 1 and Player 2 for each combination of strategies. For example, if Player 1 chooses Strategy 1 and Player 2 chooses Strategy 2, Player 1 receives a payoff of 100, and Player 2 receives a payoff of 78.
 
 ---
 
@@ -204,12 +189,10 @@ If result not present, please test on your system and give feedback.
 
 ```bash
 git clone https://github.com/FitHanuSpecialSubject/GA-Application-Java.git
-```
-2. Change directory to GA-Application-Java folder
-```bash
 cd GA-Application-Java
 ```
-3. Build the project
+
+2. Build the project
 
 #### Using project maven wrapper (recommended):
 
@@ -222,7 +205,7 @@ bash ./mvnw clean install
 - Windows
 
 ```bash
-.\mvnw.cmd clean install
+mvnw.cmd clean install
 ```
 
 - Using system maven (require installation)
@@ -251,7 +234,7 @@ mvn clean install -PwithFront
 mvn verify -DskipTests -PstartBE
 ```
 
-- Run the generated .jar file from the build project step. (recommended)
+- Run the generated .jar file from the build project step. (recomended)
 
 ```bash
 java -jar target/[generated_application_filename].jar
@@ -259,11 +242,6 @@ java -jar target/[generated_application_filename].jar
 
 - Or use modern Java IDE like IntelliJ IDEA, Eclipse, Netbeans, ... to run with IDE preconfigures
 
-- Expected output:
-![alt text](install1.png)
-To verify that the backend is running correctly, open `localhost:8080` in your web browser. The expected output is shown below:
-
-  ![alt text](install2.png)
 ### Webapp run via maven (for a quick demo via terminal)
 
 ```bash
