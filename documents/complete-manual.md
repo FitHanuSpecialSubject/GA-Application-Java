@@ -114,9 +114,9 @@ flowchart TD
 ### **3.2 GT (Game Theory)**
 
 
-Game theory is a branch of mathematics that studies the interactions between rational decision-makers, often modeled as players in a game. The goal of game theory is to understand how people make decisions in strategic situations where the outcome of a decision depends on the actions of others. Here, the sole game representation is in **Normal form**, where all players make decisions simultaneously or don't have information about others' decisions.
+- Game theory is a branch of mathematics that studies the interactions between rational decision-makers, often modeled as players in a game. The goal of game theory is to understand how people make decisions in strategic situations where the outcome of a decision depends on the actions of others. Here, the sole game representation is in **Normal form**, where all players make decisions simultaneously or don't have information about others' decisions.
 
-![alt text](game-theory1.png)
+  ![alt text](game-theory1.png)
 1. **Problem Information**
 - **Problem Name**: The name of the problem. The name should be concise and meaningful, reflecting the nature of the game being analyzed. For example, if the game is about two competing companies deciding whether to enter a new market, the name could be "Market Entry Game." 
 - **Special player**: A player who may have additional constraints or capabilities, differentiating them from other players. Default is 0 (no special player), set to 1 to specify a special player exists.
@@ -131,7 +131,7 @@ Game theory is a branch of mathematics that studies the interactions between rat
 
 After these data are provided to the system, the payoff of each player's strategies are calculated with the payoff function. Note that the same strategy can have different payoffs with different values.
 
-![alt text](game-theory2.png)
+  ![alt text](game-theory2.png)
 
 In this table, the values represent the payoffs for Player 1 and Player 2 for each combination of strategies in the Prisoners Dilemma problem. For example, if both player chooses Strategy 1 (Keep silent), both player receives a payoff value of 1. If Player 1 chooses Strategy 1 (Keep silent) and player 2 chooses Strategy 2 (Betray), player 1 receives a payoff value of 3 and player 2 receives a payoff value of 0.
 
@@ -240,7 +240,11 @@ java -jar target/[generated_application_filename].jar
 
 - Or use modern Java IDE like IntelliJ IDEA, Eclipse, Netbeans, ... to run with IDE preconfigures
 
+- Expected output:
+![alt text](install1.png)
+- Run `localhost:8080` to check if backend works:
 
+  ![alt text](install2.png)
 ### Webapp run via maven (for a quick demo via terminal)
 
 ```bash
