@@ -10,174 +10,26 @@ The primary goal of this manual is to provide a detailed, easy-to-understand gui
 
 1. [Introduction](#1-introduction)
 2. [Table of Contents](#2-table-of-contents)
-3. [Module Specifications](#3-module-specifications)
-   - [SMT (Stable Matching Theory)](#31-smt-stable-matching-theory)
-   - [GT (Game Theory)](#32-gt-game-theory)
-4. [Local Installation](#4-local-installation) ([Link Google Drive hướng dẫn](https://drive.google.com/drive/folders/16e0t3Vhkr4Bc85k0Bd_aFFTEpU6s_s9R?fbclid=IwY2xjawMJPQZleHRuA2FlbQIxMABicmlkETFsT1IwVkJaaHJBMUtmUTE4AR741Ywh1I-yCqv9AaGPo5un13PKUY8MdMW9LwNyUlv8iGt--cosdN3dKernLg_aem_0l6ykE2LyEzvn0goo-wD-Q))
-5. [Data Form Creation](#5-data-form-creation)
-6. [Solve](#6-solve)
-   - [Step-by-step Execution](#61-step-by-step--excution)
-   - [Optimization Tips](#62-optimization-tips)
-7. [Get Result Insight](#7-get-result-insight)
-   - [Analyzing Results](#71-analyzing-results)
-   - [Output Format](#72-output-format)
-   - [Common Issues](#73-common-issues)
-8. [Deployment](#8-deployment)
-   - [Supported Environments](#81-supported-environments)
-   - [Deployment Steps](#82-deployment-steps)
-   - [Best Practices](#83-best-practices)
-10. [Contributors](#9-contributors)
-11. [End](#10-end)
+3. [Local Installation](#3-local-installation) ([Link Google Drive hướng dẫn](https://drive.google.com/drive/folders/1LAf5cdsjDVBJT-gzQGw6fIyd2YOD3e-f))
+4. [Solve](#4-solve)
+   - [Step-by-step Execution](#41-step-by-step--excution)
+   - [Optimization Tips](#42-optimization-tips)
+5. [Get Result Insight](#5-get-result-insight)
+   - [Analyzing Results](#51-analyzing-results)
+   - [Output Format](#52-output-format)
+   - [Common Issues](#53-common-issues)
+6. [Deployment](#6-deployment)
+   - [Supported Environments](#61-supported-environments)
+   - [Deployment Steps](#62-deployment-steps)
+   - [Best Practices](#63-best-practices)
+7. [Module Specifications](#7-module-specifications)
+   - [SMT (Stable Matching Theory)](#71-smt-stable-matching-theory)
+   - [GT (Game Theory)](#72-gt-game-theory)
+8. [Data Form Creation](#8-data-form-creation)
 
-# **3\. Module Specifications**
-
-### **3.1 SMT (Stable Matching Theory)**
-A stable matching is a fundamental concept in mathematics, economics, and computer science that describes a particular way of pairing elements from two distinct sets based on their individual preferences. In essence, it is a matching of participants where there is no incentive for any pair of individuals to break their assigned partnerships to form a new one.
-The core principle of a stable matching lies in the idea of avoiding "instability." An instability, often referred to as a blocking pair, occurs when two individuals who are not matched with each other would both prefer to be with each other than their current partners.
-#### **Types of Problems**
-
-- **MTM (Many-to-Many)**: Each individual (from two distinct sets) can have multiple matches.
-    - **Example:** A group of freelancers and a group of companies. A freelancer can work for multiple companies, and a
-      company can hire multiple freelancers.
-- **OTM (One-to-Many)**: One individual from a set can have multiple matches, but each other individual in the opposite set can only be matched once.
-    - **Example:** A group of professors and a group of students. A professor can advise multiple students, but each
-      student can only have one advisor.
-- **OTO (One-to-One)**: This is the standard Gale-Shapley problem where each individual in both sets is matched with exactly one individual from the opposite set.
-    - **Example:** A group of people and a group of cars. Each person can buy one car, and each car can only be sold to one person.
-
-![alt text](st-matching1.png)
-#### **Problem Name**
-Name of the problem. Should reflect the content of the game or analysis problem.
-#### **Number of set**
-The number of sets you will analyze. Must be a positive integer that is greater than 1. Ex: 2, 3...
-#### **Number of individuals**
-The total number of individuals in each set that you wish to analyze. Must be a positive integer. Ex: 10, 15, 20, ...
-#### **Number of characteristics:**:
-Represents a requirement or attribute that an individual has. Must be a positive integer., Ex: 3,5,..
-#### **Fitness Function**
-
-The **Fitness function** evaluates the final result of the matching process. It calculates how good or "fit" a matching is based on the preferences of the matched pairs. By default, this is the sum of the list.
-The current evaluation function can handle three types of variables:
-
-$R$: Requirements of each individual for a specific characteristic.
-
-$P$: Properties of each individual for a specific characteristic.
-
-$W$: Weight of an individual's characteristic (the degree of importance of the characteristic to the individual).
-
-Example: $P1*R1*W1+P2*R2*W2$ is a function that software can process. The software will not handle function notation unless the user provides it by default.
-#### **Evaluate Function**
-
-The **Evaluate function** is specific to individuals within a set, used to compute the preference of one individual over others based on the components of the individual's properties. 
-
-#### **Exclude Pair**
-
-The **Exclude pair** functionality allows for the exclusion of specific pairs from being matched, even if they would otherwise have a high preference score.
-
-#### **Capacity**
-
-The **Capacity** refers to the maximum number of matches an individual may have.
-
-#### **Example of a Problem Information Sheet:**
-![alt text](st-matching1.png)
-#### **Properties of Each Individual**
-
-- **Set indices**
-- **Capacity**: Each individual can have a defined capacity, which restricts the number of matches they can participate in. 
-- **PWR (Properties)**:
-  - **Value**: Represents a numerical or qualitative measure of the individual’s importance or suitability in the matching process. For example, A job applicant's `Value` could be their GPA, or a company's `Value` could be its average salary offering.
-  - **Weight**: Represents the relative importance or priority of that individual in the matching decision. For example, A company might have a higher `Weight` than a new startup, meaning the algorithm prioritizes matching applicants to that company.
-  - **Requirement**: The minimum necessary requirements that an individual must have to be considered for a match. For example, a job opening might have a `Requirement` for 3 years of experience.
-  
-![alt text](st-matching2.png)
-#### **Flow of Event**
-
-With each iteration, a queue of individuals is used to generate stable matching, which is then used to calculate fitness. The order of the queue will be adjusted by the Genetic Algorithm.
-
-```mermaid
-flowchart TD
-    A[Start] --> B[Queue]
-    B --> C[ Stable Matching]
-    C --> D[Matches]
-    D --> E[Preferences]
-    E --> F{Exclude pairs exist?}
-    F -->|Yes| G[Reduce Fitness]
-    F -->|No| H[Select Next Pair]
-    G --> H
-    H --> J[End]
-```
-
-### **Core Stable Matching**
-
-As mentioned, the system expands on the original problem by introducing many-to-many matching. This requires some modification to the Gale-Shapley Algorithm.
-
-```mermaid
-
-flowchart TD
-    A[Start] --> B[Dequeue an individual A]
-    B --> C[A proposes to their most preferred unmatched B]
-    C --> D{Is B unengaged?}
-    D -->|Yes| E[Match A and B]
-    D -->|No| F{Does B prefer A over current partner?}
-    F -->|Yes| G[Unmatch current partner]
-    G --> E
-    F -->|No| H[A proposes to next preference]
-    H --> C
-    E --> I{Is queue empty?}
-    I -->|No| B
-    I -->|Yes| J[End]
-
-```
-
-### **3.2 GT (Game Theory)**
-
-
-- Game theory is a branch of mathematics that studies the interactions between rational decision-makers, often modeled as players in a game. The goal of game theory is to understand how people make decisions in strategic situations where the outcome of a decision depends on the actions of others. Here, the sole game representation is in **Normal form**, where all players make decisions simultaneously or don't have information about others' decisions.
-
-  ![alt text](game-theory1.png)
-1. **Problem Information**
-- **Problem Name**: The name of the problem. The name should be concise and meaningful, reflecting the nature of the game being analyzed. For example, if the game is about two competing companies deciding whether to enter a new market, the name could be "Market Entry Game." 
-- **Special player**: A player who may have additional constraints or capabilities, differentiating them from other players. Default is 0 (no special player), set to 1 to specify a special player exists.
-- **Number of properties of special player**: Number of strategy attributes that special player is influenced by.
-- **Normal players**: Normal players are the participants in a game theory problem who do not have any special advantages or properties. The input field for the number of normal players should be a numeric field that only accepts positive integers between 2 and 1000. 
-- **Number of properties of normal players**: Number of strategy attributes that regular players are influenced by (>= 1) (the number of attributes for all strategies must be equal)
-- **Fitness function**: A function that evaluates how good or optimal a player's strategy is, typically by assessing the payoff values generated by the chosen strategies. 
-- **Payoff function**: This function calculates the payoff (or reward) that each player receives based on their chosen strategy and the strategies chosen by other players. Payoff calculations will depend on the interactions between these strategies. Define how to calculate payoff from a player strategy. It should be note that this function will be the default for any player without their own payoff function. Example: 
-$$ p1 + p2 + p3 - p4 $$
-- **Is maximizing problem**: If the player's proposed strategy is optimal (already has a high fitness score), set to TRUE, otherwise FALSE (to be determined on a case-by-case basis)
-- **Strategy and their property matrix**: A table representing all the strategies available to the players along with the properties or attributes of each strategy.
-- **Conflict**: A functionality that can prevent or discourage players from choosing specific strategies at any iteration of the game.
-
-After these data are provided to the system, the payoff of each player's strategies are calculated with the payoff function. Note that the same strategy can have different payoffs with different values.
-
-  ![alt text](game-theory2.png)
-
-In this table, the values represent the payoffs for Player 1 and Player 2 for each combination of strategies in the Prisoners Dilemma problem. For example, if both player chooses Strategy 1 (Keep silent), both player receives a payoff value of 1. If Player 1 chooses Strategy 1 (Keep silent) and player 2 chooses Strategy 2 (Betray), player 1 receives a payoff value of 3 and player 2 receives a payoff value of 0.
-
----
-
-2. **Flow of Event**
-
-With each iteration, all the players simultaneously make a decision, which has their corresponding payoff. Then the chosen **Genetic Algorithm** will use the fitness function to evaluate the payoffs list.
-
-Here is how fitness is calculated:
-
-```mermaid
-flowchart TD
-    A[Start] --> B[Strategies]
-    B --> C[Payoffs]
-    C --> D[Fitness]
-    D --> E{Do conflicts exist?}
-    E -->|Yes| F[Reduce Fitness]
-    E -->|No| G[No action]
-    F --> H[Fitness]
-    G --> H
-    H --> I[End]
-
-
-```
-
-# **4\. Local Installation**
+9. [Contributors](#9-contributors)
+10. [End](#10-end)
+# **3\. Local Installation**
 
 ### Compatibility and Testing
 
@@ -275,23 +127,59 @@ mvn verify -DskipTests -Dskip.node-and-npm.install -PstartFE
 
 Web application server will start at localhost:3000 using `npx serve` with static resources generated by `npx react-scripts build`
 
-# **5\. Data Form Creation** 
-**[Video tutorial](https://drive.google.com/drive/folders/16e0t3Vhkr4Bc85k0Bd_aFFTEpU6s_s9R?usp=drive_link)**
+# **4\. Solve**
 
-### **Purpose of Data Forms**
+The solver processes the input data and applies algorithms to compute results.
 
-The Data Form allows users to define and structure input data for solving various problems effectively. There are two types of data forms: SMT data form and GT data form. Each type has its own specific requirements for input formatting and structure to ensure accurate and efficient problem-solving.
+### **4.1 Step-by-Step Execution**
 
-## 5.1. **Stable Matching Theory**
+1. Prepare input data form, then upload this file.
+![](img5.jpg)
+2. Configure the solver
+   - Select a algorithm, problem type.
+   - Configure algorithm parameters, likes: Number of distributed cores, Population size, Number of crossover generation, Optimizatiob execution max time.
+3. Click the "Solve now" button to start the process and wait for the results.
+![](img6.jpg)
 
-The data form requires users to input a list of participants along with their ranked preferences. Each participant must have a complete and correctly ordered preference list to maintain consistency and fairness in the matching process.
+### **4.2 Optimization Tips**
 
-#### 5.1.1. **Sheet naming**
+- Use smaller datasets for initial testing.
+- Ensure input data is complete and correctly formatted.
 
-- It's include: "Problem Info", "Problem Data".
-- Note: Name the sheet correctly, or an error will occur.
+# **5\. Get Result Insight**
 
-#### 5.1.2. **Problem information**
+_The "Get Result Insight" feature will be available after a successful solve._
+
+### **5.1 Analyzing Results**
+
+![](img7.jpg)
+
+- "Get Result Insight" will run 6 algorithms, each executing 10 times.
+- Estimated completion time = average runtime of one algorithm _ number of executions per algorithm _ number of algorithms. **So That**: The runtime of getInsight may be very long, and users should not close the tab or shut down the computer, as it will result in a lost session.
+- After running GetInsight, users can export results and images using the "Export" feature.
+  - View results in dashboards with charts, tables, and other visual aids.
+  - Filter data to focus on specific insights
+
+### **5.2 Output Format**
+
+- **SMT**: A table containing matched pairs and unmatched pairs (if any).
+- **GT**: A table containing the strategies used and the corresponding scores of the players.
+# **6\. Deployment**
+# **7\. Module Specifications**
+
+### **7.1 SMT (Stable Matching Theory)**
+A stable matching is a fundamental concept in mathematics, economics, and computer science that describes a particular way of pairing elements from two distinct sets based on their individual preferences. In essence, it is a matching of participants where there is no incentive for any pair of individuals to break their assigned partnerships to form a new one.
+The core principle of a stable matching lies in the idea of avoiding "instability." An instability, often referred to as a blocking pair, occurs when two individuals who are not matched with each other would both prefer to be with each other than their current partners.
+#### **Types of Problems**
+
+- **MTM (Many-to-Many)**: Each individual (from two distinct sets) can have multiple matches.
+    - **Example:** A group of freelancers and a group of companies. A freelancer can work for multiple companies, and a
+      company can hire multiple freelancers.
+- **OTM (One-to-Many)**: One individual from a set can have multiple matches, but each other individual in the opposite set can only be matched once.
+    - **Example:** A group of professors and a group of students. A professor can advise multiple students, but each
+      student can only have one advisor.
+- **OTO (One-to-One)**: This is the standard Gale-Shapley problem where each individual in both sets is matched with exactly one individual from the opposite set.
+    - **Example:** A group of people and a group of cars. Each person can buy one car, and each car can only be sold to one person.
 
 | Name                          | Explanation                                                                               | Data Type | Notes                          |
 | ----------------------------- | ----------------------------------------------------------------------------------------- | --------- | ------------------------------ |
@@ -303,7 +191,141 @@ The data form requires users to input a list of participants along with their ra
 | **Evaluate Function Set_1**   | The first set of evaluation functions used to assess individuals.                         | text      | Exact formula or default value |
 | **Evaluate Function Set_2**   | The second set of evaluation functions, which may use different criteria.                 | text      | Exact formula or default value |
 
-#### 5.1.3. **Problem data**
+
+#### **Example of a Problem Information Sheet:**
+![alt text](st-matching1.png)
+
+#### **Exclude Pair**
+
+The **Exclude pair** functionality allows for the exclusion of specific pairs from being matched, even if they would otherwise have a high preference score.
+#### **Properties of Each Individual**
+
+- **Set indices**
+- **Capacity**: Each individual can have a defined capacity, which restricts the number of matches they can participate in. 
+- **PWR (Properties)**:
+  - **Value**: Represents a numerical or qualitative measure of the individual’s importance or suitability in the matching process. For example, A job applicant's `Value` could be their GPA, or a company's `Value` could be its average salary offering.
+  - **Weight**: Represents the relative importance or priority of that individual in the matching decision. For example, A company might have a higher `Weight` than a new startup, meaning the algorithm prioritizes matching applicants to that company.
+  - **Requirement**: The minimum necessary requirements that an individual must have to be considered for a match. For example, a job opening might have a `Requirement` for 3 years of experience.
+  
+![alt text](st-matching2.png)
+#### **Flow of Event**
+
+With each iteration, a queue of individuals is used to generate stable matching, which is then used to calculate fitness. The order of the queue will be adjusted by the Genetic Algorithm.
+
+```mermaid
+flowchart TD
+    A[Start] --> B[Queue]
+    B --> C[ Stable Matching]
+    C --> D[Matches]
+    D --> E[Preferences]
+    E --> F{Exclude pairs exist?}
+    F -->|Yes| G[Reduce Fitness]
+    F -->|No| H[Select Next Pair]
+    G --> H
+    H --> J[End]
+```
+
+### **Core Stable Matching**
+
+As mentioned, the system expands on the original problem by introducing many-to-many matching. This requires some modification to the Gale-Shapley Algorithm.
+
+```mermaid
+
+flowchart TD
+    A[Start] --> B[Dequeue an individual A]
+    B --> C[A proposes to their most preferred unmatched B]
+    C --> D{Is B unengaged?}
+    D -->|Yes| E[Match A and B]
+    D -->|No| F{Does B prefer A over current partner?}
+    F -->|Yes| G[Unmatch current partner]
+    G --> E
+    F -->|No| H[A proposes to next preference]
+    H --> C
+    E --> I{Is queue empty?}
+    I -->|No| B
+    I -->|Yes| J[End]
+
+```
+
+### **7.2 GT (Game Theory)**
+
+
+- Game theory is a branch of mathematics that studies the interactions between rational decision-makers, often modeled as players in a game. The goal of game theory is to understand how people make decisions in strategic situations where the outcome of a decision depends on the actions of others. Here, the sole game representation is in **Normal form**, where all players make decisions simultaneously or don't have information about others' decisions.
+
+  ![alt text](game-theory1.png)
+1. **Problem Information**
+- **Problem Name**: The name of the problem. The name should be concise and meaningful, reflecting the nature of the game being analyzed. For example, if the game is about two competing companies deciding whether to enter a new market, the name could be "Market Entry Game." 
+- **Special player**: A player who may have additional constraints or capabilities, differentiating them from other players. Default is 0 (no special player), set to 1 to specify a special player exists.
+- **Number of properties of special player**: Number of strategy attributes that special player is influenced by.
+- **Normal players**: Normal players are the participants in a game theory problem who do not have any special advantages or properties. The input field for the number of normal players should be a numeric field that only accepts positive integers between 2 and 1000. 
+- **Number of properties of normal players**: Number of strategy attributes that regular players are influenced by (>= 1) (the number of attributes for all strategies must be equal)
+- **Fitness function**: A function that evaluates how good or optimal a player's strategy is, typically by assessing the payoff values generated by the chosen strategies. 
+- **Payoff function**: This function calculates the payoff (or reward) that each player receives based on their chosen strategy and the strategies chosen by other players. Payoff calculations will depend on the interactions between these strategies. Define how to calculate payoff from a player strategy. It should be note that this function will be the default for any player without their own payoff function. Example: 
+$$ p1 + p2 + p3 - p4 $$
+- **Is maximizing problem**: If the player's proposed strategy is optimal (already has a high fitness score), set to TRUE, otherwise FALSE (to be determined on a case-by-case basis)
+- **Strategy and their property matrix**: A table representing all the strategies available to the players along with the properties or attributes of each strategy.
+- **Conflict**: A functionality that can prevent or discourage players from choosing specific strategies at any iteration of the game.
+
+After these data are provided to the system, the payoff of each player's strategies are calculated with the payoff function. Note that the same strategy can have different payoffs with different values.
+
+  ![alt text](game-theory2.png)
+
+In this table, the values represent the payoffs for Player 1 and Player 2 for each combination of strategies in the Prisoners Dilemma problem. For example, if both player chooses Strategy 1 (Keep silent), both player receives a payoff value of 1. If Player 1 chooses Strategy 1 (Keep silent) and player 2 chooses Strategy 2 (Betray), player 1 receives a payoff value of 3 and player 2 receives a payoff value of 0.
+
+---
+
+2. **Flow of Event**
+
+With each iteration, all the players simultaneously make a decision, which has their corresponding payoff. Then the chosen **Genetic Algorithm** will use the fitness function to evaluate the payoffs list.
+
+Here is how fitness is calculated:
+
+```mermaid
+flowchart TD
+    A[Start] --> B[Strategies]
+    B --> C[Payoffs]
+    C --> D[Fitness]
+    D --> E{Do conflicts exist?}
+    E -->|Yes| F[Reduce Fitness]
+    E -->|No| G[No action]
+    F --> H[Fitness]
+    G --> H
+    H --> I[End]
+
+
+```
+
+
+
+# **8\. Data Form Creation** 
+**[Video tutorial](https://drive.google.com/drive/folders/16e0t3Vhkr4Bc85k0Bd_aFFTEpU6s_s9R?usp=drive_link)**
+
+### **Purpose of Data Forms**
+
+The Data Form allows users to define and structure input data for solving various problems effectively. There are two types of data forms: SMT data form and GT data form. Each type has its own specific requirements for input formatting and structure to ensure accurate and efficient problem-solving.
+
+## 8.1. **Stable Matching Theory**
+
+The data form requires users to input a list of participants along with their ranked preferences. Each participant must have a complete and correctly ordered preference list to maintain consistency and fairness in the matching process.
+
+#### 8.1.1. **Sheet naming**
+
+- It's include: "Problem Info", "Problem Data".
+- Note: Name the sheet correctly, or an error will occur.
+
+#### 8.1.2. **Problem information**
+
+| Name                          | Explanation                                                                               | Data Type | Notes                          |
+| ----------------------------- | ----------------------------------------------------------------------------------------- | --------- | ------------------------------ |
+| **Problem name**              | The name is taken from the data entered by the user.                                      | text      |                                |
+| **Number of set**             | The number of participating sets is taken from the user input.                            | int       | must be >= 2                   |
+| **Number of individuals**     | The total number of individuals in each participating set.                                | int       | must be >3                     |
+| **Number of characteristics** | The total number of attributes of the participating individuals.                          | int       |                                |
+| **Fitness function**          | A function that evaluates the suitability or effectiveness of an individual in the model. | text      | Exact formula or default value |
+| **Evaluate Function Set_1**   | The first set of evaluation functions used to assess individuals.                         | text      | Exact formula or default value |
+| **Evaluate Function Set_2**   | The second set of evaluation functions, which may use different criteria.                 | text      | Exact formula or default value |
+
+#### 8.1.3. **Problem data**
 
 **Components**
 
@@ -484,16 +506,16 @@ $$
 
 - Note: User can fill "Default" in the function.
 
-## 5.2. **Game Theory**
+## 8.2. **Game Theory**
 
 The data form consists of defining the number of players, their available strategies, and a corresponding payoff matrix. This ensures that the system can accurately compute optimal strategies and outcomes based on the input data.
 
-#### 5.2.1. **Sheet naming**
+#### 8.2.1. **Sheet naming**
 
 - It's include: "Problem Info", "Problem Data".
 - Note: Name the sheet correctly, or an error will occur.
 
-#### 5.2.2. **Problem Information**
+#### 8.2.2. **Problem Information**
 
 | Name                                           | Explanation                                                                                                                       | Data Type | Notes                          |
 | ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | --------- | ------------------------------ |
@@ -509,7 +531,7 @@ The data form consists of defining the number of players, their available strate
   **Example here**  
   ![](img2.jpg)
 
-#### 5.2.3. **Problem Data**
+#### 8.2.3. **Problem Data**
 
 **Components**
 
@@ -580,48 +602,6 @@ Example here
   - The second value (p2) is also multiplied by 5 but then divided by a constant sum (5+5), reducing its impact compared to p1.
   - The third value (p3) is subtracted, meaning it reduces the overall reward.
 - Note: User can fill "Default" in two functions.
-
-# **6\. Solve**
-
-The solver processes the input data and applies algorithms to compute results.
-
-### **6.1 Step-by-Step Execution**
-
-1. Prepare input data form, then upload this file.
-![](img5.jpg)
-2. Configure the solver
-   - Select a algorithm, problem type.
-   - Configure algorithm parameters, likes: Number of distributed cores, Population size, Number of crossover generation, Optimizatiob execution max time.
-3. Click the "Solve now" button to start the process and wait for the results.
-![](img6.jpg)
-
-### **6.2 Optimization Tips**
-
-- Use smaller datasets for initial testing.
-- Ensure input data is complete and correctly formatted.
-
-# **7\. Get Result Insight**
-
-_The "Get Result Insight" feature will be available after a successful solve._
-
-### **7.1 Analyzing Results**
-
-![](img7.jpg)
-
-- "Get Result Insight" will run 6 algorithms, each executing 10 times.
-- Estimated completion time = average runtime of one algorithm _ number of executions per algorithm _ number of algorithms. **So That**: The runtime of getInsight may be very long, and users should not close the tab or shut down the computer, as it will result in a lost session.
-- After running GetInsight, users can export results and images using the "Export" feature.
-  - View results in dashboards with charts, tables, and other visual aids.
-  - Filter data to focus on specific insights
-
-### **7.2 Output Format**
-
-- **SMT**: A table containing matched pairs and unmatched pairs (if any).
-- **GT**: A table containing the strategies used and the corresponding scores of the players.
-
-
-# **8\. Deployment**
-
 
 
 # **9\. Contributors**
