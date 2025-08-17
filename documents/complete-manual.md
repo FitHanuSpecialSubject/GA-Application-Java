@@ -202,9 +202,9 @@ The **Exclude pair** functionality allows for the exclusion of specific pairs fr
 | Properties of Each Individual | Explanation |
 | :--- | :--- |
 | **Capacity** |  Each individual can have a defined capacity, which restricts the number of matches they can participate in.|
-| **Value** | Represents a numerical or qualitative measure of the individual’s importance or suitability in the matching process. For example, A job applicant's `Value` could be their GPA, or a company's `Value` could be its average salary offering. |
-| **Weight** |  Represents the relative importance or priority of that individual in the matching decision. For example, A company might have a higher `Weight` than a new startup, meaning the algorithm prioritizes matching applicants to that company.|
-| **Requirement** |  The minimum necessary requirements that an individual must have to be considered for a match. For example, a job opening might have a `Requirement` for 3 years of experience.|
+| **Value** | Represents a numerical or qualitative measure of the individual’s importance or suitability in the matching process. This property must be greater than or equal to 0. For example, A job applicant's `Value` could be their GPA, or a company's `Value` could be its average salary offering. |
+| **Weight** |  Represents the relative importance or priority of that individual in the matching decision. This property must be greater than or equal to 0. For example, A company might have a higher `Weight` than a new startup, meaning the algorithm prioritizes matching applicants to that company.|
+| **Requirement** |  The minimum necessary requirements that an individual must have to be considered for a match. For example, a job opening might have a `Requirement` for 3 years of experience. In the form, requirement can be a positive number or a string (such as "1 bound", "2 bounds", or "scale target") .|
   
 ![alt text](st-matching2.png)
 #### **Flow of Event**
