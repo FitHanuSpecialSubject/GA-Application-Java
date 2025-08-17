@@ -135,12 +135,12 @@ The solver processes the input data and applies algorithms to compute results.
 ### **4.1 Step-by-Step Execution**
 
 1. Prepare input data form, then upload this file.
-![alt text](SMT-41-1.png)
+![ ](SMT-41-1.png)
 2. Configure the solver
    - Select a algorithm, problem type.
    - Configure algorithm parameters, likes: Number of distributed cores, Population size, Number of crossover generation, Optimizatiob execution max time.
 3. Click the "Solve now" button to start the process and wait for the results.
-![alt text](SMT-41-2.png)
+![ ](SMT-41-2.png)
 
 ### **4.2 Optimization Tips**
 - Use smaller datasets for initial testing.
@@ -152,7 +152,7 @@ _The "Get Result Insight" feature will be available after a successful solve._
 
 ### **5.1 Analyzing Results**
 
-![alt text](SMT-51-1.png)
+![ ](SMT-51-1.png)
 
 - "Get Result Insight" will run 6 algorithms, each executing 10 times.
 - Estimated completion time = average runtime of one algorithm _ number of executions per algorithm _ number of algorithms. **So That**: The runtime of getInsight may be very long, and users should not close the tab or shut down the computer, as it will result in a lost session.
@@ -165,7 +165,7 @@ _The "Get Result Insight" feature will be available after a successful solve._
 - **SMT**: A table containing matched pairs and unmatched pairs (if any).
 ![alt text](SMT-52-1.png)
 - **GT**: A table containing the strategies used and the corresponding scores of the players.
-![alt text](SMT-52-2.png)
+![ ](SMT-52-2.png)
 # **6\. Deployment**
 # **7\. Module Specifications**
 
@@ -328,10 +328,10 @@ The data form requires users to input a list of participants along with their ra
 | **Evaluate Function Set_1** | First evaluation function set for individuals. | text | Formula or default |
 | **Evaluate Function Set_2** | Second evaluation function set (optional criteria). | text | Formula or default |
 ### Example
-![alt text](SMT-812-1.png)
+![ ](SMT-812-1.png)
 ### 8.1.3. **Problem Data (Dataset)**
 **Components**  
-![alt text](SMT-813-1.png)
+![ ](SMT-813-1.png)
 
 | Name                          | Description                                                                                   | Data Type | Notes                                                                 |
 | ----------------------------- | --------------------------------------------------------------------------------------------- | --------- | --------------------------------------------------------------------- |
@@ -345,7 +345,7 @@ The data form requires users to input a list of participants along with their ra
 | **p_1 ... p_k**               | Values of properties (values).                                                                 | double    | Must be ≥ 0                                                           |
 ### Example
 
-![alt text](SMT-813-2.png)
+![](SMT-813-2.png)
 
 ---
 
@@ -371,13 +371,13 @@ The data form consists of defining the number of players, their available strate
 | **Is maximizing problem** | Whether the problem is maximization. | boolean | true/false |
 
 ### Example
-![alt text](SMT-822-1.png)
+![](SMT-822-1.png)
 
 ### 8.2.3. **Problem Data( Normal player/Special player)**
 
 **Components**
 
-![alt text](SMT-823-1.png)
+![](SMT-823-1.png)
 
 | Name | Description | Data Type | Notes |
 |------|-------------|-----------|-------|
@@ -387,7 +387,7 @@ The data form consists of defining the number of players, their available strate
 | **Strategy_name** | Strategy label. | text | e.g. "S1" |
 | **Property_1 ... property_n** | Strategy quantitative attributes. | double | ≥ 0 |
 ### Example
-![alt text](SMT-823-2.png)
+![](SMT-823-2.png)
 
 # **9\. Contributors**
 
