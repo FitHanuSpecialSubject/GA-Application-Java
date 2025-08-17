@@ -328,7 +328,7 @@ The data form requires users to input a list of participants along with their ra
 ![alt text](SMT-812-1.png)
 ### 8.1.3. **Problem Data (Dataset)**
 **Components**  
-![alt text](SMT-813-1.png)
+![alt text](SMT-813-1.png)![alt text](SMT-813-1.png.png)
 
 | Name                          | Description                                                                                   | Data Type | Notes                                                                 |
 | ----------------------------- | --------------------------------------------------------------------------------------------- | --------- | --------------------------------------------------------------------- |
@@ -384,7 +384,8 @@ The data form consists of defining the number of players, their available strate
 | **Strategy_name** | Strategy label. | text | e.g. "S1" |git br
 | **Property_1 ... property_n** | Strategy quantitative attributes. | double | ≥ 0 |
 ### Example
-![alt text](T-823-2.png)
+
+![alt text](GT-823-2.png)
 
 # **9\. Contributors**
 
