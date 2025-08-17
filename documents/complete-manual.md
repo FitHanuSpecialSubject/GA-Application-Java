@@ -183,31 +183,28 @@ The core principle of a stable matching lies in the idea of avoiding "instabilit
 - **OTO (One-to-One)**: This is the standard Gale-Shapley problem where each individual in both sets is matched with exactly one individual from the opposite set.
     - **Example:** A group of people and a group of cars. Each person can buy one car, and each car can only be sold to one person.
 
-| Name                          | Explanation                                                                               | Data Type | Notes                          |
-| ----------------------------- | ----------------------------------------------------------------------------------------- | --------- | ------------------------------ |
-| **Problem name**              | The name is taken from the data entered by the user.                                      | text      |                                |
-| **Number of set**             | The number of participating sets is taken from the user input.                            | int       | must be >= 2                   |
-| **Number of individuals**     | The total number of individuals in each participating set.                                | int       | must be >3                     |
-| **Number of characteristics** | The total number of attributes of the participating individuals.                          | int       |                                |
-| **Fitness function**          | A function that evaluates the suitability or effectiveness of an individual in the model. | text      | Exact formula or default value |
-| **Evaluate Function Set_1**   | The first set of evaluation functions used to assess individuals.                         | text      | Exact formula or default value |
-| **Evaluate Function Set_2**   | The second set of evaluation functions, which may use different criteria.                 | text      | Exact formula or default value |
+#### **Definition Breakdown:**
+| Name | Explanation |
+| :--- | :--- |
+| **Special Player** | A player who may have additional constraints or capabilities, differentiating them from other players. Example: In a company scenario, it could be a senior manager who needs to be paired with a junior employee.|
+| **Fitness function** | The **Fitness function** evaluates the final result of the matching process. It calculates how good or "fit" a matching is based on the preferences of the matched pairs. Example: In a room assignment problem, the fitness function might be the sum of all roommates' compatibility scores. The higher the total score, the better the overall assignment.|
+| **Evaluate Function** | The **Evaluate function** is specific to individuals within a set, used to compute the preference of one individual over others based on the components of the individual's properties. Example: In a roommate matching scenario, the evaluate function for person A might calculate their preference for person B based on shared hobbies and cleanliness habits. |
+| **Exclude Pair** | The **Exclude pair** functionality allows for the exclusion of specific pairs from being matched, even if they would otherwise have a high preference score. For example, in a school project, two students who have previously had conflicts could be flagged as an excluded pair to prevent them from being assigned to the same group.|
+| **Capacity** | The **Capacity** refers to the maximum number of matches an individual may have. For example, A typical dating app has a capacity of one-to-one matches (you can only be matched with one person at a time).|
 
 
-#### **Example of a Problem Information Sheet:**
-![alt text](st-matching1.png)
 
 #### **Exclude Pair**
 
 The **Exclude pair** functionality allows for the exclusion of specific pairs from being matched, even if they would otherwise have a high preference score.
 #### **Properties of Each Individual**
 
-- **Set indices**
-- **Capacity**: Each individual can have a defined capacity, which restricts the number of matches they can participate in. 
-- **PWR (Properties)**:
-  - **Value**: Represents a numerical or qualitative measure of the individual’s importance or suitability in the matching process. For example, A job applicant's `Value` could be their GPA, or a company's `Value` could be its average salary offering.
-  - **Weight**: Represents the relative importance or priority of that individual in the matching decision. For example, A company might have a higher `Weight` than a new startup, meaning the algorithm prioritizes matching applicants to that company.
-  - **Requirement**: The minimum necessary requirements that an individual must have to be considered for a match. For example, a job opening might have a `Requirement` for 3 years of experience.
+| Properties of Each Individual | Explanation |
+| :--- | :--- |
+| **Capacity** |  Each individual can have a defined capacity, which restricts the number of matches they can participate in.|
+| **Value** | Represents a numerical or qualitative measure of the individual’s importance or suitability in the matching process. For example, A job applicant's `Value` could be their GPA, or a company's `Value` could be its average salary offering. |
+| **Weight** |  Represents the relative importance or priority of that individual in the matching decision. For example, A company might have a higher `Weight` than a new startup, meaning the algorithm prioritizes matching applicants to that company.|
+| **Requirement** |  The minimum necessary requirements that an individual must have to be considered for a match. For example, a job opening might have a `Requirement` for 3 years of experience.|
   
 ![alt text](st-matching2.png)
 #### **Flow of Event**
