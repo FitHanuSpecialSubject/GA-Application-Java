@@ -368,13 +368,13 @@ The data form consists of defining the number of players, their available strate
 | **Is maximizing problem** | Whether the problem is maximization. | boolean | true/false |
 
 ### Example
-![alt text](SMT-822-1.png)
+![alt text](GT-822-1.png)
 
 ### 8.2.3. **Problem Data( Normal player/Special player)**
 
 **Components**
 
-![alt text](SMT-823-1.png)
+![alt text](GT-823-1.png)
 
 | Name | Description | Data Type | Notes |
 |------|-------------|-----------|-------|
@@ -384,7 +384,7 @@ The data form consists of defining the number of players, their available strate
 | **Strategy_name** | Strategy label. | text | e.g. "S1" |git br
 | **Property_1 ... property_n** | Strategy quantitative attributes. | double | ≥ 0 |
 ### Example
-![alt text](SMT-823-2.png)
+![alt text](T-823-2.png)
 
 # **9\. Contributors**
 
