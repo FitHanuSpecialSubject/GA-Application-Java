@@ -384,7 +384,7 @@ The data form consists of defining the number of players, their available strate
 | **Player_name** | Player’s name (default: “Player n”). | text | Optional |
 | **Number_of_strategies** | Strategies per player. | int | ≥ 1 |
 | **Payoff_function** | Custom payoff function. | text | Default = sum(properties) |
-| **Strategy_name** | Strategy label. | text | e.g. "S1" |
+| **Strategy_name** | Strategy label. | text | e.g. "S1" |git br
 | **Property_1 ... property_n** | Strategy quantitative attributes. | double | ≥ 0 |
 ### Example
 ![alt text](SMT-823-2.png)
