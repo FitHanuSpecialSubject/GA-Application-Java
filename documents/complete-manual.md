@@ -328,7 +328,7 @@ The data form requires users to input a list of participants along with their ra
 ![alt text](SMT-812-1.png)
 ### 8.1.3. **Problem Data (Dataset)**
 **Components**  
-![alt text](SMT-813-1.png)![alt text](SMT-813-1.png.png)
+![alt text](SMT-813-1.png)
 
 | Name                          | Description                                                                                   | Data Type | Notes                                                                 |
 | ----------------------------- | --------------------------------------------------------------------------------------------- | --------- | --------------------------------------------------------------------- |
