@@ -135,17 +135,16 @@ The solver processes the input data and applies algorithms to compute results.
 ### **4.1 Step-by-Step Execution**
 
 1. Prepare input data form, then upload this file.
-![](img5.jpg)
+![alt text](SMT-41-1.png)
 2. Configure the solver
    - Select a algorithm, problem type.
    - Configure algorithm parameters, likes: Number of distributed cores, Population size, Number of crossover generation, Optimizatiob execution max time.
 3. Click the "Solve now" button to start the process and wait for the results.
-![](img6.jpg)
+![alt text](SMT-41-2.png)
 
 ### **4.2 Optimization Tips**
-
 - Use smaller datasets for initial testing.
-- Ensure input data is complete and correctly formatted.
+- Ensure input data is complete,syntax-corrected and correctly formatted.
 
 # **5\. Get Result Insight**
 
@@ -153,7 +152,7 @@ _The "Get Result Insight" feature will be available after a successful solve._
 
 ### **5.1 Analyzing Results**
 
-![](img7.jpg)
+![alt text](SMT-51-1.png)
 
 - "Get Result Insight" will run 6 algorithms, each executing 10 times.
 - Estimated completion time = average runtime of one algorithm _ number of executions per algorithm _ number of algorithms. **So That**: The runtime of getInsight may be very long, and users should not close the tab or shut down the computer, as it will result in a lost session.
@@ -164,7 +163,9 @@ _The "Get Result Insight" feature will be available after a successful solve._
 ### **5.2 Output Format**
 
 - **SMT**: A table containing matched pairs and unmatched pairs (if any).
+![alt text](SMT-52-1.png)
 - **GT**: A table containing the strategies used and the corresponding scores of the players.
+![alt text](SMT-52-2.png)
 # **6\. Deployment**
 # **7\. Module Specifications**
 
@@ -299,312 +300,94 @@ flowchart TD
 
 
 
-# **8\. Data Form Creation** 
-**[Video tutorial](https://drive.google.com/drive/folders/16e0t3Vhkr4Bc85k0Bd_aFFTEpU6s_s9R?usp=drive_link)**
+# **8. Data Form Creation**
+**[Video Tutorial](https://drive.google.com/drive/folders/16e0t3Vhkr4Bc85k0Bd_aFFTEpU6s_s9R?usp=drive_link)**
 
-### **Purpose of Data Forms**
-
+### **Purpose of the Data Form**
 The Data Form allows users to define and structure input data for solving various problems effectively. There are two types of data forms: SMT data form and GT data form. Each type has its own specific requirements for input formatting and structure to ensure accurate and efficient problem-solving.
 
-## 8.1. **Stable Matching Theory**
+#
+
+## 8.1. **SMT (Stable Matching Theory)**
 
 The data form requires users to input a list of participants along with their ranked preferences. Each participant must have a complete and correctly ordered preference list to maintain consistency and fairness in the matching process.
 
-#### 8.1.1. **Sheet naming**
+### 8.1.1. **Sheet Naming**
+- Must include: "Problem Info", "Dataset".  
+- Note: Use the exact sheet names to avoid errors.  
 
-- It's include: "Problem Info", "Problem Data".
-- Note: Name the sheet correctly, or an error will occur.
+### 8.1.2. **Problem Information**
 
-#### 8.1.2. **Problem information**
+| Name | Description | Data Type | Notes |
+|------|-------------|-----------|-------|
+| **Problem name** | The name provided by the user. | text | |
+| **Number of sets** | Total number of sets involved. | int | Must be ≥ 2 |
+| **Number of individuals** | Total individuals in each set. | int | Must be > 3 |
+| **Number of characteristics** | Total attributes of individuals. | int | |
+| **Fitness function** | Function to evaluate suitability/effectiveness of an individual. | text | Formula or default |
+| **Evaluate Function Set_1** | First evaluation function set for individuals. | text | Formula or default |
+| **Evaluate Function Set_2** | Second evaluation function set (optional criteria). | text | Formula or default |
+### Example
+![alt text](SMT-812-1.png)
+### 8.1.3. **Problem Data (Dataset)**
+**Components**  
+![alt text](SMT-813-1.png)
 
-| Name                          | Explanation                                                                               | Data Type | Notes                          |
-| ----------------------------- | ----------------------------------------------------------------------------------------- | --------- | ------------------------------ |
-| **Problem name**              | The name is taken from the data entered by the user.                                      | text      |                                |
-| **Number of set**             | The number of participating sets is taken from the user input.                            | int       | must be >= 2                   |
-| **Number of individuals**     | The total number of individuals in each participating set.                                | int       | must be >3                     |
-| **Number of characteristics** | The total number of attributes of the participating individuals.                          | int       |                                |
-| **Fitness function**          | A function that evaluates the suitability or effectiveness of an individual in the model. | text      | Exact formula or default value |
-| **Evaluate Function Set_1**   | The first set of evaluation functions used to assess individuals.                         | text      | Exact formula or default value |
-| **Evaluate Function Set_2**   | The second set of evaluation functions, which may use different criteria.                 | text      | Exact formula or default value |
-
-#### 8.1.3. **Problem data**
-
-**Components**
-
-![](img1.jpg)
-
-**How to input values?**
-
-The preference of individual A to individual B is based on 3 factors:
-
-- **Requirement**
-- **Value**
-- **Weight**
-
-These factors are presented in every property of an individual and are used by the Evaluate function to calculate preference.
-
----
-
+| Name                          | Description                                                                                   | Data Type | Notes                                                                 |
+| ----------------------------- | --------------------------------------------------------------------------------------------- | --------- | --------------------------------------------------------------------- |
+| **Set_1**                     | The name of the set or group containing individuals.                                           | text      | Example: "Set_1", "Set_2"                                             |
+| **Capacity**                  | The maximum capacity of each object.                                                           | int       | Must be > 0, enter directly in the “fill capacity > 0” field          |
+| **Total individuals**         | The maximum number of individuals in each set.                                                 | int       | Must be > 0, enter immediately to the right of the capacity field     |
+| **Individual_1**              | The name of a participant in the set.                                                          | text      | Required if Capacity > 0                                              |
+| **Requirements, Weights, Properties** | The attributes (requirements, weights, values) used in the Gale-Shapley algorithm. |           | **DO NOT MODIFY THIS DATA**                                           |
+| **req_1 ... req_k**           | Values of requirements.                                                                        | text / logical expression |                                                                       |
+| **w_1 ... w_k**               | Values of weights.                                                                             | int       | Must be ≥ 0                                                           |
+| **p_1 ... p_k**               | Values of properties (values).                                                                 | double    | Must be ≥ 0                                                           |
 ### Example
 
-| Individual A | Weight | Value | Requirement |
-| :----------: | :----: | :---: | :---------: |
-|  Property 1  |   10   |  11   |     12      |
-|  Property 2  |   7    |  13   |     13      |
-|  Property 3  |   5    |  18   |   18:100    |
-
-| Individual B | Weight | Value | Requirement |
-| :----------: | :----: | :---: | :---------: |
-|  Property 1  |   3    |  12   |     12      |
-|  Property 2  |   8    |  13   |     13      |
-|  Property 3  |   6    |  18   |   18:100    |
-
-### Rules for properties
-
-- Weight $>=$ 0
-- Value $>=$ 0
-- Requirement can either be a positive number (used in custom calculations) or a string (such as "1 bound", "2 bounds", or "scale target") (used in default calculations).
-
-### Common Annotation
-
-- $R_i$ represents the Requirement for Property $i$
-- $W_i$ represents the Weight for Property $i$
-- $P_i$ represents the Value for Property $i$
-
-Example: Custom function in Individual A: $$ (P_1 - R_1)^{W_1} $$
-
-- $P_1$ is the Value of Property 1: 11  
-- $R_1$ is the Requirement of Property 1: 12  
-- $W_1$ is the Weight of Property 1 :10
-
-Result is: $$ (P_1 - R_1)^{W_1} = (11 - 10)^{12} = 1 $$
-
+![alt text](SMT-813-2.png)
 
 ---
 
-### Custom Evaluation
+## 8.2. **GT (Game Theory)**
 
-A custom evaluation function is:
+The data form consists of defining the number of players, their available strategies, and a corresponding payoff matrix. This ensures that the system can accurately compute optimal strategies and outcomes based on the input data. 
 
-The values of $R_2$ and $W_1$ are taken from Individual A, and $P_1$ is taken from Individual B.
+### 8.2.1. **Sheet Naming**
+- Must include: "Problem Info", "Normal player"(add a sheet of "Special player" if you need).  
+- Note: Use the exact sheet names to avoid errors.  
 
-- $W_1$ and $P_1$ are straightforward, while $R_2$ has more nuance.
-- The syntax rules give different results for Requirement calculations:
+### 8.2.2. **Problem Information**
 
-1. $x--$ returns $x$
-2. $x:y$ returns $\frac{x + y}{2}$
+| Name | Description | Data Type | Notes |
+|------|-------------|-----------|-------|
+| **Problem name** | User-provided name. | text | |
+| **Special Player exists** | 0: No, 1: Yes. | int | 0 or 1 |
+| **Number of properties of special player** | Number of attributes of the special player. | int | |
+| **Number of normal players** | Total normal players. | int | |
+| **Number of properties of each normal player** | Number of attributes per normal player. | int | |
+| **Fitness function** | Evaluates player success. | text | Formula or default |
+| **Player payoff function** | Determines reward/payoff per strategy. | text | Formula or default |
+| **Is maximizing problem** | Whether the problem is maximization. | boolean | true/false |
 
-3. $x++$ returns $x$
-4. $x$ returns $x$
+### Example
+![alt text](SMT-822-1.png)
 
-Using these rules, the preference of A to B is calculated as:
-
-$12 + 11 * 12 = 144$
-
----
-
-### Default Evaluation
-
-Default evaluation uses all properties to calculate preference. The formulation can be expressed as:
-
-$$P_A(B) = \sum_{i=1}^{N} R_i(P_i) \times W_i$$
-
-Where:
-
-- $N$ is the number of properties of an individual
-- $R_i$ is the requirement function for property $i$ of A
-- $W_i$ is the weight for property $i$ of A
-- $P_i$ is the value for property $i$ of B
-
----
-
-### Requirement Functions
-
-1.  
-$$
-    R_i(P_i) = x - - (P_i) =
-    \begin{cases}
-    2 & \text{if } x = 0 \\
-    0 & \text{if } P_i > x \\
-    \frac{x + |P_i - x|}{x} & \text{else}
-    \end{cases}
-    $$
-
-2.  
-$$
-    R_i(P_i) = x + + (P_i) =
-    \begin{cases}
-    2 & \text{if } x = 0 \\
-    0 & \text{if } P_i < x \\
-    \frac{x + |P_i - x|}{x} & \text{else}
-    \end{cases}
-    $$
-
-3.  
-$$
-    R_i(P_i) = x : y (P_i) =
-    \begin{cases}
-    \frac{|y - x|}{2} - \frac{|x + y|}{2} + \frac{|P_i|}{|y - x|} + 1 & \text{if } P_i \in [x, y] \\
-    0 & \text{else}
-    \end{cases}
-    $$
-
-4.  
-$$
-    R_i(P_i) = x(P_i) =
-    \begin{cases}
-    0 & \text{if } P_i < 0 \text{ or } P_i > 10 \\
-    0 & \text{if } |P_i - x| > 7 \\
-    1 & \text{if } |P_i - x| > 5 \\
-    \frac{10 - |P_i - x|}{11} & \text{else}
-    \end{cases}
-    $$
-
----
-
-### Apply These Rules
-
-Let’s now apply these rules to calculate the preference of A to B.
-
-$$
-P_A(B) = R_1(P_1) * W_1 + R_2(P_2) * W_2 + R_3(P_3) * W_3
-$$
-
-Substituting the values from the tables:
-
-This simplifies to:
-
-$$
-= \frac{12 + |12 - 12|}{12} * 12 + 0 * 13 + \left( \frac{100 - 18}{2} - \frac{100 + 18}{2} + 1 \right) * 23
-$$
-
-Which results in:
-
-$$
-= 12 + 0 + 23 = 35
-$$
-
-**How to enter function syntax?**
-
-- Syntax
-
-  - $: i - index of MatchSet in "matches"
-
-    - $: set - value (1 or 2) represent set 1 (0) or set 2 (1)
-    - $: S(set) - Sum of all payoff scores of "set" evaluate by opposite set
-    - $: M(i) - Value of specific matchSet's satisfaction eg: M0 (satisfactory of Individual no 0)
-      _ Supported functions:
-      _ #: SIGMA{S1} calculate sum of all MatchSet of a belonging set eg: SIGMA{S1}
-
-          * Supported mathematical calculations:
-          * Name:    Usage
-          * 1. absolute       : abs(expression)
-          * 2. exponent      : (expression)^(expression)
-          * 3. sin                 : sin(expression)
-          * 4. cos                 : cos(expression)
-          * 5. tan                : tan(expression)
-          * 6. logarithm     : log(expression)(expression)
-          * 7. square root: sqrt(expression)
-
-- Note: User can fill "Default" in the function.
-
-## 8.2. **Game Theory**
-
-The data form consists of defining the number of players, their available strategies, and a corresponding payoff matrix. This ensures that the system can accurately compute optimal strategies and outcomes based on the input data.
-
-#### 8.2.1. **Sheet naming**
-
-- It's include: "Problem Info", "Problem Data".
-- Note: Name the sheet correctly, or an error will occur.
-
-#### 8.2.2. **Problem Information**
-
-| Name                                           | Explanation                                                                                                                       | Data Type | Notes                          |
-| ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | --------- | ------------------------------ |
-| **Problem name**                               | The name is taken from the data entered by the user.                                                                              | text      |                                |
-| **Special Player exists**                      | Determines whether a special player exists (0: No, 1: Yes). The special player may have a significant or unique role in the game. | int       | 0 or 1                         |
-| **Number of properties of special player**     | The number of characteristics or attributes of the special player.                                                                | int       |                                |
-| **Number of normal players**                   | The total number of regular players in the game.                                                                                  | int       |                                |
-| **Number of properties of each normal player** | The number of attributes for each normal player, which may relate to strategies, resources, or benefits.                          | int       |                                |
-| **Fitness function**                           | A function that evaluates the success of a player.                                                                                | text      | Exact formula or default value |
-| **Player payoff function**                     | A function that determines the rewards or benefits a player receives based on their strategies and actions.                       | text      | Exact formula or default value |
-| **Is maximizing problem**                      | Specifies whether the problem is a maximization problem.                                                                          | boolean   | true or false                  |
-
-  **Example here**  
-  ![](img2.jpg)
-
-#### 8.2.3. **Problem Data**
+### 8.2.3. **Problem Data( Normal player/Special player)**
 
 **Components**
 
-Example here 
+![alt text](SMT-823-1.png)
 
-![](img3.jpg)
-
-
-**How to input values?**
-
-- Players:
-
-  - The stage game is represented in standard strategic (normal) form.
-  - The set of players is denoted by $I = {1, ..., n}$.
-  - Each player $i ∈ I$ has an action set denoted by **$A_{i}$**.
-  - An action profile **$a$ $=$ ($ai$, $a_{-i}$)** consists of the action of player **i** and the actions of the other players, denoted by **$a_{-i}$ = ($a{1}$,..., $a{n}$) ∈ $A_{-i}$**.
-
-- Strategies:
-
-  - A strategy **$s_i$ ∈ $S_i$** for player **i**, then a function **$s_i$: H $\to$ $A_{i}$**, where the strategy space of **i** consists of **$K_{i}$** discrete strategies: that is, **$S_i = {s_i^1,s_i^1, ..., s_i^{K_{i}} }$**
-  - Futhermore, denote a strategy combination of the **n** players except **$i$** by **$s_{-i}$ = ($s{1}$,..., $s{n}$)**
-  - The set of joint-strategy profiles is denoted by **$S$ = $S_{1}$ x ... x $S_{n}$**
-
-  Each player **i** has a payoff function **$\pi_{i}$: S $\to$ R**, which represents the payoff when the joint-strategy profile is payed.
-
-- Payoff <<payoff>>
-
-  Payoff is calculated using the payoff function, which defaults to the sum of a strategy's properties or a custom function using the syntax `=p<column index>[<arithmetic>]`.
-
-  - p<column index> refers to the value in the corresponding property column.
-  - The index starts from 1.
-
-  For example: If Strategy A has two properties with values 188 and 1.2, the default payoff function would compute:  
-  Payoff(Strategy A) = Property 1 + Property 2 = 188 + 1.2 = 189.2
-
-- Fitness <<fitness>>
-
-  The fitness is typically derived from the payoff. The simplest fitness function could just be the payoff itself, but it can also incorporate other factors:
-
-  - Simple Fitness Function: fitness = payoff
-
-  - Custom Fitness Function: fitness = (payoff \* weight_factor) + other_adjustments
-
-  For example: a weight factor of 1.5, a custom fitness function will be:  
-  fitness(Player 1) = 189.2 \* 1.5 = 283.8
-
-  fitness(Player 2) = 148.7 \* 1.5 = 223.05
-
-- Conflict Resolution
-
-  Conflict rule: A player may not be allowed to choose a particular strategy if it conflicts with another player's choice, or it may be penalized.
-
-  For example: If Player 1 chooses Strategy A and Player 2 also chooses Strategy A, a conflict rule may exist that penalizes both players’ fitness scores.
-
-  Conflict Rule: If both players select Strategy A, reduce fitness by 20%. So, result will be:  
-   player1*fitness = 189.2 * 0.8 = 151.36  
-   player2*fitness = 148.7 * 0.8 = 119.0
-
-  **3.3 Way to enter function syntax.**
-  See this example for clearer understanding:
-
-  ![](img4.png)
-
-
-- Fitness function: This function calculates the average value of five utility parameters (u1 to u5). It is a simple mean function that evaluates the overall fitness of a player by averaging these five factors.
-- Payoff function:
-  - The first value (p1) is multiplied by 5, meaning it has a significant impact on the final result.
-  - The second value (p2) is also multiplied by 5 but then divided by a constant sum (5+5), reducing its impact compared to p1.
-  - The third value (p3) is subtracted, meaning it reduces the overall reward.
-- Note: User can fill "Default" in two functions.
-
+| Name | Description | Data Type | Notes |
+|------|-------------|-----------|-------|
+| **Player_name** | Player’s name (default: “Player n”). | text | Optional |
+| **Number_of_strategies** | Strategies per player. | int | ≥ 1 |
+| **Payoff_function** | Custom payoff function. | text | Default = sum(properties) |
+| **Strategy_name** | Strategy label. | text | e.g. "S1" |
+| **Property_1 ... property_n** | Strategy quantitative attributes. | double | ≥ 0 |
+### Example
+![alt text](SMT-823-2.png)
 
 # **9\. Contributors**
 
