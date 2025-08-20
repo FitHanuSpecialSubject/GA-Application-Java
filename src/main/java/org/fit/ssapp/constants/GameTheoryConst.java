@@ -11,6 +11,8 @@ public class GameTheoryConst {
    * algorithms allowing
    */
   public static final String[] ALLOWED_INSIGHT_ALGORITHMS = {
+          "IBEA",
+          "SPEA2",      
           "NSGAII",
           "NSGAIII",
           "eMOEA",
