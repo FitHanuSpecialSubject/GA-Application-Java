@@ -10,7 +10,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  */
 
 @Slf4j
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = {
+    "org.fit.ssapp",
+    "org.c419.infra"
+})
 public class Ss2BackendApplication {
   /**
    * Main method to start the Spring Boot application.
