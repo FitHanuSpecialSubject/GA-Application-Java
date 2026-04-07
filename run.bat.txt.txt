@@ -1,0 +1,7 @@
+@echo off
+title GA Backend Server
+color 0A
+cd /d C:\Users\ADMIN\GA-Application-Java
+echo Starting GA Backend...
+java -jar target\SS2_Backend-0.0.1-SNAPSHOT.jar
+pause
