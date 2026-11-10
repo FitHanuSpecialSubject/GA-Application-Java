@@ -109,6 +109,82 @@ public class JobController {
   }
 
   /**
+   * Submit a game theory insights request. Progress is still pushed over websocket
+   * to the given session code.
+   *
+   * @param dto problem request.
+   *
+   * @param sessionCode session code runtime.
+   *
+   * @return job id.
+   */
+  @PostMapping("/problem-result-insights/{sessionCode}")
+  public ResponseEntity<Response> submitGameTheoryInsights(
+      @RequestBody @Valid GameTheoryProblemDto dto, @PathVariable String sessionCode) {
+    return submit(() -> gameTheoryService.getProblemResultInsights(dto, sessionCode));
+  }
+
+  /**
+   * Submit a many to many matching insights request.
+   *
+   * @param dto problem request.
+   *
+   * @param sessionCode session code runtime.
+   *
+   * @return job id.
+   */
+  @PostMapping("/matching-problem-result-insights/{sessionCode}")
+  public ResponseEntity<Response> submitMatchingInsights(
+      @RequestBody @Valid StableMatchingProblemDto dto, @PathVariable String sessionCode) {
+    return submit(() -> stableMatchingSolver.getInsights(dto, sessionCode));
+  }
+
+  /**
+   * Submit a one to many matching insights request.
+   *
+   * @param dto problem request.
+   *
+   * @param sessionCode session code runtime.
+   *
+   * @return job id.
+   */
+  @PostMapping("/otm-matching-problem-result-insights/{sessionCode}")
+  public ResponseEntity<Response> submitOtmMatchingInsights(
+      @RequestBody @Valid StableMatchingProblemDto dto, @PathVariable String sessionCode) {
+    return submit(() -> otmProblemSolver.getInsights(dto, sessionCode));
+  }
+
+  /**
+   * Submit a triplet matching insights request.
+   *
+   * @param dto problem request.
+   *
+   * @param sessionCode session code runtime.
+   *
+   * @return job id.
+   */
+  @PostMapping("/rbo-triplet-problem-result-insights/{sessionCode}")
+  public ResponseEntity<Response> submitTripletMatchingInsights(
+      @RequestBody @Valid StableMatchingProblemDto dto, @PathVariable String sessionCode) {
+    return submit(() -> tripletMatchingSolver.getInsights(dto, sessionCode));
+  }
+
+  /**
+   * Submit a PSO compatible matching insights request.
+   *
+   * @param dto problem request.
+   *
+   * @param sessionCode session code runtime.
+   *
+   * @return job id.
+   */
+  @PostMapping("/smt-pso-compat-insight/{sessionCode}")
+  public ResponseEntity<Response> submitPsoCompatSmtInsights(
+      @RequestBody @Valid StableMatchingProblemDto dto, @PathVariable String sessionCode) {
+    return submit(() -> psoCompatSmtService.getInsights(dto, sessionCode));
+  }
+
+  /**
    * Poll a job. While running, data holds jobId and status. Once finished, data also holds
    * "result", which is exactly the body the synchronous endpoint would have returned.
    *
